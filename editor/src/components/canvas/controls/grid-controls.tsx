@@ -970,7 +970,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
           const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridChangeElementLocation and do not set targetCell prop in these cases
 
           const borderColor = activePositioningTarget
-            ? colorTheme.brandNeonPink.value
+            ? colorTheme.gridControlsPink.value
             : colorTheme.grey65.value
 
           return (
@@ -2455,6 +2455,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     return null
   }
 
+  const frozenOrRegularMarkerData = frozenMarkers ?? rulerMarkerData
+
   return (
     <React.Fragment>
       <GridRuler
@@ -2464,7 +2466,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         rulerVisible={showExtraMarkers === 'column' ? 'visible' : 'not-visible'}
       >
         {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherColumnMarkers.map((marker, index) => {
+        {frozenOrRegularMarkerData.otherColumnMarkers.map((marker, index) => {
           return (
             <RulerMarkerIndicator
               key={`ruler-marker-${index}`}
@@ -2481,7 +2483,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.columnStart ?? rulerMarkerData.columnStart}
+          marker={frozenOrRegularMarkerData.columnStart}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-start')}
@@ -2490,7 +2492,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.columnEnd ?? rulerMarkerData.columnEnd}
+          marker={frozenOrRegularMarkerData.columnEnd}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-end')}
@@ -2505,7 +2507,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         rulerVisible={showExtraMarkers === 'row' ? 'visible' : 'not-visible'}
       >
         {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherRowMarkers.map((marker, index) => {
+        {frozenOrRegularMarkerData.otherRowMarkers.map((marker, index) => {
           return (
             <RulerMarkerIndicator
               key={`ruler-marker-${index}`}
@@ -2522,7 +2524,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.rowStart ?? rulerMarkerData.rowStart}
+          marker={frozenOrRegularMarkerData.rowStart}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-start')}
@@ -2531,7 +2533,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.rowEnd ?? rulerMarkerData.rowEnd}
+          marker={frozenOrRegularMarkerData.rowEnd}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-end')}
@@ -2684,19 +2686,24 @@ const SnapLine = React.memo(
     const labelHeight = 20
 
     const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
+
+    const top = isColumn
+      ? props.container.y
+      : props.target.y + (props.edge === 'row-end' ? props.target.height : 0)
+    const left = !isColumn
+      ? props.container.x
+      : props.target.x + (props.edge === 'column-end' ? props.target.width : 0)
+
     return (
       <div
         style={{
           position: 'absolute',
-          width: isColumn ? 1 : props.container.width,
-          height: !isColumn ? 1 : props.container.height,
-          top: isColumn
-            ? props.container.y
-            : props.target.y + (props.edge === 'row-end' ? props.target.height : 0),
-          left: !isColumn
-            ? props.container.x
-            : props.target.x + (props.edge === 'column-end' ? props.target.width : 0),
-          backgroundColor: colorTheme.brandNeonPink.value,
+          width: isColumn ? 1 : props.container.width * canvasScale,
+          height: !isColumn ? 1 : props.container.height * canvasScale,
+          top: top * canvasScale,
+          left: left * canvasScale,
+          backgroundColor: colorTheme.gridControlsPink.value,
+          zoom: 1 / canvasScale,
         }}
       >
         {when(
@@ -2706,12 +2713,11 @@ const SnapLine = React.memo(
               position: 'absolute',
               top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
               left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
-              color: colorTheme.brandNeonPink.value,
+              color: colorTheme.gridControlsPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
               width: labelWidth,
               height: labelHeight,
-              zoom: 1 / canvasScale,
             }}
           >
             <span
@@ -2719,7 +2725,7 @@ const SnapLine = React.memo(
                 backgroundColor: 'white',
                 padding: '2px 4px',
                 borderRadius: 2,
-                fontSize: 11 / canvasScale,
+                fontSize: 11,
               }}
             >
               {printPin(props.gridTemplate, targetMarker.position, axis)}
