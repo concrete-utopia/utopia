@@ -2412,3 +2412,20 @@ export function extractMediaQueryFromCss(css: string): MediaQuery | null {
   })
   return result
 }
+
+// Cache for storing previously parsed screen sizes
+const screenSizeCache: Map<string, ScreenSize | null> = new Map()
+export function extractScreenSizeFromCss(css: string): ScreenSize | null {
+  // Check cache first
+  const cached = screenSizeCache.get(css)
+  if (cached !== undefined) {
+    return cached
+  }
+
+  // If not in cache, compute and store result
+  const mediaQuery = extractMediaQueryFromCss(css)
+  const result = mediaQuery == null ? null : mediaQueryToScreenSize(mediaQuery)
+
+  screenSizeCache.set(css, result)
+  return result
+}

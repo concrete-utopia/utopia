@@ -1,6 +1,5 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { emptyComments } from 'utopia-shared/src/types'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { jsExpressionValue } from '../../../../core/shared/element-template'
 import type {
   PropertiesToRemove,
