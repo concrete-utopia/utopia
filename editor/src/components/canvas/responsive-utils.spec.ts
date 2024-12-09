@@ -4,47 +4,7 @@ import type { ScreenSize, MediaQuery } from './responsive-types'
 import { extractScreenSizeFromCss } from './responsive-utils'
 import type { StyleMediaSizeModifier } from './canvas-types'
 
-describe('mediaQueryToScreenSize', () => {
-  it('converts simple screen size queries', () => {
-    const testCases: { input: string; expected: ScreenSize }[] = [
-      {
-        input: '@media (100px <width < 500px)',
-        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
-      },
-      {
-        input: '@media (min-width: 100px) and (max-width: 500px)',
-        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
-      },
-      {
-        input: '@media screen and (min-width: 100px)',
-        expected: { min: { value: 100, unit: 'px' } },
-      },
-      {
-        input: '@media (100px < width) and (max-width: 500px)',
-        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
-      },
-      {
-        input: '@media (width > 100px)',
-        expected: { min: { value: 100, unit: 'px' } },
-      },
-    ]
-    testCases.forEach((testCase) => {
-      csstree.walk(csstree.parse(testCase.input), (node) => {
-        if (node.type === 'MediaQuery') {
-          const result = mediaQueryToScreenSize(node as unknown as MediaQuery)
-          expect(result).toEqual(testCase.expected)
-        }
-      })
-    })
-  })
-})
-
 describe('extractScreenSizeFromCss', () => {
-  beforeEach(() => {
-    // Clear the cache before each test
-    ;(extractScreenSizeFromCss as any).screenSizeCache?.clear()
-  })
-
   it('extracts screen size from simple media query', () => {
     const css = '@media (min-width: 100px) and (max-width: 500px)'
     const result = extractScreenSizeFromCss(css)
@@ -164,5 +124,40 @@ describe('selectValueByBreakpoint', () => {
         50,
       ),
     ).toEqual({ value: 'c' })
+  })
+})
+
+describe('mediaQueryToScreenSize', () => {
+  it('converts simple screen size queries', () => {
+    const testCases: { input: string; expected: ScreenSize }[] = [
+      {
+        input: '@media (100px <width < 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+      {
+        input: '@media (min-width: 100px) and (max-width: 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+      {
+        input: '@media screen and (min-width: 100px)',
+        expected: { min: { value: 100, unit: 'px' } },
+      },
+      {
+        input: '@media (100px < width) and (max-width: 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+      {
+        input: '@media (width > 100px)',
+        expected: { min: { value: 100, unit: 'px' } },
+      },
+    ]
+    testCases.forEach((testCase) => {
+      csstree.walk(csstree.parse(testCase.input), (node) => {
+        if (node.type === 'MediaQuery') {
+          const result = mediaQueryToScreenSize(node as unknown as MediaQuery)
+          expect(result).toEqual(testCase.expected)
+        }
+      })
+    })
   })
 })
