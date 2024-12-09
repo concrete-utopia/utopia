@@ -19,6 +19,7 @@ import {
 } from '../../../../core/shared/element-template'
 import {
   localRectangle,
+  zeroRectangle,
   zeroRectIfNullOrInfinity,
   type CanvasRectangle,
   type LocalRectangle,
@@ -750,8 +751,8 @@ const TemporaryGridID = 'temporary-grid'
 
 export function getGridRelativeContainingBlock(
   gridMetadata: ElementInstanceMetadata,
-  cellMetadata: ElementInstanceMetadata,
-  cellProperties: GridElementProperties,
+  gridElements: ElementInstanceMetadata[],
+  targetElement: ElementPath,
   options?: {
     forcePositionRelative?: boolean
   },
@@ -828,47 +829,68 @@ export function getGridRelativeContainingBlock(
   }
   offsetContainer.appendChild(gridElement)
 
-  // Create a child of the grid element with the appropriate properties.
-  const gridChildElement = document.createElement('div')
+  function addItemToGrid(measurements: SpecialSizeMeasurements) {
+    // Create a child of the grid element with the appropriate properties.
+    const gridChildElement = document.createElement('div')
 
-  if (cellProperties.gridColumnStart != null) {
-    gridChildElement.style.gridColumnStart = printPinAsString(
-      gridProperties,
-      cellProperties.gridColumnStart,
-      'column',
-    )
-  }
-  if (cellProperties.gridColumnEnd != null) {
-    gridChildElement.style.gridColumnEnd = printPinAsString(
-      gridProperties,
-      cellProperties.gridColumnEnd,
-      'column',
-    )
-  }
-  if (cellProperties.gridRowStart != null) {
-    gridChildElement.style.gridRowStart = printPinAsString(
-      gridProperties,
-      cellProperties.gridRowStart,
-      'row',
-    )
-  }
-  if (cellProperties.gridRowEnd != null) {
-    gridChildElement.style.gridRowEnd = printPinAsString(
-      gridProperties,
-      cellProperties.gridRowEnd,
-      'row',
-    )
-  }
-  gridChildElement.style.position = options?.forcePositionRelative
-    ? 'relative'
-    : cellMetadata.specialSizeMeasurements.position ?? 'initial'
-  // Fill out the entire space available.
-  gridChildElement.style.top = '0'
-  gridChildElement.style.left = '0'
-  gridChildElement.style.bottom = '0'
-  gridChildElement.style.right = '0'
+    const { elementGridProperties, position } = measurements
 
-  gridElement.appendChild(gridChildElement)
+    if (elementGridProperties.gridColumnStart != null) {
+      gridChildElement.style.gridColumnStart = printPinAsString(
+        gridProperties,
+        elementGridProperties.gridColumnStart,
+        'column',
+      )
+    }
+    if (elementGridProperties.gridColumnEnd != null) {
+      gridChildElement.style.gridColumnEnd = printPinAsString(
+        gridProperties,
+        elementGridProperties.gridColumnEnd,
+        'column',
+      )
+    }
+    if (elementGridProperties.gridRowStart != null) {
+      gridChildElement.style.gridRowStart = printPinAsString(
+        gridProperties,
+        elementGridProperties.gridRowStart,
+        'row',
+      )
+    }
+    if (elementGridProperties.gridRowEnd != null) {
+      gridChildElement.style.gridRowEnd = printPinAsString(
+        gridProperties,
+        elementGridProperties.gridRowEnd,
+        'row',
+      )
+    }
+    gridChildElement.style.position = options?.forcePositionRelative
+      ? 'relative'
+      : position ?? 'initial'
+    // Fill out the entire space available.
+    gridChildElement.style.top = '0'
+    gridChildElement.style.left = '0'
+    gridChildElement.style.bottom = '0'
+    gridChildElement.style.right = '0'
+
+    return gridChildElement
+  }
+
+  // add every element into the grid, so flow elements will be correctly positioned
+  const createdElements = gridElements.map((element) =>
+    addItemToGrid(element.specialSizeMeasurements),
+  )
+  createdElements.forEach((elem) => gridElement.appendChild(elem))
+
+  // get the index of the generated target element
+  const targetIndex = gridElements.findIndex((element) =>
+    EP.pathsEqual(element.elementPath, targetElement),
+  )
+  if (targetIndex < 0 || targetIndex >= createdElements.length) {
+    // this should never happen
+    return localRectangle(zeroRectangle)
+  }
+  // grab the generated element via its index
+  const gridChildElement = createdElements[targetIndex]
 
   // Get the result and cleanup the temporary elements.
   try {
