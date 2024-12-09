@@ -62,40 +62,59 @@ describe('extractScreenSizeFromCss', () => {
 describe('selectValueByBreakpoint', () => {
   const variants: { value: string; modifiers?: StyleMediaSizeModifier[] }[] = [
     {
-      value: 'b',
+      value: 'Desktop Value',
       modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
     },
     {
-      value: 'a',
+      value: 'Tablet Value',
       modifiers: [{ type: 'media-size', size: { min: { value: 100, unit: 'px' } } }],
     },
     {
-      value: 'c',
+      value: 'Extra Large Value',
       modifiers: [{ type: 'media-size', size: { min: { value: 20, unit: 'em' } } }],
     },
-    { value: 'd' },
+    {
+      value: 'Ranged Value',
+      modifiers: [
+        {
+          type: 'media-size',
+          size: { min: { value: 80, unit: 'px' }, max: { value: 90, unit: 'px' } },
+        },
+      ],
+    },
+    {
+      value: 'Mobile Value',
+      modifiers: [{ type: 'media-size', size: { min: { value: 60, unit: 'px' } } }],
+    },
+    { value: 'Default Value' },
   ]
-  it('selects the correct value', () => {
-    expect(selectValueByBreakpoint(variants, 150)).toEqual({
-      value: 'a',
-      modifiers: [{ type: 'media-size', size: { min: { value: 100, unit: 'px' } } }],
+  const tests: { title: string; screenSize: number; expected: string }[] = [
+    { title: 'selects the correct value', screenSize: 150, expected: 'Tablet Value' },
+    { title: 'select the closest value', screenSize: 250, expected: 'Desktop Value' },
+    { title: 'converts em to px', screenSize: 350, expected: 'Extra Large Value' },
+    {
+      title: 'selects the default value if no breakpoint is matched',
+      screenSize: 50,
+      expected: 'Default Value',
+    },
+    {
+      title: 'selects the ranged value if the screen size is within the range',
+      screenSize: 85,
+      expected: 'Ranged Value',
+    },
+    {
+      title: 'selects the mobile value if the screen size is outside the ranged values',
+      screenSize: 95,
+      expected: 'Mobile Value',
+    },
+  ] as const
+
+  tests.forEach((test) => {
+    it(`${test.title}`, () => {
+      expect(selectValueByBreakpoint(variants, test.screenSize)?.value).toEqual(test.expected)
     })
   })
-  it('select the closest value', () => {
-    expect(selectValueByBreakpoint(variants, 250)).toEqual({
-      value: 'b',
-      modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
-    })
-  })
-  it('converts em to px', () => {
-    expect(selectValueByBreakpoint(variants, 350)).toEqual({
-      value: 'c',
-      modifiers: [{ type: 'media-size', size: { min: { value: 20, unit: 'em' } } }],
-    })
-  })
-  it('selects the first value if no breakpoint is matched', () => {
-    expect(selectValueByBreakpoint(variants, 50)).toEqual({ value: 'd' })
-  })
+
   it('selects null if no matching breakpoint and no default value', () => {
     expect(selectValueByBreakpoint(variants.slice(0, 2), 50)).toBeNull()
   })
@@ -104,14 +123,14 @@ describe('selectValueByBreakpoint', () => {
       selectValueByBreakpoint(
         [
           {
-            value: 'a',
+            value: 'Hover Value',
             modifiers: [{ type: 'hover' }],
           },
-          { value: 'c' },
+          { value: 'Default Value' },
         ],
         50,
-      ),
-    ).toEqual({ value: 'c' })
+      )?.value,
+    ).toEqual('Default Value')
   })
 })
 
