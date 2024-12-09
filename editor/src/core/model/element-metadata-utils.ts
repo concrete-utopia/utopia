@@ -1061,6 +1061,13 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata != null && isSceneFromMetadata(elementMetadata)
   },
+  getParentSceneMetadata(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): ElementInstanceMetadata | null {
+    const parentPath = MetadataUtils.findSceneOfTarget(path, metadata)
+    return parentPath == null ? null : MetadataUtils.findElementByElementPath(metadata, parentPath)
+  },
   overflows(allElementProps: AllElementProps, path: ElementPath): boolean {
     const elementProps = allElementProps[EP.toString(path)] ?? {}
     const styleProps = elementProps.style ?? null

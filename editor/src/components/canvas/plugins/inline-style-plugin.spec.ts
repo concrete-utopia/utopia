@@ -43,13 +43,11 @@ export var storyboard = (
     const { flexDirection, gap } = styleInfo!
     expect(flexDirection).toMatchObject({
       type: 'property',
-      tags: [],
       value: 'column',
       propertyValue: { value: 'column' },
     })
     expect(gap).toMatchObject({
       type: 'property',
-      tags: [],
       value: cssNumber(2, 'rem'),
       propertyValue: { value: '2rem' },
     })
@@ -110,6 +108,7 @@ function getStyleInfoFromInlineStyle(editor: EditorRenderResult) {
 
   const styleInfoReader = InlineStylePlugin.styleInfoFactory({
     projectContents: projectContents,
+    jsxMetadata: jsxMetadata,
   })
   const styleInfo = styleInfoReader(EP.fromString('sb/scene/div'))
   return styleInfo

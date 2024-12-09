@@ -5980,3 +5980,8 @@ export function maybeParseGridLine(
       return null
   }
 }
+
+const EM_TO_PX_RATIO = 16
+export function compValueAsPx(value: CSSNumber | null | undefined): number | null {
+  return value == null ? null : value.unit === 'em' ? value.value * EM_TO_PX_RATIO : value.value
+}
