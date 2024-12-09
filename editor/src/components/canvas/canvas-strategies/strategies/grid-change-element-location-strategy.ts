@@ -34,16 +34,8 @@ import {
   isAutoGridPin,
   getCommandsForGridItemPlacement,
   sortElementsByGridPosition,
-  getGridRelativeContainingBlock,
 } from './grid-helpers'
 import type { GridCellCoordinates } from './grid-cell-bounds'
-import {
-  canvasRectangle,
-  offsetPoint,
-  offsetRect,
-  rectContainsPoint,
-  zeroCanvasRect,
-} from '../../../../core/shared/math-utils'
 
 export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,

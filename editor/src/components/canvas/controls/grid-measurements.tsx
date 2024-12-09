@@ -10,7 +10,6 @@ import { applicative4Either, defaultEither, isRight, mapEither } from '../../../
 import * as EP from '../../../core/shared/element-path'
 import type {
   BorderWidths,
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridAutoOrTemplateBase,
   GridElementProperties,
@@ -28,8 +27,6 @@ import type { GridIdentifier } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { useMonitorChangesToElements } from '../../editor/store/store-monitor'
 import { isStaticGridRepeat, parseCSSLength } from '../../inspector/common/css-utils'
-import { getGridChildCellCoordBoundsFromCanvas } from '../canvas-strategies/strategies/grid-cell-bounds'
-import type { GridCellGlobalFrames } from '../canvas-strategies/strategies/grid-helpers'
 import {
   findOriginalGrid,
   getGridRelativeContainingBlock,
@@ -42,6 +39,7 @@ import {
   getGridElementProperties,
 } from '../dom-walker'
 import { addChangeCallback, removeChangeCallback } from '../observers'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type GridElementMeasurementHelperData = {
   frame: CanvasRectangle
@@ -357,42 +355,16 @@ export function useGridElementMeasurementHelperData(
   return useKeepReferenceEqualityIfPossible(getGridElementMeasurementHelperData(elementPath, scale))
 }
 
-function getCellPositionFromCanvas(
-  elementMetadata: ElementInstanceMetadata,
-  parentGridCellGlobalFrames: GridCellGlobalFrames,
-): { left: number; top: number } | null {
-  const cellCoordBoundsFromCanvas = getGridChildCellCoordBoundsFromCanvas(
-    elementMetadata,
-    parentGridCellGlobalFrames,
-  )
-  if (cellCoordBoundsFromCanvas == null) {
-    return null
-  }
-
-  if (parentGridCellGlobalFrames.length === 0) {
-    return null
-  }
-
-  const firstRow = parentGridCellGlobalFrames[0]
-  const left = firstRow[cellCoordBoundsFromCanvas.column - 1].x
-
-  const cellBoundsRowIndex = cellCoordBoundsFromCanvas.row - 1
-  if (
-    parentGridCellGlobalFrames.length <= cellBoundsRowIndex ||
-    parentGridCellGlobalFrames[cellBoundsRowIndex].length === 0
-  ) {
-    return null
-  }
-  const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
-  const top = firstColumn.y
-
-  return { left, top }
-}
-
-function getCellDimensions(
+export function calculateGridCellRectangle(
   jsxMetadata: ElementInstanceMetadataMap,
-  cellItemMetadata: ElementInstanceMetadata,
-): { width: number; height: number } | null {
+  pathTree: ElementPathTrees,
+  path: ElementPath,
+): CanvasRectangle | null {
+  const cellItemMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (cellItemMetadata == null) {
+    return null
+  }
+
   const originalGrid = findOriginalGrid(jsxMetadata, EP.parentPath(cellItemMetadata.elementPath))
   if (originalGrid == null) {
     return null
@@ -406,54 +378,10 @@ function getCellDimensions(
   const coordinateSystemBounds =
     cellItemMetadata.specialSizeMeasurements.immediateParentBounds ?? zeroCanvasRect
 
-  const calculatedCellBounds = getGridRelativeContainingBlock(
-    gridMetadata,
-    cellItemMetadata,
-    cellItemMetadata.specialSizeMeasurements.elementGridProperties,
-    {
-      forcePositionRelative: true,
-    },
-  )
-  const cellRect = offsetRect(canvasRectangle(calculatedCellBounds), coordinateSystemBounds)
-  const { width, height } = cellRect
+  const siblings = MetadataUtils.getSiblingsOrdered(jsxMetadata, pathTree, path)
 
-  return { width, height }
-}
-
-/**
- * Returns the _actual_ canvas rectangle for a grid _cell_ (not its contained item) that's rendered on the canvas.
- * This is done by combining grabbing the position from the parent grid frames (which is required for flow elements!),
- * with the HTML calculation of dimensions in getGridRelativeContainingBlock.
- */
-export function calculateGridCellRectangle(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): CanvasRectangle | null {
-  const cellItemMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  if (cellItemMetadata == null) {
-    return null
-  }
-
-  const parentGridCellGlobalFrames =
-    cellItemMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
-  if (parentGridCellGlobalFrames == null) {
-    return null
-  }
-
-  const position = getCellPositionFromCanvas(cellItemMetadata, parentGridCellGlobalFrames)
-  if (position == null) {
-    return null
-  }
-
-  const dimensions = getCellDimensions(jsxMetadata, cellItemMetadata)
-  if (dimensions == null) {
-    return null
-  }
-
-  return canvasRectangle({
-    x: position.left,
-    y: position.top,
-    width: dimensions.width,
-    height: dimensions.height,
+  const calculatedCellBounds = getGridRelativeContainingBlock(gridMetadata, siblings, path, {
+    forcePositionRelative: true,
   })
+  return offsetRect(canvasRectangle(calculatedCellBounds), coordinateSystemBounds)
 }
