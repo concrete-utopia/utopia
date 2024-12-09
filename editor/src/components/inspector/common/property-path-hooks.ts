@@ -766,7 +766,7 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
       (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
         const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop, {
           sceneWidth: getContainingSceneWidth(
-            // TODO: support multiple selected elements?
+            // TODO: support multiple selected elements in different scenes?
             store.editor.selectedViews[0],
             store.editor.jsxMetadata,
           ),
