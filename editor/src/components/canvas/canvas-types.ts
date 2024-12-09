@@ -30,6 +30,7 @@ import type {
   CSSPadding,
   FlexDirection,
 } from '../inspector/common/css-utils'
+import type { ScreenSize } from './responsive-types'
 
 export const CanvasContainerID = 'canvas-container'
 export const SceneContainerName = 'scene'
@@ -556,6 +557,13 @@ interface ParsedCSSStyleProperty<T> {
   propertyValue: JSExpression | PartOfJSXAttributeValue
   value: T
 }
+
+type StyleHoverModifier = { type: 'hover' }
+export type StyleMediaSizeModifier = {
+  type: 'media-size'
+  size: ScreenSize
+}
+export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
 
 export type CSSStyleProperty<T> =
   | CSSStylePropertyNotFound
