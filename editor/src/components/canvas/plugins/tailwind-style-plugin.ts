@@ -24,11 +24,8 @@ import { getContainingSceneWidth, selectValueByBreakpoint } from '../responsive-
 
 type StyleValueVariants = {
   value: string | number | undefined
-  modifiers?: TailwindGeneralModifier[]
+  modifiers?: TailwindModifier[]
 }[]
-export type TailwindMediaModifier = { type: 'media'; value: string }
-export type TailwindHoverModifier = { type: 'hover'; value: string }
-export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
 
 export const parseTailwindPropertyFactory =
   (config: Config | null, context: StylePluginContext) =>
@@ -138,9 +135,7 @@ export function getTailwindClassMapping(
       return
     }
     mapping[parsed.property] = mapping[parsed.property] ?? []
-    const modifiers = (parsed.variants ?? []).filter(
-      (v): v is TailwindGeneralModifier => v.type === 'media' || v.type === 'hover',
-    )
+    const modifiers = (parsed.variants ?? []).filter(isTailwindModifier)
     mapping[parsed.property].push({
       value: parsed.value,
       modifiers: modifiers,
@@ -286,4 +281,12 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
       )
     },
   }
+}
+
+type TailwindModifier = { type: 'media'; value: string } | { type: 'hover'; value: string }
+function isTailwindModifier(modifier: {
+  type: string
+  value: string
+}): modifier is TailwindModifier {
+  return modifier.type === 'media' || modifier.type === 'hover'
 }
