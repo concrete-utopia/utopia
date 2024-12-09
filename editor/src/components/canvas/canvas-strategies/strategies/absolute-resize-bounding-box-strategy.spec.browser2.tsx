@@ -54,10 +54,7 @@ import {
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
-import {
-  ResizePointTestId,
-  AbsoluteResizeControlTestId,
-} from '../../controls/select-mode/absolute-resize-control'
+import { AbsoluteResizeControlTestId } from '../../controls/select-mode/absolute-resize-control'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
@@ -78,6 +75,7 @@ import {
 import { act } from 'react-dom/test-utils'
 import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 import { SizeLabelTestId } from '../../controls/select-mode/size-label'
+import { ResizePointTestId } from '../../controls/resize-control'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(

@@ -17,6 +17,7 @@ import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/sto
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import {
   controlsForGridPlaceholders,
+  gridEdgeToEdgePosition,
   GridResizeControls,
 } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -177,6 +178,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         bounds.height,
       )
 
+      const edgePosition = gridEdgeToEdgePosition(interactionSession.activeControl.edge)
       const normalizedGridProps: GridElementProperties = {
         gridColumnStart: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridColumnStart,
@@ -185,7 +187,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
           'start',
           elementGridPropertiesFromProps.gridColumnEnd,
           resizedProps.gridColumnEnd,
-          interactionSession.activeControl.edge,
+          edgePosition,
         ),
         gridColumnEnd: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridColumnEnd,
@@ -194,7 +196,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
           'end',
           elementGridPropertiesFromProps.gridColumnStart,
           resizedProps.gridColumnStart,
-          interactionSession.activeControl.edge,
+          edgePosition,
         ),
         gridRowStart: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridRowStart,
@@ -203,7 +205,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
           'start',
           elementGridPropertiesFromProps.gridRowEnd,
           resizedProps.gridRowEnd,
-          interactionSession.activeControl.edge,
+          edgePosition,
         ),
         gridRowEnd: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridRowEnd,
@@ -212,7 +214,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
           'end',
           elementGridPropertiesFromProps.gridRowStart,
           resizedProps.gridRowStart,
-          interactionSession.activeControl.edge,
+          edgePosition,
         ),
       }
 

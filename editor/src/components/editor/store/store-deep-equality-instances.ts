@@ -462,6 +462,7 @@ import type {
   GridResizeEdge,
   GridGapHandle,
   GridResizeRulerHandle,
+  GridChildCornerHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -475,12 +476,14 @@ import {
   gridResizeHandle,
   gridGapHandle,
   gridResizeRulerHandle,
+  gridChildCornerHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
   CanvasFrameAndTarget,
   CSSCursor,
   EdgePosition,
+  EdgePositionCorner,
   FrameAndTarget,
 } from '../../canvas/canvas-types'
 import { edgePosition } from '../../canvas/canvas-types'
@@ -3194,6 +3197,15 @@ export const GridResizeMarkerHandleKeepDeepEquality: KeepDeepEqualityCall<GridRe
 export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
   combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
 
+export const GridChildCornerHandleKeepDeepEquality: KeepDeepEqualityCall<GridChildCornerHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.corner,
+    createCallWithTripleEquals<EdgePositionCorner>(),
+    gridChildCornerHandle,
+  )
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -3257,6 +3269,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_RESIZE_RULER_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridResizeMarkerHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_CHILD_CORNER_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridChildCornerHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

@@ -85,9 +85,6 @@ export function basicResizeStrategy(
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
   const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
-  if (isGridCell && isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
-    return null
-  }
 
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
@@ -98,13 +95,17 @@ export function basicResizeStrategy(
       type: 'resize',
     },
     controlsToRender: [
-      controlWithProps({
-        control: AbsoluteResizeControl,
-        props: { targets: selectedElements, pathsWereReplaced: false },
-        key: 'absolute-resize-control',
-        show: 'always-visible',
-        priority: 'top',
-      }),
+      ...(isGridCell
+        ? []
+        : [
+            controlWithProps({
+              control: AbsoluteResizeControl,
+              props: { targets: selectedElements, pathsWereReplaced: false },
+              key: 'absolute-resize-control',
+              show: 'always-visible',
+              priority: 'top',
+            }),
+          ]),
       controlWithProps({
         control: StrategySizeLabel,
         props: { targets: selectedElements, pathsWereReplaced: false },

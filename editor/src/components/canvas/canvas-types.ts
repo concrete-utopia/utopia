@@ -537,6 +537,12 @@ export const EdgePositionBottomLeft: EdgePosition = { x: 0, y: 1 }
 export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
 
+export type EdgePositionCorner =
+  | typeof EdgePositionTopLeft
+  | typeof EdgePositionTopRight
+  | typeof EdgePositionBottomLeft
+  | typeof EdgePositionBottomRight
+
 export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }

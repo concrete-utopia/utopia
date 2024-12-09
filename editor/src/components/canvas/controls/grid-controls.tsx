@@ -71,11 +71,12 @@ import {
   printGridCSSNumber,
 } from '../../inspector/common/css-utils'
 import CanvasActions from '../canvas-actions'
-import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
+import type { CanvasControlType, GridResizeEdge } from '../canvas-strategies/interaction-state'
 import {
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
+  gridChildCornerHandle,
   gridResizeHandle,
   gridResizeRulerHandle,
 } from '../canvas-strategies/interaction-state'
@@ -95,7 +96,7 @@ import {
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
-import type { EdgePosition } from '../canvas-types'
+import type { EdgePosition, EdgePositionCorner } from '../canvas-types'
 import { CSSCursor } from '../canvas-types'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
@@ -135,6 +136,7 @@ import {
 import type { Property } from 'csstype'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { ResizeControl } from './resize-control'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1682,6 +1684,9 @@ interface GridResizeControlProps {
 
 export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) => {
   const gridTarget = getGridIdentifierContainerOrComponentPath(target)
+  const targets = React.useMemo(() => {
+    return [gridTarget]
+  }, [gridTarget])
   const colorTheme = useColorTheme()
 
   const element = useEditorState(
@@ -1748,7 +1753,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
   }, [onMouseMove, onMouseUp])
 
   const startResizeInteraction = React.useCallback(
-    (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
+    (event: React.MouseEvent, canvasControl: CanvasControlType) => {
       event.stopPropagation()
       const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
       setBounds(frame)
@@ -1763,7 +1768,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
           createInteractionViaMouse(
             start.canvasPositionRounded,
             Modifier.modifiersForEvent(event),
-            gridResizeHandle(uid, edge),
+            canvasControl,
             'zero-drag-not-permitted',
           ),
         ),
@@ -1784,7 +1789,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
   }, [element, scale, isResizing])
 
   const onEdgeMouseDown = React.useCallback(
-    (position: EdgePosition) => (e: React.MouseEvent<HTMLDivElement>) => {
+    (e: React.MouseEvent<HTMLDivElement>, position: EdgePosition) => {
       if (element == null) {
         return
       }
@@ -1794,43 +1799,21 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
         return
       }
 
-      startResizeInteraction(EP.toUid(element.elementPath), edge)(e)
+      startResizeInteraction(e, gridResizeHandle(EP.toUid(element.elementPath), edge))
     },
     [element, startResizeInteraction],
   )
 
-  const resizeEdges = useResizeEdges([gridTarget], {
-    onEdgeDoubleClick: () => NO_OP,
-    onEdgeMouseMove: NO_OP,
-    onEdgeMouseDown: onEdgeMouseDown,
-    cursors: {
-      top: CSSCursor.RowResize,
-      bottom: CSSCursor.RowResize,
-      left: CSSCursor.ColResize,
-      right: CSSCursor.ColResize,
-    },
-  })
-
-  const resizeDirection = useEditorState(
-    Substores.metadata,
-    (store) => {
+  const onCornerMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>, position: EdgePositionCorner) => {
+      event.stopPropagation()
       if (element == null) {
-        return { horizontal: false, vertical: false }
+        return
       }
-      return {
-        horizontal: isFillOrStretchModeAppliedOnSpecificSide(
-          store.editor.jsxMetadata,
-          element.elementPath,
-          'horizontal',
-        ),
-        vertical: isFillOrStretchModeAppliedOnSpecificSide(
-          store.editor.jsxMetadata,
-          element.elementPath,
-          'vertical',
-        ),
-      }
+
+      startResizeInteraction(event, gridChildCornerHandle(EP.toUid(element.elementPath), position))
     },
-    'GridResizeControlsComponent resizeDirection',
+    [element, startResizeInteraction],
   )
 
   if (
@@ -1857,29 +1840,19 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
           backgroundColor: isResizing ? colorTheme.primary25.value : 'transparent',
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
+        <ResizeControl
+          position='relative'
+          expandToFill='expand'
+          targets={targets}
+          onCornerMouseDown={onCornerMouseDown}
+          onEdgeMouseDown={onEdgeMouseDown}
+          edgeCursors={{
+            top: CSSCursor.RowResize,
+            bottom: CSSCursor.RowResize,
+            left: CSSCursor.ColResize,
+            right: CSSCursor.ColResize,
           }}
-        >
-          {when(
-            resizeDirection.vertical,
-            <React.Fragment>
-              {resizeEdges.top}
-              {resizeEdges.bottom}
-            </React.Fragment>,
-          )}
-          {when(
-            resizeDirection.horizontal,
-            <React.Fragment>
-              {resizeEdges.left}
-              {resizeEdges.right}
-            </React.Fragment>,
-          )}
-        </div>
+        />
       </div>
     </CanvasOffsetWrapper>
   )
@@ -2157,7 +2130,9 @@ function useIsGridItemInteractionActive() {
         // resize (cell)
         store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE' ||
         // resize (abs)
-        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
+        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE' ||
+        // resize (grid corner)
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_CHILD_CORNER_HANDLE'
       )
     },
     'useIsGridItemInteractionActive isItemInteractionActive',
