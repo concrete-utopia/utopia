@@ -87,6 +87,7 @@ export const runSetCssLengthProperty = (
 
   const styleInfo = getActivePlugin(editorStateWithPropsDeleted).styleInfoFactory({
     projectContents: editorStateWithPropsDeleted.projectContents,
+    jsxMetadata: editorStateWithPropsDeleted.jsxMetadata,
   })(command.target)
 
   if (styleInfo == null) {
