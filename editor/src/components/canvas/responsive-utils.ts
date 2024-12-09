@@ -2,7 +2,7 @@ import type { Feature, FeatureRange, MediaQuery, ScreenSize } from './responsive
 import * as csstree from 'css-tree'
 import type { StyleMediaSizeModifier, StyleModifier } from './canvas-types'
 import { type CSSNumber, type CSSNumberUnit, cssNumber } from '../inspector/common/css-utils'
-import { memoize } from 'src/core/shared/memoize'
+import { memoize } from '../../core/shared/memoize'
 
 /**
  * Extracts the screen size from a CSS string, for example:
