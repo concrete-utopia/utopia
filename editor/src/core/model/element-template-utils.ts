@@ -91,6 +91,12 @@ import type { PropertyControlsInfo } from '../../components/custom-code/code-fil
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { foldEither, right } from '../shared/either'
+import type { AbsolutePinsFromStyleInfo } from '../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import type {
+  CSSStyleProperty,
+  PositionInfo,
+  StyleInfo,
+} from '../../components/canvas/canvas-types'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -883,6 +889,29 @@ function concatHonoursPositions(honoursPositions: Array<HonoursPosition>): Honou
     }
   }
   return result ?? 'does-not-honour'
+}
+
+export function componentHonoursPropsPositionFromStyleInfo(
+  styleInfo: AbsolutePinsFromStyleInfo & { position: StyleInfo['position'] },
+): HonoursPosition {
+  const horizontalPins = ['left', 'right'] as const
+  const verticalPins = ['top', 'bottom'] as const
+
+  const propertyHonoured = (p: CSSStyleProperty<unknown> | null) =>
+    p != null && p.type !== 'not-found'
+
+  const positionAbsolutePresent = propertyHonoured(styleInfo.position)
+  const numericPropsPresent =
+    verticalPins.some((p) => propertyHonoured(styleInfo[p])) &&
+    horizontalPins.some((p) => propertyHonoured(styleInfo[p]))
+
+  if (positionAbsolutePresent && numericPropsPresent) {
+    return 'absolute-position-and-honours-numeric-props'
+  }
+  if (numericPropsPresent) {
+    return 'honours-numeric-props-only'
+  }
+  return 'does-not-honour'
 }
 
 export function componentHonoursPropsPosition(component: UtopiaJSXComponent): HonoursPosition {

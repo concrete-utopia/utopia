@@ -26,6 +26,17 @@ export function honoursPropsSize(
   )
 }
 
+export function honoursPropsPositionFromStyleInfo(
+  canvasState: InteractionCanvasState,
+  element: ElementPath,
+): HonoursPosition {
+  return MetadataUtils.targetHonoursPropsPositionFromStyleInfo(
+    canvasState.projectContents,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
+    canvasState.styleInfoReader(element),
+  )
+}
+
 export function honoursPropsPosition(
   canvasState: InteractionCanvasState,
   element: ElementPath,
