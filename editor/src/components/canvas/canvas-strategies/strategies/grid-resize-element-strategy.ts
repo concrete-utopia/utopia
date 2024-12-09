@@ -1,6 +1,8 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
+  ElementInstanceMetadata,
   GridElementProperties,
   GridPositionOrSpan,
 } from '../../../../core/shared/element-template'
@@ -17,6 +19,7 @@ import {
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { cssKeyword } from '../../../inspector/common/css-utils'
 import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
+import { EdgePosition } from '../../canvas-types'
 import {
   controlsForGridPlaceholders,
   gridEdgeToEdgePosition,
@@ -24,7 +27,7 @@ import {
 } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionCanvasState, StrategyApplicationResult } from '../canvas-strategy-types'
 import {
   getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
@@ -99,85 +102,106 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const allCellBounds =
-        selectedElementMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
-
-      if (allCellBounds == null) {
-        return emptyStrategyApplicationResult
-      }
-
-      const resizeBoundingBox = resizeBoundingBoxFromSide(
+      return gridResizeElement(
+        interactionSession,
+        selectedElement,
+        selectedElementMetadata,
         selectedElementBounds,
-        interactionSession.interactionData.drag,
-        gridEdgeToEdgePosition(interactionSession.activeControl.edge),
-        'non-center-based',
-        null,
-      )
-
-      const gridPropsNumeric = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
-
-      if (gridPropsNumeric == null) {
-        return emptyStrategyApplicationResult
-      }
-
-      const gridTemplate =
-        selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
-
-      const elementGridPropertiesFromProps =
-        selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
-
-      const columnCount =
-        gridPropsNumeric.gridColumnEnd.numericalPosition -
-        gridPropsNumeric.gridColumnStart.numericalPosition
-      const rowCount =
-        gridPropsNumeric.gridRowEnd.numericalPosition -
-        gridPropsNumeric.gridRowStart.numericalPosition
-
-      const gridProps: GridElementProperties = {
-        gridColumnStart: normalizeGridElementPositionAfterResize(
-          elementGridPropertiesFromProps.gridColumnStart,
-          gridPropsNumeric.gridColumnStart,
-          columnCount,
-          'start',
-          elementGridPropertiesFromProps.gridColumnEnd,
-          gridPropsNumeric.gridColumnEnd,
-          interactionSession.activeControl.edge,
-        ),
-        gridColumnEnd: normalizeGridElementPositionAfterResize(
-          elementGridPropertiesFromProps.gridColumnEnd,
-          gridPropsNumeric.gridColumnEnd,
-          columnCount,
-          'end',
-          elementGridPropertiesFromProps.gridColumnStart,
-          gridPropsNumeric.gridColumnStart,
-          interactionSession.activeControl.edge,
-        ),
-        gridRowStart: normalizeGridElementPositionAfterResize(
-          elementGridPropertiesFromProps.gridRowStart,
-          gridPropsNumeric.gridRowStart,
-          rowCount,
-          'start',
-          elementGridPropertiesFromProps.gridRowEnd,
-          gridPropsNumeric.gridRowEnd,
-          interactionSession.activeControl.edge,
-        ),
-        gridRowEnd: normalizeGridElementPositionAfterResize(
-          elementGridPropertiesFromProps.gridRowEnd,
-          gridPropsNumeric.gridRowEnd,
-          rowCount,
-          'end',
-          elementGridPropertiesFromProps.gridRowStart,
-          gridPropsNumeric.gridRowStart,
-          interactionSession.activeControl.edge,
-        ),
-      }
-
-      return strategyApplicationResult(
-        getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
-        [EP.parentPath(selectedElement), selectedElement],
+        interactionSession.activeControl.edge,
       )
     },
   }
+}
+
+export function gridResizeElement(
+  interactionSession: InteractionSession,
+  selectedElement: ElementPath,
+  selectedElementMetadata: ElementInstanceMetadata,
+  selectedElementBounds: CanvasRectangle,
+  gridEdge: GridResizeEdge,
+): StrategyApplicationResult {
+  if (
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null
+  ) {
+    return emptyStrategyApplicationResult
+  }
+
+  const allCellBounds = selectedElementMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
+
+  if (allCellBounds == null) {
+    return emptyStrategyApplicationResult
+  }
+
+  const edgePosition = gridEdgeToEdgePosition(gridEdge)
+  const resizeBoundingBox = resizeBoundingBoxFromSide(
+    selectedElementBounds,
+    interactionSession.interactionData.drag,
+    edgePosition,
+    'non-center-based',
+    null,
+  )
+
+  const gridPropsNumeric = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
+
+  if (gridPropsNumeric == null) {
+    return emptyStrategyApplicationResult
+  }
+
+  const gridTemplate = selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
+
+  const elementGridPropertiesFromProps =
+    selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
+
+  const columnCount =
+    gridPropsNumeric.gridColumnEnd.numericalPosition -
+    gridPropsNumeric.gridColumnStart.numericalPosition
+  const rowCount =
+    gridPropsNumeric.gridRowEnd.numericalPosition - gridPropsNumeric.gridRowStart.numericalPosition
+
+  const gridProps: GridElementProperties = {
+    gridColumnStart: normalizeGridElementPositionAfterResize(
+      elementGridPropertiesFromProps.gridColumnStart,
+      gridPropsNumeric.gridColumnStart,
+      columnCount,
+      'start',
+      elementGridPropertiesFromProps.gridColumnEnd,
+      gridPropsNumeric.gridColumnEnd,
+      gridEdge,
+    ),
+    gridColumnEnd: normalizeGridElementPositionAfterResize(
+      elementGridPropertiesFromProps.gridColumnEnd,
+      gridPropsNumeric.gridColumnEnd,
+      columnCount,
+      'end',
+      elementGridPropertiesFromProps.gridColumnStart,
+      gridPropsNumeric.gridColumnStart,
+      gridEdge,
+    ),
+    gridRowStart: normalizeGridElementPositionAfterResize(
+      elementGridPropertiesFromProps.gridRowStart,
+      gridPropsNumeric.gridRowStart,
+      rowCount,
+      'start',
+      elementGridPropertiesFromProps.gridRowEnd,
+      gridPropsNumeric.gridRowEnd,
+      gridEdge,
+    ),
+    gridRowEnd: normalizeGridElementPositionAfterResize(
+      elementGridPropertiesFromProps.gridRowEnd,
+      gridPropsNumeric.gridRowEnd,
+      rowCount,
+      'end',
+      elementGridPropertiesFromProps.gridRowStart,
+      gridPropsNumeric.gridRowStart,
+      gridEdge,
+    ),
+  }
+
+  return strategyApplicationResult(
+    getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
+    [EP.parentPath(selectedElement), selectedElement],
+  )
 }
 
 function getNewGridPropsFromResizeBox(

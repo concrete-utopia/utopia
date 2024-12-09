@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type { EdgePosition } from '../canvas-types'
+import type { EdgePosition, EdgePositionCorner } from '../canvas-types'
 import { CSSCursor } from '../canvas-types'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { useResizeEdges } from './select-mode/use-resize-edges'
@@ -123,7 +123,10 @@ interface ResizeControlProps {
     event: React.MouseEvent<HTMLDivElement>,
     direction: 'horizontal' | 'vertical',
   ) => void
-  onCornerMouseDown?: (event: React.MouseEvent<HTMLDivElement>, position: EdgePosition) => void
+  onCornerMouseDown?: (
+    event: React.MouseEvent<HTMLDivElement>,
+    position: EdgePositionCorner,
+  ) => void
   onCornerDoubleClick?: (event: React.MouseEvent<HTMLDivElement>) => void
   edgeCursors?: {
     top?: CSSCursor

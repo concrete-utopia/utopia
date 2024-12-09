@@ -91,6 +91,7 @@ import {
 } from '../controls/grid-controls-for-strategies'
 import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
 import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
+import { gridChildCornerResizeStrategy } from './strategies/grid-child-corner-resize-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -143,6 +144,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       resizeGridStrategy,
       gridResizeElementStrategy,
       gridResizeElementRulerStrategy,
+      gridChildCornerResizeStrategy,
     ],
   )
 }

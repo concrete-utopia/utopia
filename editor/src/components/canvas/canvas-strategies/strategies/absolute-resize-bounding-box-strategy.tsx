@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   isFiniteRectangle,
@@ -42,7 +42,11 @@ import {
   getDescriptiveStrategyLabelWithRetargetedPaths,
   onlyFitWhenDraggingThisControl,
 } from '../canvas-strategies'
-import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
+import type {
+  CanvasStrategy,
+  InteractionCanvasState,
+  StrategyApplicationResult,
+} from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -163,151 +167,14 @@ export function absoluteResizeBoundingBoxStrategy(
 
         const edgePosition = interactionSession.activeControl.edgePosition
         if (interactionSession.interactionData.drag != null) {
-          const drag = interactionSession.interactionData.drag
-          const originalBoundingBox = getMultiselectBounds(
-            canvasState.startingMetadata,
+          return absoluteBoundingResize(
+            canvasState,
+            interactionSession,
+            originalTargets,
             retargetedTargets,
+            childGroups,
+            edgePosition,
           )
-          const anySelectedElementAspectRatioLocked = isAnySelectedElementAspectRatioLocked(
-            canvasState.startingMetadata,
-            retargetedTargets,
-          )
-          if (originalBoundingBox != null) {
-            const lockedAspectRatio = getLockedAspectRatio(
-              interactionSession,
-              interactionSession.interactionData.modifiers,
-              originalBoundingBox,
-              anySelectedElementAspectRatioLocked,
-            )
-            const centerBased = interactionSession.interactionData.modifiers.alt
-              ? 'center-based'
-              : 'non-center-based'
-            const newBoundingBox = resizeBoundingBox(
-              originalBoundingBox,
-              drag,
-              edgePosition,
-              lockedAspectRatio,
-              centerBased,
-            )
-            const parentAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
-              canvasState.startingMetadata,
-              canvasState.startingAllElementProps,
-              canvasState.startingElementPathTree,
-              originalTargets,
-            )
-            const childrenToSnapTo = childrenBoundsToSnapTo(
-              edgePosition,
-              originalTargets,
-              canvasState.startingMetadata,
-              canvasState.startingAllElementProps,
-              canvasState.startingElementPathTree,
-            )
-            const snapTargets = [...childrenToSnapTo, ...parentAndSiblings]
-            const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-              snapTargets,
-              originalTargets,
-              canvasState.startingMetadata,
-              edgePosition,
-              newBoundingBox,
-              canvasState.scale,
-              lockedAspectRatio,
-              centerBased,
-              canvasState.startingAllElementProps,
-              canvasState.startingElementPathTree,
-            )
-
-            const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
-              const element = getJSXElementFromProjectContents(
-                selectedElement,
-                canvasState.projectContents,
-              )
-              const originalFrame = MetadataUtils.getFrameInCanvasCoords(
-                selectedElement,
-                canvasState.startingMetadata,
-              )
-
-              if (element == null || originalFrame == null || isInfinityRectangle(originalFrame)) {
-                return []
-              }
-
-              const elementIsGroup = treatElementAsGroupLike(
-                canvasState.startingMetadata,
-                selectedElement,
-              )
-
-              // If there are constrained descendants of the selected elements, adjust the
-              // resized frame to respect the min/max dimensions that come from them.
-              const newFrame = applyConstraintsAdjustmentsToFrame(
-                canvasState.startingMetadata,
-                canvasState.startingAllElementProps,
-                canvasState.startingElementPathTree,
-                selectedElement,
-                originalFrame,
-                edgePosition,
-                roundRectangleToNearestWhole(
-                  transformFrameUsingBoundingBox(
-                    snappedBoundingBox,
-                    originalBoundingBox,
-                    originalFrame,
-                  ),
-                ),
-              )
-
-              const metadata = MetadataUtils.findElementByElementPath(
-                canvasState.startingMetadata,
-                selectedElement,
-              )
-              const elementParentBounds =
-                metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-
-              const elementParentFlexDirection =
-                metadata?.specialSizeMeasurements.parentFlexDirection ?? null
-
-              const ensureFramePointsExist: EnsureFramePointsExist =
-                !elementIsGroup ||
-                (isEdgePositionEqualTo(edgePosition, EdgePositionLeft) && originalFrame.x === 0) ||
-                (isEdgePositionEqualTo(edgePosition, EdgePositionTop) && originalFrame.y === 0) ||
-                (isEdgePositionEqualTo(edgePosition, EdgePositionTopLeft) &&
-                  (originalFrame.x === 0 || originalFrame.y === 0))
-                  ? 'ensure-two-frame-points-per-dimension-exists'
-                  : 'only-offset-frame-points-are-needed'
-
-              return [
-                ...createResizeCommandsFromFrame(
-                  element,
-                  selectedElement,
-                  newFrame,
-                  originalFrame,
-                  elementParentBounds,
-                  elementParentFlexDirection,
-                  edgePosition,
-                  ensureFramePointsExist,
-                ),
-                pushIntendedBoundsAndUpdateGroups(
-                  [{ target: selectedElement, frame: newFrame }],
-                  'starting-metadata',
-                ),
-                queueTrueUpElement(childGroups.map(trueUpGroupElementChanged)),
-                setActiveFrames([
-                  {
-                    action: 'resize',
-                    target: activeFrameTargetRect(newFrame),
-                    source: originalBoundingBox,
-                  },
-                ]),
-              ]
-            })
-
-            return strategyApplicationResult(
-              [
-                ...commandsForSelectedElements,
-                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-                updateHighlightedViews('mid-interaction', []),
-                setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              ],
-              retargetedTargets,
-            )
-          }
         } else {
           return strategyApplicationResult(
             [
@@ -322,6 +189,153 @@ export function absoluteResizeBoundingBoxStrategy(
       return emptyStrategyApplicationResult
     },
   }
+}
+
+export function absoluteBoundingResize(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  originalTargets: Array<ElementPath>,
+  retargetedTargets: Array<ElementPath>,
+  childGroups: Array<ElementPath>,
+  edgePosition: EdgePosition,
+): StrategyApplicationResult {
+  if (
+    interactionSession.interactionData.type !== 'DRAG' ||
+    interactionSession.interactionData.drag == null
+  ) {
+    return emptyStrategyApplicationResult
+  }
+  const drag = interactionSession.interactionData.drag
+  const originalBoundingBox = getMultiselectBounds(canvasState.startingMetadata, retargetedTargets)
+  const anySelectedElementAspectRatioLocked = isAnySelectedElementAspectRatioLocked(
+    canvasState.startingMetadata,
+    retargetedTargets,
+  )
+  if (originalBoundingBox == null) {
+    return emptyStrategyApplicationResult
+  }
+  const lockedAspectRatio = getLockedAspectRatio(
+    interactionSession,
+    interactionSession.interactionData.modifiers,
+    originalBoundingBox,
+    anySelectedElementAspectRatioLocked,
+  )
+  const centerBased = interactionSession.interactionData.modifiers.alt
+    ? 'center-based'
+    : 'non-center-based'
+  const newBoundingBox = resizeBoundingBox(
+    originalBoundingBox,
+    drag,
+    edgePosition,
+    lockedAspectRatio,
+    centerBased,
+  )
+  const parentAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
+    originalTargets,
+  )
+  const childrenToSnapTo = childrenBoundsToSnapTo(
+    edgePosition,
+    originalTargets,
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
+  )
+  const snapTargets = [...childrenToSnapTo, ...parentAndSiblings]
+  const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
+    snapTargets,
+    originalTargets,
+    canvasState.startingMetadata,
+    edgePosition,
+    newBoundingBox,
+    canvasState.scale,
+    lockedAspectRatio,
+    centerBased,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
+  )
+
+  const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
+    const element = getJSXElementFromProjectContents(selectedElement, canvasState.projectContents)
+    const originalFrame = MetadataUtils.getFrameInCanvasCoords(
+      selectedElement,
+      canvasState.startingMetadata,
+    )
+
+    if (element == null || originalFrame == null || isInfinityRectangle(originalFrame)) {
+      return []
+    }
+
+    const elementIsGroup = treatElementAsGroupLike(canvasState.startingMetadata, selectedElement)
+
+    // If there are constrained descendants of the selected elements, adjust the
+    // resized frame to respect the min/max dimensions that come from them.
+    const newFrame = applyConstraintsAdjustmentsToFrame(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      canvasState.startingElementPathTree,
+      selectedElement,
+      originalFrame,
+      edgePosition,
+      roundRectangleToNearestWhole(
+        transformFrameUsingBoundingBox(snappedBoundingBox, originalBoundingBox, originalFrame),
+      ),
+    )
+
+    const metadata = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      selectedElement,
+    )
+    const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+
+    const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
+
+    const ensureFramePointsExist: EnsureFramePointsExist =
+      !elementIsGroup ||
+      (isEdgePositionEqualTo(edgePosition, EdgePositionLeft) && originalFrame.x === 0) ||
+      (isEdgePositionEqualTo(edgePosition, EdgePositionTop) && originalFrame.y === 0) ||
+      (isEdgePositionEqualTo(edgePosition, EdgePositionTopLeft) &&
+        (originalFrame.x === 0 || originalFrame.y === 0))
+        ? 'ensure-two-frame-points-per-dimension-exists'
+        : 'only-offset-frame-points-are-needed'
+
+    return [
+      ...createResizeCommandsFromFrame(
+        element,
+        selectedElement,
+        newFrame,
+        originalFrame,
+        elementParentBounds,
+        elementParentFlexDirection,
+        edgePosition,
+        ensureFramePointsExist,
+      ),
+      pushIntendedBoundsAndUpdateGroups(
+        [{ target: selectedElement, frame: newFrame }],
+        'starting-metadata',
+      ),
+      queueTrueUpElement(childGroups.map(trueUpGroupElementChanged)),
+      setActiveFrames([
+        {
+          action: 'resize',
+          target: activeFrameTargetRect(newFrame),
+          source: originalBoundingBox,
+        },
+      ]),
+    ]
+  })
+
+  return strategyApplicationResult(
+    [
+      ...commandsForSelectedElements,
+      setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+      updateHighlightedViews('mid-interaction', []),
+      setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+    ],
+    retargetedTargets,
+  )
 }
 
 /**
