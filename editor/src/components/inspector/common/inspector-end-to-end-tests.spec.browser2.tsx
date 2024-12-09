@@ -113,6 +113,7 @@ async function dispatchActionsAndWaitUntilComplete(
   actionsToDispatch: readonly EditorAction[],
   renderResult: EditorRenderResult,
 ): Promise<void> {
+  //
   await act(() => renderResult.dispatch(actionsToDispatch, false))
   await renderResult.getDispatchFollowUpActionsFinished()
 }

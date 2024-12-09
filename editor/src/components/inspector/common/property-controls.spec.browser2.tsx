@@ -13,7 +13,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import {
   clearExpressionUniqueIDs,
   emptyComments,
