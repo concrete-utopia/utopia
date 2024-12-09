@@ -2,7 +2,7 @@ import * as csstree from 'css-tree'
 import { mediaQueryToScreenSize, selectValueByBreakpoint } from './responsive-utils'
 import type { ScreenSize, MediaQuery } from './responsive-types'
 import { extractScreenSizeFromCss } from './responsive-utils'
-import type { StyleMediaSizeModifier, StyleModifier } from './canvas-types'
+import type { StyleModifier } from './canvas-types'
 
 describe('extractScreenSizeFromCss', () => {
   it('extracts screen size from simple media query', () => {
