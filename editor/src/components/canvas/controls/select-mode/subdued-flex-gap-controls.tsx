@@ -43,6 +43,7 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
       maybeFlexGapData(
         getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
+          jsxMetadata: store.editor.jsxMetadata,
         })(selectedElement),
         MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedElement),
       ),
