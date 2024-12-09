@@ -5,6 +5,7 @@ import {
   parseTailwindClass,
   type ParsedTailwindClass,
 } from './tailwind-parsing-utils'
+import { getTailwindClassOrderFunc } from './tailwind-compilation'
 
 export type TailwindClassParserResult =
   | { type: 'unparsed'; className: string }
@@ -14,7 +15,9 @@ export function getParsedClassList(
   classList: string,
   config: Config | null,
 ): TailwindClassParserResult[] {
-  return classList.split(' ').map((c) => {
+  const getClassOrder = getTailwindClassOrderFunc()
+  const classes = getClassOrder == null ? classList.split(' ') : getClassOrder(classList.split(' '))
+  return classes.map((c) => {
     const result = parseTailwindClass(c, config)
     if (result.kind === 'error') {
       return { type: 'unparsed', className: c }

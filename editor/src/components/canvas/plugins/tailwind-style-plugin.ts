@@ -14,8 +14,6 @@ import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
 import { isLeft } from '../../../core/shared/either'
-import { textDecorationLine } from '../../../uuiui'
-import { objectKeys } from '../../../core/shared/object-utils'
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 

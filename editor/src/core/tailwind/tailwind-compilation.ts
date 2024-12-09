@@ -46,6 +46,11 @@ export function getTailwindConfigCached(editorState: StyleInfoSubEditorState): C
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
+export type TailwindClassOrderFunc = (classes: string[]) => string[]
+export function getTailwindClassOrderFunc(): TailwindClassOrderFunc | null {
+  return TAILWIND_INSTANCE.current?.getClassOrder ?? null
+}
+
 export function isTailwindEnabled(): boolean {
   return TAILWIND_INSTANCE.current != null
 }
@@ -95,7 +100,10 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
   const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
   TAILWIND_INSTANCE.current = tailwindCss
-  // console.log('get class order', TAILWIND_INSTANCE.current.getClassOrder(['left-3', 'inset-x-10']))
+  // console.log(
+  //   'get class order',
+  //   TAILWIND_INSTANCE.current.getClassOrder(['left-[3px]', 'inset-x-[5px]']),
+  // )
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
