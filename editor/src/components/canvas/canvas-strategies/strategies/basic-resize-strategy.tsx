@@ -243,12 +243,12 @@ export function basicResizeStrategy(
             ),
           ]
 
-          if (isEdgePositionAHorizontalEdge(edgePosition)) {
+          if (isEdgePositionAHorizontalEdge(edgePosition) && !isGridCell) {
             commands.push(
               deleteProperties('always', selectedElement, [PP.create('style', 'justifySelf')]),
             )
           }
-          if (isEdgePositionAVerticalEdge(edgePosition)) {
+          if (isEdgePositionAVerticalEdge(edgePosition) && !isGridCell) {
             commands.push(
               deleteProperties('always', selectedElement, [PP.create('style', 'alignSelf')]),
             )
