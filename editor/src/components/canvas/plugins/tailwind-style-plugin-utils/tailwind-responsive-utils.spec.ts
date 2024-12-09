@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss/types/config'
 import { getModifiers, screensConfigToScreenSizes } from './tailwind-responsive-utils'
 
 describe('getModifiers', () => {
