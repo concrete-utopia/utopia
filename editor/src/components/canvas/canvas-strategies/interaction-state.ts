@@ -15,7 +15,15 @@ import type { KeyCharacter } from '../../../utils/keyboard'
 import type { Modifiers } from '../../../utils/modifiers'
 import type { AllElementProps } from '../../editor/store/editor-state'
 import type { BorderRadiusCorner } from '../border-radius-control-utils'
-import type { EdgePiece, EdgePosition, EdgePositionCorner } from '../canvas-types'
+import {
+  EdgePositionBottom,
+  EdgePositionLeft,
+  EdgePositionRight,
+  EdgePositionTop,
+  type EdgePiece,
+  type EdgePosition,
+  type EdgePositionCorner,
+} from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import type { CanvasCommand } from '../commands/commands'
 import type { ApplicableStrategy } from './canvas-strategies'
@@ -664,6 +672,21 @@ export type GridResizeEdgeProperties = {
   isColumn: boolean
   isStart: boolean
   isEnd: boolean
+}
+
+export function gridResizeEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
+  switch (edge) {
+    case 'column-start':
+      return EdgePositionLeft
+    case 'column-end':
+      return EdgePositionRight
+    case 'row-start':
+      return EdgePositionTop
+    case 'row-end':
+      return EdgePositionBottom
+    default:
+      assertNever(edge)
+  }
 }
 
 export function gridResizeEdgeProperties(edge: GridResizeEdge): GridResizeEdgeProperties {

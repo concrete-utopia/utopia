@@ -51,6 +51,7 @@ import {
   gridCellCoordinates,
 } from './grid-cell-bounds'
 import type { GridIdentifier } from '../../../editor/store/editor-state'
+import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 
 export function gridPositionToValue(
   p: GridPositionOrSpan | null | undefined,
@@ -889,5 +890,33 @@ export function getGridRelativeContainingBlock(
     if (gridElementFromDocument != null) {
       gridElementFromDocument.remove()
     }
+  }
+}
+
+export type GridItemAndFillStatus = 'not-grid-item' | 'all-fixed' | 'all-stretch' | 'mixed'
+
+export function gridItemAndFillStatus(
+  metadata: ElementInstanceMetadataMap,
+  targets: Array<ElementPath>,
+): GridItemAndFillStatus {
+  let allFixed = true
+  let allStretch = true
+  for (const target of targets) {
+    const isGridItem = MetadataUtils.isGridItem(metadata, target)
+    if (!isGridItem) {
+      return 'not-grid-item'
+    }
+    const horizontalType = detectFillHugFixedState('horizontal', metadata, target).fixedHugFill
+      ?.type
+    const verticalType = detectFillHugFixedState('vertical', metadata, target).fixedHugFill?.type
+    allFixed = allFixed && horizontalType === 'fixed' && verticalType === 'fixed'
+    allStretch = allStretch && horizontalType === 'stretch' && verticalType === 'stretch'
+  }
+  if (allFixed) {
+    return 'all-fixed'
+  } else if (allStretch) {
+    return 'all-stretch'
+  } else {
+    return 'mixed'
   }
 }

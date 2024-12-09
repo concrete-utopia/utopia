@@ -41,6 +41,7 @@ import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { pickCursorFromEdgePosition } from './resize-helpers'
+import { gridItemAndFillStatus } from './grid-helpers'
 
 export function gridChildCornerResizeStrategy(
   canvasState: InteractionCanvasState,
@@ -66,6 +67,11 @@ export function gridChildCornerResizeStrategy(
     canvasState.startingMetadata,
   )
   if (selectedElementBounds == null || isInfinityRectangle(selectedElementBounds)) {
+    return null
+  }
+
+  const gridItemFillStatus = gridItemAndFillStatus(canvasState.startingMetadata, [selectedElement])
+  if (gridItemFillStatus !== 'mixed' && gridItemFillStatus !== 'all-stretch') {
     return null
   }
 
@@ -98,14 +104,27 @@ export function gridChildCornerResizeStrategy(
           selectedElements,
         )
 
-        const { gridResizeEdges, edgePosition } = fromEdgePositionCornerToStrategyValues(
-          canvasState,
-          selectedElement,
-          interactionSession.activeControl.corner,
-        )
+        const { gridResizeEdgePosition, elementResizeEdgePosition } =
+          fromEdgePositionCornerToStrategyValues(
+            canvasState,
+            selectedElement,
+            interactionSession.activeControl.corner,
+          )
 
         let strategyApplicationResults: Array<StrategyApplicationResult> = []
-        if (edgePosition != null) {
+        if (gridResizeEdgePosition != null) {
+          strategyApplicationResults.push(
+            gridResizeElement(
+              interactionSession,
+              selectedElement,
+              nonNullSelectedElementMetadata,
+              selectedElementBounds,
+              gridResizeEdgePosition,
+            ),
+          )
+        }
+
+        if (elementResizeEdgePosition != null) {
           strategyApplicationResults.push(
             absoluteBoundingResize(
               canvasState,
@@ -113,19 +132,7 @@ export function gridChildCornerResizeStrategy(
               selectedElements,
               selectedElements,
               childGroups,
-              edgePosition,
-            ),
-          )
-        }
-
-        for (const gridResizeEdge of gridResizeEdges) {
-          strategyApplicationResults.push(
-            gridResizeElement(
-              interactionSession,
-              selectedElement,
-              nonNullSelectedElementMetadata,
-              selectedElementBounds,
-              gridResizeEdge,
+              elementResizeEdgePosition,
             ),
           )
         }
@@ -163,17 +170,17 @@ export function gridChildCornerResizeStrategy(
 }
 
 export interface StrategyValuesFromCorner {
-  gridResizeEdges: Array<GridResizeEdge>
-  edgePosition: EdgePosition | null
+  gridResizeEdgePosition: EdgePosition | null
+  elementResizeEdgePosition: EdgePosition | null
 }
 
 export function strategyValuesFromCorner(
-  gridResizeEdges: Array<GridResizeEdge>,
-  edgePosition: EdgePosition | null,
+  gridResizeEdgePosition: EdgePosition | null,
+  elementResizeEdgePosition: EdgePosition | null,
 ): StrategyValuesFromCorner {
   return {
-    gridResizeEdges: gridResizeEdges,
-    edgePosition: edgePosition,
+    gridResizeEdgePosition: gridResizeEdgePosition,
+    elementResizeEdgePosition: elementResizeEdgePosition,
   }
 }
 
@@ -190,44 +197,20 @@ export function fromEdgePositionCornerToStrategyValues(
     detectFillHugFixedState('vertical', canvasState.startingMetadata, element).fixedHugFill
       ?.type === 'stretch'
 
-  const gridResizeEdges: Array<GridResizeEdge> = GridResizeEdges.filter((edge) => {
-    switch (edge) {
-      case 'column-start':
-        return (
-          horizontalIsStretch &&
-          (isEdgePositionEqualTo(corner, EdgePositionTopLeft) ||
-            isEdgePositionEqualTo(corner, EdgePositionBottomLeft))
-        )
-      case 'column-end':
-        return (
-          horizontalIsStretch &&
-          (isEdgePositionEqualTo(corner, EdgePositionTopRight) ||
-            isEdgePositionEqualTo(corner, EdgePositionBottomRight))
-        )
-      case 'row-start':
-        return (
-          verticalIsStretch &&
-          (isEdgePositionEqualTo(corner, EdgePositionTopLeft) ||
-            isEdgePositionEqualTo(corner, EdgePositionTopRight))
-        )
-      case 'row-end':
-        return (
-          verticalIsStretch &&
-          (isEdgePositionEqualTo(corner, EdgePositionBottomLeft) ||
-            isEdgePositionEqualTo(corner, EdgePositionBottomRight))
-        )
-      default:
-        assertNever(edge)
-    }
-  })
+  const gridResizeEdgePosition: EdgePosition = {
+    x: horizontalIsStretch ? 0.5 : corner.x,
+    y: verticalIsStretch ? 0.5 : corner.y,
+  }
 
-  const edgePosition: EdgePosition = {
+  const elementResizeEdgePosition: EdgePosition = {
     x: horizontalIsStretch ? 0.5 : corner.x,
     y: verticalIsStretch ? 0.5 : corner.y,
   }
 
   return strategyValuesFromCorner(
-    gridResizeEdges,
-    isEdgePositionEqualTo(edgePosition, { x: 0.5, y: 0.5 }) ? null : edgePosition,
+    gridResizeEdgePosition,
+    isEdgePositionEqualTo(elementResizeEdgePosition, { x: 0.5, y: 0.5 })
+      ? null
+      : elementResizeEdgePosition,
   )
 }

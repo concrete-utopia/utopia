@@ -59,6 +59,7 @@ import {
   retargetStrategyToChildrenOfFragmentLikeElements,
   treatElementAsFragmentLike,
 } from './fragment-like-helpers'
+import { gridItemAndFillStatus } from './grid-helpers'
 import { treatElementAsGroupLike } from './group-helpers'
 import {
   getLockedAspectRatio,
@@ -105,6 +106,11 @@ export function absoluteResizeBoundingBoxStrategy(
   if (
     retargetedTargets.some((path) => MetadataUtils.isGridItem(canvasState.startingMetadata, path))
   ) {
+    return null
+  }
+
+  const gridItemFillStatus = gridItemAndFillStatus(canvasState.startingMetadata, retargetedTargets)
+  if (gridItemFillStatus === 'mixed') {
     return null
   }
 
