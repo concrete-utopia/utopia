@@ -95,6 +95,7 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
   const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
   TAILWIND_INSTANCE.current = tailwindCss
+  // console.log('get class order', TAILWIND_INSTANCE.current.getClassOrder(['left-3', 'inset-x-10']))
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
