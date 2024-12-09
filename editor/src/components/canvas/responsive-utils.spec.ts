@@ -2,7 +2,7 @@ import * as csstree from 'css-tree'
 import { mediaQueryToScreenSize, selectValueByBreakpoint } from './responsive-utils'
 import type { ScreenSize, MediaQuery } from './responsive-types'
 import { extractScreenSizeFromCss } from './responsive-utils'
-import type { StyleMediaSizeModifier } from './canvas-types'
+import type { StyleMediaSizeModifier, StyleModifier } from './canvas-types'
 
 describe('extractScreenSizeFromCss', () => {
   it('extracts screen size from simple media query', () => {
@@ -60,7 +60,7 @@ describe('extractScreenSizeFromCss', () => {
 })
 
 describe('selectValueByBreakpoint', () => {
-  const variants: { value: string; modifiers?: StyleMediaSizeModifier[] }[] = [
+  const variants: { value: string; modifiers?: StyleModifier[] }[] = [
     {
       value: 'Desktop Value',
       modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
@@ -116,21 +116,27 @@ describe('selectValueByBreakpoint', () => {
   })
 
   it('selects null if no matching breakpoint and no default value', () => {
-    expect(selectValueByBreakpoint(variants.slice(0, 2), 50)).toBeNull()
+    const largeVariants: { value: string; modifiers?: StyleModifier[] }[] = [
+      {
+        value: 'Desktop Value',
+        modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
+      },
+      {
+        value: 'Tablet Value',
+        modifiers: [{ type: 'media-size', size: { min: { value: 100, unit: 'px' } } }],
+      },
+    ]
+    expect(selectValueByBreakpoint(largeVariants, 50)).toBeNull()
   })
   it('selects default value if no media modifiers', () => {
-    expect(
-      selectValueByBreakpoint(
-        [
-          {
-            value: 'Hover Value',
-            modifiers: [{ type: 'hover' }],
-          },
-          { value: 'Default Value' },
-        ],
-        50,
-      )?.value,
-    ).toEqual('Default Value')
+    const noMediaVariants: { value: string; modifiers?: StyleModifier[] }[] = [
+      {
+        value: 'Hover Value',
+        modifiers: [{ type: 'hover' }],
+      },
+      { value: 'Default Value' },
+    ]
+    expect(selectValueByBreakpoint(noMediaVariants, 50)?.value).toEqual('Default Value')
   })
 })
 
