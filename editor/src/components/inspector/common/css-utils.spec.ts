@@ -85,7 +85,6 @@ import {
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
-import type { StyleMediaSizeModifier } from '../../canvas/canvas-types'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStylePropPath(PP.create('style', 'backgroundColor'), toggleSimple)
