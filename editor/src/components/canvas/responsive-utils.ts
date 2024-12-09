@@ -10,7 +10,7 @@ import { memoize } from 'src/core/shared/memoize'
  * `@media (20px < width < 50em)` -> { min: {value: 20, unit: 'px'}, max: {value: 50, unit: 'em'} }
  */
 export const extractScreenSizeFromCss = memoize((css: string): ScreenSize | null => {
-  const mediaQuery = extractMediaQueryFromCss(css)
+  const mediaQuery = parseMediaQueryFromCss(css)
   return mediaQuery == null ? null : mediaQueryToScreenSize(mediaQuery)
 })
 
@@ -107,7 +107,7 @@ export function mediaQueryToScreenSize(mediaQuery: MediaQuery): ScreenSize {
   return result
 }
 
-function extractMediaQueryFromCss(css: string): MediaQuery | null {
+function parseMediaQueryFromCss(css: string): MediaQuery | null {
   let result: MediaQuery | null = null
   csstree.walk(csstree.parse(css), (node) => {
     if (node.type === 'MediaQuery') {
