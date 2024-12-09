@@ -50,8 +50,8 @@ import {
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
 import { getActivePlugin } from '../../../../canvas/plugins/style-plugins'
 import type { StyleInfo } from '../../../../canvas/canvas-types'
-import { getAppliedMediaSizeModifierFromBreakpoint } from '../../../common/css-utils'
-import { getTailwindVariantFromAppliedModifier } from '../../../../canvas/plugins/tailwind-style-plugin-utils/tailwind-media-query-utils'
+import { getTailwindVariantFromAppliedModifier } from '../../../../canvas/plugins/tailwind-style-plugin-utils/tailwind-responsive-utils'
+import { getAppliedMediaSizeModifierFromBreakpoint } from '../../../../canvas/responsive-utils'
 
 function buildPaddingPropsToUnset(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [

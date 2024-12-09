@@ -4,12 +4,12 @@ import { defaultEither, Either, flatMapEither, isLeft } from '../../../core/shar
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
-import { cssParsers, selectValueByBreakpoint } from '../../inspector/common/css-utils'
+import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
 import type { ParsedVariant, StyleInfo } from '../canvas-types'
-import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
+import { cssStyleProperty, cssVariant, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import {
@@ -20,7 +20,8 @@ import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getModifiers } from './tailwind-style-plugin-utils/tailwind-media-query-utils'
+import { getModifiers } from './tailwind-style-plugin-utils/tailwind-responsive-utils'
+import { selectValueByBreakpoint } from '../responsive-utils'
 
 type StyleValueVariants = {
   value: string | number | undefined
@@ -44,7 +45,7 @@ export const parseTailwindPropertyFactory =
     if (styleDefinition == null) {
       return null
     }
-    const parsed: ParsedVariant<T>[] = styleDefinition
+    const possibleVariants: ParsedVariant<T>[] = styleDefinition
       .map((v) => ({
         parsedValue: cssParsers[prop](v.value, null),
         originalValue: v.value,
@@ -58,18 +59,14 @@ export const parseTailwindPropertyFactory =
         >,
       }))
 
-    const result = selectValueByBreakpoint(parsed, context?.sceneWidth)
-    if (result == null) {
+    const selectedVariant = selectValueByBreakpoint(possibleVariants, context?.sceneWidth)
+    if (selectedVariant == null) {
       return null
     }
     return cssStyleProperty(
-      result.parsedValue,
-      jsExpressionValue(result.originalValue, emptyComments),
-      result.modifiers,
-      parsed.map((variant) => ({
-        value: variant.parsedValue,
-        modifiers: variant.modifiers,
-      })),
+      jsExpressionValue(selectedVariant.originalValue, emptyComments),
+      cssVariant(selectedVariant.parsedValue, selectedVariant.modifiers),
+      possibleVariants.map((variant) => cssVariant(variant.parsedValue, variant.modifiers)),
     )
   }
 

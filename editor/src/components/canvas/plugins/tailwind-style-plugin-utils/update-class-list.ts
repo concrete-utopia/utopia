@@ -19,7 +19,7 @@ import type { EditorStateWithPatch } from '../../commands/utils/property-utils'
 import { applyValuesAtPath } from '../../commands/utils/property-utils'
 import * as PP from '../../../../core/shared/property-path'
 import type { Config } from 'tailwindcss/types/config'
-import { getPropertiesToAppliedModifiersMap } from './tailwind-media-query-utils'
+import { getPropertiesToAppliedModifiersMap } from './tailwind-responsive-utils'
 
 export type ClassListUpdate =
   | { type: 'add'; property: string; value: string }

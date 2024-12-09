@@ -1,11 +1,7 @@
 import type { Config } from 'tailwindcss/types/config'
-import {
-  isStyleInfoKey,
-  type ScreenSize,
-  type StyleMediaSizeModifier,
-  type StyleModifier,
-} from '../../canvas-types'
-import { extractScreenSizeFromCss } from '../../canvas-utils'
+import { isStyleInfoKey, type StyleMediaSizeModifier, type StyleModifier } from '../../canvas-types'
+import type { ScreenSize } from '../../responsive-types'
+import { extractScreenSizeFromCss } from '../../responsive-utils'
 import { TailwindPropertyMapping } from '../tailwind-style-plugin'
 import { parseTailwindPropertyFactory } from '../tailwind-style-plugin'
 import { getTailwindClassMapping } from '../tailwind-style-plugin'
@@ -100,10 +96,10 @@ export function getPropertiesToAppliedModifiersMap(
       classMapping[TailwindPropertyMapping[propertyName]],
       propertyName,
     )
-    if (parsedProperty?.type == 'property' && parsedProperty.appliedModifiers != null) {
+    if (parsedProperty?.type == 'property' && parsedProperty.currentVariant.modifiers != null) {
       return {
         ...acc,
-        [propertyName]: parsedProperty.appliedModifiers,
+        [propertyName]: parsedProperty.currentVariant.modifiers,
       }
     } else {
       return acc

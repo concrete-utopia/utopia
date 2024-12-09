@@ -81,7 +81,6 @@ import {
   printBackgroundSize,
   printGridDimensionCSS,
   RegExpLibrary,
-  selectValueByBreakpoint,
   stringifyGridDimension,
   toggleSimple,
   toggleStylePropPath,
@@ -2135,61 +2134,5 @@ describe('parseGridRange', () => {
       'span some-area / bar',
     )
     expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridPositionValue(2))))
-  })
-})
-
-describe('selectValueByBreakpoint', () => {
-  const variants: { value: string; modifiers?: StyleMediaSizeModifier[] }[] = [
-    {
-      value: 'b',
-      modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
-    },
-    {
-      value: 'a',
-      modifiers: [{ type: 'media-size', size: { min: { value: 100, unit: 'px' } } }],
-    },
-    {
-      value: 'c',
-      modifiers: [{ type: 'media-size', size: { min: { value: 20, unit: 'em' } } }],
-    },
-    { value: 'd' },
-  ]
-  it('selects the correct value', () => {
-    expect(selectValueByBreakpoint(variants, 150)).toEqual({
-      value: 'a',
-      modifiers: [{ type: 'media-size', size: { min: { value: 100, unit: 'px' } } }],
-    })
-  })
-  it('select the closest value', () => {
-    expect(selectValueByBreakpoint(variants, 250)).toEqual({
-      value: 'b',
-      modifiers: [{ type: 'media-size', size: { min: { value: 200, unit: 'px' } } }],
-    })
-  })
-  it('converts em to px', () => {
-    expect(selectValueByBreakpoint(variants, 350)).toEqual({
-      value: 'c',
-      modifiers: [{ type: 'media-size', size: { min: { value: 20, unit: 'em' } } }],
-    })
-  })
-  it('selects the first value if no breakpoint is matched', () => {
-    expect(selectValueByBreakpoint(variants, 50)).toEqual({ value: 'd' })
-  })
-  it('selects null if no matching breakpoint and no default value', () => {
-    expect(selectValueByBreakpoint(variants.slice(0, 2), 50)).toBeNull()
-  })
-  it('selects default value if no media modifiers', () => {
-    expect(
-      selectValueByBreakpoint(
-        [
-          {
-            value: 'a',
-            modifiers: [{ type: 'hover' }],
-          },
-          { value: 'c' },
-        ],
-        50,
-      ),
-    ).toEqual({ value: 'c' })
   })
 })

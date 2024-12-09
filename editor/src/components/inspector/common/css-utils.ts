@@ -86,8 +86,6 @@ import { memoize } from '../../../core/shared/memoize'
 import * as csstree from 'css-tree'
 import type { IcnProps } from '../../../uuiui'
 import { cssNumberEqual } from '../../canvas/controls/select-mode/controls-common'
-import type { StyleInfo } from '../../canvas/canvas-types'
-import type { CompValue, StyleMediaSizeModifier, StyleModifier } from '../../canvas/canvas-types'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -5984,105 +5982,6 @@ export function maybeParseGridLine(
 }
 
 const EM_TO_PX_RATIO = 16
-function compValueAsPx(value: CompValue | null | undefined): number | null {
+export function compValueAsPx(value: CSSNumber | null | undefined): number | null {
   return value == null ? null : value.unit === 'em' ? value.value * EM_TO_PX_RATIO : value.value
-}
-
-function getMediaModifier(
-  modifiers: StyleModifier[] | undefined | null,
-): StyleMediaSizeModifier | null {
-  return (modifiers ?? []).filter(
-    (modifier): modifier is StyleMediaSizeModifier => modifier.type === 'media-size',
-  )[0]
-}
-
-export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] }>(
-  parsedVariants: T[],
-  sceneWidthInPx?: number,
-): T | null {
-  const relevantModifiers = parsedVariants.filter((variant) => {
-    // 1. filter out variants that don't have media modifiers, but keep variants with no modifiers at all
-    if (variant.modifiers == null || variant.modifiers.length === 0) {
-      return true
-    }
-    // FIXME - we take only the first media modifier for now
-    const mediaModifier = getMediaModifier(variant.modifiers)
-    if (mediaModifier == null) {
-      // this means it only has other modifiers
-      return false
-    }
-
-    if (sceneWidthInPx == null) {
-      // filter out variants that require a scene width
-      return false
-    }
-
-    // 2. check that it has at least one media modifier that satisfies the current scene width
-    const maxSizeInPx = compValueAsPx(mediaModifier.size.max)
-    const minSizeInPx = compValueAsPx(mediaModifier.size.min)
-
-    // if it has only max
-    if (maxSizeInPx != null && minSizeInPx == null && sceneWidthInPx <= maxSizeInPx) {
-      return true
-    }
-
-    // if it has only min
-    if (maxSizeInPx == null && minSizeInPx != null && sceneWidthInPx >= minSizeInPx) {
-      return true
-    }
-
-    // if it has both max and min
-    if (
-      maxSizeInPx != null &&
-      minSizeInPx != null &&
-      sceneWidthInPx >= minSizeInPx &&
-      sceneWidthInPx <= maxSizeInPx
-    ) {
-      return true
-    }
-    return false
-  })
-  let chosen: T | null = null
-  for (const variant of relevantModifiers) {
-    const chosenMediaModifier = getMediaModifier(chosen?.modifiers)
-    const variantMediaModifier = getMediaModifier(variant.modifiers)
-    if (variantMediaModifier == null) {
-      if (chosenMediaModifier == null) {
-        // if we have nothing chosen then we'll take the base value
-        chosen = variant
-      }
-      continue
-    }
-    if (chosenMediaModifier == null) {
-      chosen = variant
-      continue
-    }
-    // fixme - select by actual media query precedence
-    const minSizeInPx = compValueAsPx(variantMediaModifier.size.min)
-    const chosenMinSizeInPx = compValueAsPx(chosenMediaModifier.size.min)
-    if (minSizeInPx != null && (chosenMinSizeInPx == null || minSizeInPx > chosenMinSizeInPx)) {
-      chosen = variant
-    }
-    const maxSizeInPx = compValueAsPx(variantMediaModifier.size.max)
-    const chosenMaxSizeInPx = compValueAsPx(chosenMediaModifier.size.max)
-    if (maxSizeInPx != null && (chosenMaxSizeInPx == null || maxSizeInPx < chosenMaxSizeInPx)) {
-      chosen = variant
-    }
-  }
-  if (chosen == null) {
-    return null
-  }
-  return chosen
-}
-
-export function getAppliedMediaSizeModifierFromBreakpoint(
-  styleInfo: StyleInfo,
-  prop: keyof StyleInfo,
-): StyleMediaSizeModifier | null {
-  if (styleInfo == null) {
-    return null
-  }
-  return styleInfo[prop]?.type === 'property'
-    ? (styleInfo[prop].appliedModifiers ?? []).find((m) => m.type === 'media-size') ?? null
-    : null
 }

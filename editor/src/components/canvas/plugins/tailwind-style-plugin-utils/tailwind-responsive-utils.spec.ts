@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss'
-import { getModifiers, screensConfigToScreenSizes } from './tailwind-media-query-utils'
+import { getModifiers, screensConfigToScreenSizes } from './tailwind-responsive-utils'
 
 describe('getModifiers', () => {
   it('returns empty array for non-media variants', () => {

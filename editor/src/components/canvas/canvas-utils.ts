@@ -1,4 +1,3 @@
-import * as csstree from 'css-tree'
 import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
@@ -126,11 +125,9 @@ import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import type {
   CanvasFrameAndTarget,
-  CompValue,
   DuplicateNewUID,
   EdgePosition,
   PinOrFlexFrameChange,
-  ScreenSize,
 } from './canvas-types'
 import { flexResizeChange, pinFrameChange } from './canvas-types'
 import {
@@ -2262,170 +2259,4 @@ export function projectContentsSameForRefreshRequire(
 
   // If nothing differs, return true.
   return true
-}
-
-export interface MediaQuery {
-  type: 'MediaQuery'
-  loc: null
-  modifier: null
-  mediaType: null
-  condition?: {
-    type: 'Condition'
-    loc: null
-    kind: 'media'
-    children: Array<FeatureRange | Feature | csstree.Identifier>
-  }
-}
-
-interface FeatureRange {
-  type: 'FeatureRange'
-  loc: null
-  kind: 'media'
-  left?: csstree.Dimension | csstree.Identifier
-  leftComparison: '<' | '>'
-  middle: csstree.Dimension | csstree.Identifier
-  rightComparison: '<' | '>'
-  right?: csstree.Dimension | csstree.Identifier
-}
-
-interface Feature {
-  type: 'Feature'
-  loc: null
-  kind: 'media'
-  name: 'min-width' | 'max-width'
-  value?: csstree.Dimension
-}
-
-function extractFromFeatureRange(featureRange: FeatureRange): {
-  leftValue: CompValue | null
-  rightValue: CompValue | null
-  leftComparison: '<' | '>' | null
-  rightComparison: '<' | '>' | null
-} | null {
-  // 100px < width < 500px or 500px > width > 100px or 100px > width or 500px < width
-  if (featureRange?.middle?.type === 'Identifier' && featureRange.middle.name === 'width') {
-    const leftValue =
-      featureRange.left?.type === 'Dimension'
-        ? {
-            value: Number(featureRange.left.value),
-            unit: featureRange.left.unit,
-          }
-        : null
-
-    const rightValue =
-      featureRange.right?.type === 'Dimension'
-        ? {
-            value: Number(featureRange.right.value),
-            unit: featureRange.right.unit,
-          }
-        : null
-
-    return {
-      leftValue: leftValue,
-      rightValue: rightValue,
-      leftComparison: featureRange.leftComparison,
-      rightComparison: featureRange.rightComparison,
-    }
-  }
-  // width > 100px or width < 500px
-  if (featureRange?.left?.type === 'Identifier' && featureRange.left.name === 'width') {
-    const rightValue =
-      featureRange.middle?.type === 'Dimension'
-        ? {
-            value: Number(featureRange.middle.value),
-            unit: featureRange.middle.unit,
-          }
-        : null
-    // this is not a mistake, since we normalize the "width" to be in the middle
-    const rightComparison = featureRange.leftComparison
-
-    return {
-      leftValue: null,
-      leftComparison: null,
-      rightValue: rightValue,
-      rightComparison: rightComparison,
-    }
-  }
-  return null
-}
-export function mediaQueryToScreenSize(mediaQuery: MediaQuery): ScreenSize {
-  const result: ScreenSize = {}
-
-  if (mediaQuery.condition?.type === 'Condition') {
-    // Handle FeatureRange case
-    const featureRanges = mediaQuery.condition.children.filter(
-      (child): child is FeatureRange => child.type === 'FeatureRange',
-    ) as Array<FeatureRange>
-
-    featureRanges.forEach((featureRange) => {
-      const rangeData = extractFromFeatureRange(featureRange)
-      if (rangeData == null) {
-        return
-      }
-      const { leftValue, rightValue, leftComparison, rightComparison } = rangeData
-      if (leftValue != null) {
-        if (leftComparison === '<') {
-          result.min = leftValue
-        } else {
-          result.max = leftValue
-        }
-      }
-      if (rightValue != null) {
-        if (rightComparison === '<') {
-          result.max = rightValue
-        } else {
-          result.min = rightValue
-        }
-      }
-    })
-
-    // Handle Feature case (min-width/max-width)
-    const features = mediaQuery.condition.children.filter(
-      (child): child is Feature => child.type === 'Feature',
-    )
-    features.forEach((feature) => {
-      if (feature.value?.type === 'Dimension') {
-        if (feature.name === 'min-width') {
-          result.min = {
-            value: Number(feature.value.value),
-            unit: feature.value.unit,
-          }
-        } else if (feature.name === 'max-width') {
-          result.max = {
-            value: Number(feature.value.value),
-            unit: feature.value.unit,
-          }
-        }
-      }
-    })
-  }
-
-  return result
-}
-
-export function extractMediaQueryFromCss(css: string): MediaQuery | null {
-  let result: MediaQuery | null = null
-  csstree.walk(csstree.parse(css), (node) => {
-    if (node.type === 'MediaQuery') {
-      result = node as unknown as MediaQuery
-    }
-  })
-  return result
-}
-
-// Cache for storing previously parsed screen sizes
-const screenSizeCache: Map<string, ScreenSize | null> = new Map()
-export function extractScreenSizeFromCss(css: string): ScreenSize | null {
-  // Check cache first
-  const cached = screenSizeCache.get(css)
-  if (cached !== undefined) {
-    return cached
-  }
-
-  // If not in cache, compute and store result
-  const mediaQuery = extractMediaQueryFromCss(css)
-  const result = mediaQuery == null ? null : mediaQueryToScreenSize(mediaQuery)
-
-  screenSizeCache.set(css, result)
-  return result
 }
