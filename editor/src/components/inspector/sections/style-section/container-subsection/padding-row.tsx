@@ -51,7 +51,7 @@ import {
 import { getActivePlugin } from '../../../../canvas/plugins/style-plugins'
 import type { StyleInfo } from '../../../../canvas/canvas-types'
 import { getAppliedMediaSizeModifierFromBreakpoint } from '../../../common/css-utils'
-import { getTailwindVariantFromAppliedModifier } from '../../../../canvas/plugins/tailwind-style-plugin'
+import { getTailwindVariantFromAppliedModifier } from '../../../../canvas/plugins/tailwind-style-plugin-utils/tailwind-media-query-utils'
 
 function buildPaddingPropsToUnset(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [
