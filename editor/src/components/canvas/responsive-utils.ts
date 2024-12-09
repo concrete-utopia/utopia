@@ -10,7 +10,7 @@ export function getContainingSceneWidth({
   jsxMetadata: ElementInstanceMetadataMap
 }): number | undefined {
   // TODO: support multiple selected elements in different scenes?
-  const selectedElement = selectedViews[0]
+  const selectedElement = selectedViews.at(0)
   if (selectedElement == null) {
     return undefined
   }
