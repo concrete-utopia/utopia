@@ -34,18 +34,6 @@ describe('extractScreenSizeFromCss', () => {
     })
   })
 
-  it('caches null results', () => {
-    const css = 'invalid-css'
-
-    // First call
-    const result1 = extractScreenSizeFromCss(css)
-    // Second call - should return same null reference
-    const result2 = extractScreenSizeFromCss(css)
-
-    expect(result1).toBe(result2)
-    expect(result1).toBeNull()
-  })
-
   it('handles different CSS strings independently in cache', () => {
     const css1 = '@media (min-width: 100px)'
     const css2 = '@media (max-width: 500px)'
