@@ -586,6 +586,10 @@ export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
   return null
 }
 
+export interface UntypedStyleInfo {
+  [cssProperty: string]: CSSStylePropertyNotParsable | ParsedCSSStyleProperty<unknown> | undefined
+}
+
 export type FlexGapInfo = CSSStyleProperty<CSSNumber>
 export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
 export type LeftInfo = CSSStyleProperty<CSSNumber>

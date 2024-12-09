@@ -60,6 +60,7 @@ import {
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { InlineStylePlugin } from '../../canvas/plugins/inline-style-plugin'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -1029,7 +1030,7 @@ describe('useGetOrderedPropertyKeys', () => {
     )
 
     const { result } = renderHook(
-      () => useGetOrderedPropertyKeys<P>(stylePropPathMappingFn, propsKeys),
+      () => useGetOrderedPropertyKeys<P>(stylePropPathMappingFn, propsKeys, InlineStylePlugin),
       {
         wrapper: contextProvider,
       },

@@ -102,19 +102,43 @@ describe('tailwind class list utils', () => {
         [
           {
             type: 'parsed',
-            ast: { property: 'padding', value: '2rem', variants: [], negative: false },
+            ast: {
+              property: 'padding',
+              value: '2rem',
+              variants: [],
+              negative: false,
+              valueDef: { value: '2rem', class: ['padding'] },
+            },
           },
           {
             type: 'parsed',
-            ast: { property: 'positionTop', value: '-14px', variants: [], negative: false },
+            ast: {
+              property: 'positionTop',
+              value: '-14px',
+              variants: [],
+              negative: false,
+              valueDef: { value: '-14px', class: ['top'] },
+            },
           },
           {
             type: 'parsed',
-            ast: { property: 'display', value: 'flex', variants: [], negative: false },
+            ast: {
+              property: 'display',
+              value: 'flex',
+              variants: [],
+              negative: false,
+              valueDef: { value: 'flex', class: ['display'] },
+            },
           },
           {
             type: 'parsed',
-            ast: { property: 'gap', value: '123px', variants: [], negative: false },
+            ast: {
+              property: 'gap',
+              value: '123px',
+              variants: [],
+              negative: false,
+              valueDef: { value: '123px', class: ['gap'] },
+            },
           },
           { type: 'unparsed', className: 'highlight-button' },
         ],
