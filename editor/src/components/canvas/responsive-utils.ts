@@ -7,6 +7,9 @@ import {
   compValueAsPx,
   cssNumber,
 } from '../inspector/common/css-utils'
+import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 function extractFromFeatureRange(featureRange: FeatureRange): {
   leftValue: CSSNumber | null
@@ -212,6 +215,14 @@ export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] 
     return null
   }
   return chosen
+}
+
+export function getContainingSceneWidth(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): number | undefined {
+  const containingScene = MetadataUtils.getParentSceneMetadata(jsxMetadata, elementPath)
+  return containingScene?.specialSizeMeasurements?.clientWidth
 }
 
 export function getAppliedMediaSizeModifierFromBreakpoint(

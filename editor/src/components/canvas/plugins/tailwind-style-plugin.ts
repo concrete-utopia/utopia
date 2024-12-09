@@ -19,9 +19,8 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getModifiers } from './tailwind-style-plugin-utils/tailwind-responsive-utils'
-import { selectValueByBreakpoint } from '../responsive-utils'
+import { getContainingSceneWidth, selectValueByBreakpoint } from '../responsive-utils'
 
 type StyleValueVariants = {
   value: string | number | undefined
@@ -198,9 +197,8 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         }
 
         const mapping = getTailwindClassMapping(classList.split(' '), config)
-        const containingScene = MetadataUtils.getParentSceneMetadata(jsxMetadata, elementPath)
         const parseTailwindProperty = parseTailwindPropertyFactory(config, {
-          sceneWidth: containingScene?.specialSizeMeasurements?.clientWidth,
+          sceneWidth: getContainingSceneWidth(elementPath, jsxMetadata),
         })
         return {
           gap: parseTailwindProperty(mapping[TailwindPropertyMapping.gap], 'gap'),
@@ -261,11 +259,6 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         }
       },
     updateStyles: (editorState, elementPath, updates) => {
-      const containingScene = MetadataUtils.getParentSceneMetadata(
-        editorState.jsxMetadata,
-        elementPath,
-      )
-      const sceneWidth = containingScene?.specialSizeMeasurements?.clientWidth
       const propsToDelete = mapDropNulls(
         (update) =>
           update.type !== 'delete' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
@@ -289,7 +282,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         elementPath,
         [...propsToDelete, ...propsToSet],
         config,
-        { sceneWidth: sceneWidth },
+        { sceneWidth: getContainingSceneWidth(elementPath, editorState.jsxMetadata) },
       )
     },
   }
