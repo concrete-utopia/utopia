@@ -20,6 +20,7 @@ import { applyValuesAtPath } from '../../commands/utils/property-utils'
 import * as PP from '../../../../core/shared/property-path'
 import type { Config } from 'tailwindcss/types/config'
 import { getPropertiesToAppliedModifiersMap } from './tailwind-responsive-utils'
+import type { StylePluginContext } from '../style-plugins'
 
 export type ClassListUpdate =
   | { type: 'add'; property: string; value: string }
@@ -40,9 +41,7 @@ export const runUpdateClassList = (
   element: ElementPath,
   classNameUpdates: ClassListUpdate[],
   config: Config | null,
-  context: {
-    sceneWidth?: number
-  },
+  context: StylePluginContext,
 ): EditorStateWithPatch => {
   const currentClassNameAttribute =
     getClassNameAttribute(getElementFromProjectContents(element, editorState.projectContents))

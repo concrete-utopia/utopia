@@ -51,15 +51,16 @@ export function deleteCSSProp(property: string): DeleteCSSProp {
 
 export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 
+export type StylePluginContext = {
+  sceneWidth?: number
+}
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
   readStyleFromElementProps: <T extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: T,
-    context?: {
-      sceneWidth?: number
-    },
+    context: StylePluginContext,
   ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
   updateStyles: (
     editorState: EditorState,

@@ -5,6 +5,7 @@ import { extractScreenSizeFromCss } from '../../responsive-utils'
 import { TailwindPropertyMapping } from '../tailwind-style-plugin'
 import { parseTailwindPropertyFactory } from '../tailwind-style-plugin'
 import { getTailwindClassMapping } from '../tailwind-style-plugin'
+import type { StylePluginContext } from '../style-plugins'
 
 export const TAILWIND_DEFAULT_SCREENS = {
   sm: '640px',
@@ -82,9 +83,7 @@ export function getPropertiesToAppliedModifiersMap(
   currentClassNameAttribute: string,
   propertyNames: string[],
   config: Config | null,
-  context: {
-    sceneWidth?: number
-  },
+  context: StylePluginContext,
 ): Record<string, StyleModifier[]> {
   const parseTailwindProperty = parseTailwindPropertyFactory(config, context)
   const classMapping = getTailwindClassMapping(currentClassNameAttribute.split(' '), config)

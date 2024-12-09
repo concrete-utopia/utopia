@@ -112,10 +112,12 @@ export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProp
 
 export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
 
-export type StyleInfoFactory = (context: {
+export type StyleInfoContext = {
   projectContents: ProjectContentTreeRoot
   jsxMetadata: ElementInstanceMetadataMap
-}) => StyleInfoReader
+}
+
+export type StyleInfoFactory = (context: StyleInfoContext) => StyleInfoReader
 
 export interface InteractionCanvasState {
   interactionTarget: InteractionTarget

@@ -6,7 +6,7 @@ import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import type { StylePlugin } from './style-plugins'
+import type { StylePlugin, StylePluginContext } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
 import type { ParsedVariant, StyleInfo } from '../canvas-types'
 import { cssStyleProperty, cssVariant, type CSSStyleProperty } from '../canvas-types'
@@ -32,12 +32,7 @@ export type TailwindHoverModifier = { type: 'hover'; value: string }
 export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
 
 export const parseTailwindPropertyFactory =
-  (
-    config: Config | null,
-    context: {
-      sceneWidth?: number
-    },
-  ) =>
+  (config: Config | null, context: StylePluginContext) =>
   <T extends keyof StyleInfo>(
     styleDefinition: StyleValueVariants | undefined,
     prop: T,
@@ -173,9 +168,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
     readStyleFromElementProps: <P extends keyof StyleInfo>(
       attributes: JSXAttributes,
       prop: P,
-      context?: {
-        sceneWidth?: number
-      },
+      context: StylePluginContext,
     ): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null => {
       const classNameAttribute = defaultEither(
         null,
