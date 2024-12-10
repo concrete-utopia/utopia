@@ -1,5 +1,4 @@
 import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
 
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
@@ -92,11 +91,11 @@ import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
-import { getActivePlugin, noSceneSize } from '../../canvas/plugins/style-plugins'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { isStyleInfoKey, type StyleInfo } from '../../canvas/canvas-types'
 import { assertNever } from '../../../core/shared/utils'
 import { maybeCssPropertyFromInlineStyle } from '../../canvas/commands/utils/property-utils'
-import { getContainingSceneSize } from '../../canvas/responsive-utils'
+import { getContainingSceneSizeFromEditorState } from '../../canvas/responsive-utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -764,10 +763,8 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   const styleInfoReaderRef = useRefEditorState(
     (store) =>
       (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
-        const containingSceneSize =
-          store.editor != null ? getContainingSceneSize(store.editor) : noSceneSize()
         const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop, {
-          sceneSize: containingSceneSize,
+          sceneSize: getContainingSceneSizeFromEditorState(store.editor),
         })
         if (elementStyle == null) {
           return right({ type: 'ATTRIBUTE_NOT_FOUND' })
