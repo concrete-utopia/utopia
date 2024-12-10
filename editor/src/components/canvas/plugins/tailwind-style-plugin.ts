@@ -5,7 +5,7 @@ import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import type { StylePlugin } from './style-plugins'
+import type { StylePlugin, StylePluginContext } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
 import type { StyleInfo } from '../canvas-types'
 import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
@@ -18,17 +18,20 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
+import { getContainingSceneSize } from '../responsive-utils'
 
-function parseTailwindProperty<T extends keyof StyleInfo>(
-  value: string | number | undefined,
-  prop: T,
-): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null {
-  const parsed = cssParsers[prop](value, null)
-  if (isLeft(parsed) || parsed.value == null) {
-    return null
+const parseTailwindPropertyFactory =
+  (config: Config | null, context: StylePluginContext) =>
+  <T extends keyof StyleInfo>(
+    value: string | number | undefined,
+    prop: T,
+  ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
+    const parsed = cssParsers[prop](value, null)
+    if (isLeft(parsed) || parsed.value == null) {
+      return null
+    }
+    return cssStyleProperty(parsed.value, jsExpressionValue(value, emptyComments))
   }
-  return cssStyleProperty(parsed.value, jsExpressionValue(value, emptyComments))
-}
 
 const TailwindPropertyMapping: Record<string, string> = {
   left: 'positionLeft',
@@ -100,6 +103,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   readStyleFromElementProps: <P extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: P,
+    context: StylePluginContext,
   ): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null => {
     const classNameAttribute = defaultEither(
       null,
@@ -114,10 +118,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
     }
 
     const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
+    const parseTailwindProperty = parseTailwindPropertyFactory(config, context)
     return parseTailwindProperty(mapping[TailwindPropertyMapping[prop]], prop)
   },
   styleInfoFactory:
-    ({ projectContents }) =>
+    ({ projectContents, jsxMetadata }) =>
     (elementPath) => {
       const classList = getClassNameAttribute(
         getElementFromProjectContents(elementPath, projectContents),
@@ -128,6 +133,9 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       }
 
       const mapping = getTailwindClassMapping(classList.split(' '), config)
+      const parseTailwindProperty = parseTailwindPropertyFactory(config, {
+        sceneSize: getContainingSceneSize(elementPath, jsxMetadata),
+      })
 
       return {
         gap: parseTailwindProperty(mapping[TailwindPropertyMapping.gap], 'gap'),

@@ -51,12 +51,27 @@ export function deleteCSSProp(property: string): DeleteCSSProp {
 
 export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 
+export type SceneSize = { type: 'no-scene' } | { type: 'scene'; width: number }
+export function noSceneSize(): SceneSize {
+  return { type: 'no-scene' }
+}
+export function sceneSize(width: number | undefined | null): SceneSize {
+  if (width == null) {
+    return noSceneSize()
+  }
+  return { type: 'scene', width: width }
+}
+export type StylePluginContext = {
+  sceneSize: SceneSize
+}
+
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
   readStyleFromElementProps: <T extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: T,
+    context: StylePluginContext,
   ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
   updateStyles: (
     editorState: EditorState,
@@ -248,6 +263,7 @@ export function patchRemovedProperties(editorState: EditorState): EditorState {
 
   const styleInfoReader = activePlugin.styleInfoFactory({
     projectContents: editorState.projectContents,
+    jsxMetadata: editorState.jsxMetadata,
   })
 
   const propertiesUpdatedDuringInteraction = getPropertiesUpdatedDuringInteraction(editorState)

@@ -29,6 +29,7 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
   const styleInfoReaderRef = useRefEditorState((store) =>
     getActivePlugin(store.editor).styleInfoFactory({
       projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
     }),
   )
 
