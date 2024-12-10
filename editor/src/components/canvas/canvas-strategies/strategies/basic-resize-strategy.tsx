@@ -36,7 +36,10 @@ import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import {
+  controlsForGridPlaceholders,
+  controlsForGridRulers,
+} from '../../controls/grid-controls-for-strategies'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
@@ -130,7 +133,12 @@ export function basicResizeStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
-      ...(isGridCell ? [controlsForGridPlaceholders(gridItemIdentifier(selectedElement))] : []),
+      ...(isGridCell
+        ? [
+            controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
+            controlsForGridRulers(gridItemIdentifier(selectedElement)),
+          ]
+        : []),
     ],
     fitness:
       interactionSession != null &&
