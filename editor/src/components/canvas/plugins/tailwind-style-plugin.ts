@@ -134,7 +134,10 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
 
       const mapping = getTailwindClassMapping(classList.split(' '), config)
       const parseTailwindProperty = parseTailwindPropertyFactory(config, {
-        sceneWidth: getContainingSceneWidth(elementPath, jsxMetadata),
+        sceneWidth: getContainingSceneWidth({
+          selectedViews: [elementPath],
+          jsxMetadata: jsxMetadata,
+        }),
       })
 
       return {
