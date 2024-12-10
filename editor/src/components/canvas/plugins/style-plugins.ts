@@ -51,8 +51,18 @@ export function deleteCSSProp(property: string): DeleteCSSProp {
 
 export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 
+export type SceneSize = { type: 'no-scene' } | { type: 'scene'; width: number }
+export function noSceneSize(): SceneSize {
+  return { type: 'no-scene' }
+}
+export function sceneSize(width: number | undefined | null): SceneSize {
+  if (width == null) {
+    return noSceneSize()
+  }
+  return { type: 'scene', width: width }
+}
 export type StylePluginContext = {
-  sceneWidth?: number
+  sceneSize: SceneSize
 }
 
 export interface StylePlugin {

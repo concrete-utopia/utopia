@@ -18,7 +18,7 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
-import { getContainingSceneWidth } from '../responsive-utils'
+import { getContainingSceneSize } from '../responsive-utils'
 
 const parseTailwindPropertyFactory =
   (config: Config | null, context: StylePluginContext) =>
@@ -134,7 +134,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
 
       const mapping = getTailwindClassMapping(classList.split(' '), config)
       const parseTailwindProperty = parseTailwindPropertyFactory(config, {
-        sceneWidth: getContainingSceneWidth({
+        sceneSize: getContainingSceneSize({
           selectedViews: [elementPath],
           jsxMetadata: jsxMetadata,
         }),
