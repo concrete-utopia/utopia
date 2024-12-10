@@ -11,10 +11,17 @@ const webpack = require('webpack')
 var webpackConfig = require('./webpack.config')
 delete webpackConfig['entry']
 
-// handles stack-utils looking for 'module'
-webpackConfig['resolve']['fallback']['module'] = false
+webpackConfig['resolve']['fallback'] = {
+  ...webpackConfig['resolve']['fallback'],
+  buffer: require.resolve('buffer/'),
+  // handles stack-utils looking for 'module'
+  module: false,
+}
 
 webpackConfig['plugins'].push(
+  new webpack.ProvidePlugin({
+    Buffer: ['buffer', 'Buffer'],
+  }),
   new webpack.DefinePlugin({
     'process.env.RTL_SKIP_AUTO_CLEANUP': 'undefined',
   }),
