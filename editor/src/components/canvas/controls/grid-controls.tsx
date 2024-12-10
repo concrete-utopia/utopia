@@ -2261,7 +2261,11 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       }
 
       const parentGrid = elementMetadata.specialSizeMeasurements.parentContainerGridProperties
-      const cellRect = calculateGridCellRectangle(store.editor.jsxMetadata, props.path)
+      const cellRect = calculateGridCellRectangle(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        props.path,
+      )
       if (cellRect == null) {
         return null
       }
