@@ -1682,7 +1682,6 @@ interface GridResizeControlProps {
 
 export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) => {
   const gridTarget = getGridIdentifierContainerOrComponentPath(target)
-  const colorTheme = useColorTheme()
 
   const element = useEditorState(
     Substores.metadata,
@@ -1854,7 +1853,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
           left: bounds?.x ?? element.globalFrame.x,
           width: bounds?.width ?? element.globalFrame.width,
           height: bounds?.height ?? element.globalFrame.height,
-          backgroundColor: isResizing ? colorTheme.primary25.value : 'transparent',
+          backgroundColor: 'transparent',
         }}
       >
         <div
