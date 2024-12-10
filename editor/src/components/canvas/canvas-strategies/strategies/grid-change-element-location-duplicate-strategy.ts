@@ -7,7 +7,10 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import {
+  controlsForGridPlaceholders,
+  controlsForGridRulers,
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -79,7 +82,10 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(gridItemIdentifier(selectedElement))],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
+      controlsForGridRulers(gridItemIdentifier(selectedElement)),
+    ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),
     apply: () => {
       if (

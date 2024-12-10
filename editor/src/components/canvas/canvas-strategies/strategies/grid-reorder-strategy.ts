@@ -11,7 +11,10 @@ import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { showGridControls } from '../../commands/show-grid-controls-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import {
+  controlsForGridPlaceholders,
+  controlsForGridRulers,
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -95,6 +98,7 @@ export const gridReorderStrategy: CanvasStrategyFactory = (
     },
     controlsToRender: [
       controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+      controlsForGridRulers(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
     ],
     fitness: onlyFitWhenDraggingThisControl(
       interactionSession,

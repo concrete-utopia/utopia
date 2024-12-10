@@ -2,7 +2,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridPositionValue } from '../../../../core/shared/element-template'
 import { gridPositionValue } from '../../../../core/shared/element-template'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import {
+  controlsForGridPlaceholders,
+  controlsForGridRulers,
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
@@ -68,7 +71,10 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
       category: 'modalities',
       type: 'reorder-large',
     },
-    controlsToRender: [controlsForGridPlaceholders(gridItemIdentifier(target))],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(target)),
+      controlsForGridRulers(gridItemIdentifier(target)),
+    ],
     fitness: fitness(interactionSession),
     apply: () => {
       if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {

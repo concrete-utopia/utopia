@@ -17,6 +17,7 @@ import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/sto
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import {
   controlsForGridPlaceholders,
+  controlsForGridRulers,
   GridResizeControls,
 } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -82,6 +83,7 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         show: 'always-visible',
       },
       controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
+      controlsForGridRulers(gridItemIdentifier(selectedElement)),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_RULER_HANDLE', 1),
     apply: () => {

@@ -20,7 +20,7 @@ import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspecto
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import {
-  controlsForGridPlaceholders,
+  controlsForGridRulers,
   gridEdgeToEdgePosition,
   GridResizeControls,
 } from '../../controls/grid-controls-for-strategies'
@@ -88,7 +88,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         key: `grid-resize-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
-      controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
+      controlsForGridRulers(gridItemIdentifier(selectedElement)),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_HANDLE', 1),
     apply: () => {
