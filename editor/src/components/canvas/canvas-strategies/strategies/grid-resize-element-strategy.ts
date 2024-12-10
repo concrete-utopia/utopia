@@ -17,6 +17,8 @@ import {
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { cssKeyword } from '../../../inspector/common/css-utils'
 import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
+import { CSSCursor } from '../../canvas-types'
+import { setCursorCommand } from '../../commands/set-cursor-command'
 import {
   controlsForGridPlaceholders,
   gridEdgeToEdgePosition,
@@ -172,9 +174,18 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         ),
       }
 
+      const cursor =
+        interactionSession.activeControl.edge === 'column-start' ||
+        interactionSession.activeControl.edge === 'column-end'
+          ? CSSCursor.ColResize
+          : CSSCursor.RowResize
+
       return strategyApplicationResult(
-        getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
-        [EP.parentPath(selectedElement), selectedElement],
+        [
+          ...getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
+          setCursorCommand(cursor),
+        ],
+        [(EP.parentPath(selectedElement), selectedElement)],
       )
     },
   }
