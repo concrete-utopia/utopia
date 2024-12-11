@@ -63,6 +63,7 @@ const borderRadiusSelector = createCachedSelector(
   (store: StyleInfoSubstate) =>
     getActivePlugin(store.editor).styleInfoFactory({
       projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
     }),
   (_: MetadataSubstate, x: ElementPath) => x,
   (metadata, styleInfoReader, selectedElement) => {
