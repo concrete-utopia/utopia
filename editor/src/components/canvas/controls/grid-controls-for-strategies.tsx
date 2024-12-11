@@ -25,6 +25,7 @@ import {
   GridControlsComponent,
   GridResizeControlsComponent,
   GridRowColumnResizingControlsComponent,
+  GridRulersControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
 import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
@@ -167,6 +168,15 @@ export function isGridControlsProps(props: unknown): props is GridControlsProps 
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
 
+export interface GridRulersControlsProps {
+  type: 'GRID_RULERS_CONTROLS_PROPS'
+  targets: GridIdentifier[]
+}
+
+export const GridRulersControls = controlForStrategyMemoized<GridRulersControlsProps>(
+  GridRulersControlsComponent,
+)
+
 interface GridResizeControlProps {
   target: GridIdentifier
 }
@@ -218,6 +228,22 @@ export function controlsForGridPlaceholders(
       targets: Array.isArray(gridPath) ? gridPath : [gridPath],
     },
     key: `GridControls${suffix == null ? '' : suffix}`,
+    show: whenToShow,
+  }
+}
+
+export function controlsForGridRulers(
+  gridPath: GridIdentifier | Array<GridIdentifier>,
+  whenToShow: WhenToShowControl = 'always-visible',
+  suffix: string | null = null,
+): ControlWithProps<any> {
+  return {
+    control: GridRulersControls,
+    props: {
+      type: 'GRID_RULERS_CONTROLS_PROPS',
+      targets: Array.isArray(gridPath) ? gridPath : [gridPath],
+    },
+    key: `GridRulersControls${suffix == null ? '' : suffix}`,
     show: whenToShow,
   }
 }

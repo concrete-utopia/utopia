@@ -135,6 +135,7 @@ import {
 import type { Property } from 'csstype'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { atom, useAtom } from 'jotai'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -159,6 +160,8 @@ function getLabelForAxis(
 }
 
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
+
+const forceShowGridPlaceholdersAtom = atom<GridControlVisibility>('not-visible')
 
 interface GridResizingControlProps {
   dimension: GridDimension
@@ -646,9 +649,11 @@ export const GridRowColumnResizingControlsComponent = ({
   )
 }
 
+type GridControlVisibility = 'all' | 'not-visible'
+
 interface GridControlProps {
   grid: GridData
-  controlsVisible: 'visible' | 'not-visible'
+  controlsVisible: GridControlVisibility
 }
 
 const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => {
@@ -917,7 +922,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     gridPath: gridPath,
   })
 
-  const placeholders = controlsVisible === 'visible' ? range(0, grid.cells) : []
+  const placeholders = controlsVisible !== 'not-visible' ? range(0, grid.cells) : []
   const baseStyle = getGridHelperStyleMatchingTargetGrid(grid)
   const style = {
     ...baseStyle,
@@ -1029,7 +1034,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
               backgroundColor:
                 activelyDraggingOrResizingCell != null &&
                 EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell &&
-                controlsVisible === 'visible'
+                controlsVisible === 'all'
                   ? '#ffffff66'
                   : 'transparent',
               borderRadius: cell.borderRadius ?? 0,
@@ -1044,7 +1049,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
       interactionData?.dragStart != null &&
       interactionData?.drag != null &&
       hoveringStart != null &&
-      controlsVisible === 'visible' ? (
+      controlsVisible === 'all' ? (
         <motion.div
           style={{
             pointerEvents: 'none',
@@ -1193,10 +1198,10 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
-  const [showGridCellOutlines, setShowGridCellOutlines] = React.useState(false)
-
   const isGridItemSelectedWithoutInteraction =
     selectedGridItems.length > 0 && !isGridItemInteractionActive
+
+  const [forceShowGridPlaceholders] = useAtom(forceShowGridPlaceholdersAtom)
 
   if (grids.length === 0) {
     return null
@@ -1222,30 +1227,33 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
             <GridControl
               key={GridControlKey(gridContainerOrComponentPath)}
               grid={grid}
-              controlsVisible={
-                shouldHaveVisibleControls || showGridCellOutlines ? 'visible' : 'not-visible'
-              }
+              controlsVisible={shouldHaveVisibleControls ? 'all' : forceShowGridPlaceholders}
             />
           )
         })}
-        {/* Ruler markers */}
-        {when(
-          isFeatureEnabled('Grid Ruler Markers'),
-          selectedGridItems.map((path) => {
-            return (
-              <RulerMarkers
-                key={`ruler-markers-${EP.toString(path)}`}
-                path={path}
-                setShowGridCellOutlines={setShowGridCellOutlines}
-              />
-            )
-          }),
-        )}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </div>
   )
 }
+
+export const GridRulersControlsComponent = React.memo(() => {
+  const selectedGridItems = useSelectedGridItems()
+
+  if (!isFeatureEnabled('Grid Ruler Markers')) {
+    return null
+  }
+  return (
+    <div id={'grid-rulers-controls'}>
+      <CanvasOffsetWrapper>
+        {selectedGridItems.map((path) => {
+          return <RulerMarkers key={`ruler-markers-${EP.toString(path)}`} path={path} />
+        })}
+      </CanvasOffsetWrapper>
+    </div>
+  )
+})
+GridRulersControlsComponent.displayName = 'GridRulersControlsComponent'
 
 const MIN_INDICATORS_DISTANCE = 32 // px
 
@@ -1682,7 +1690,6 @@ interface GridResizeControlProps {
 
 export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) => {
   const gridTarget = getGridIdentifierContainerOrComponentPath(target)
-  const colorTheme = useColorTheme()
 
   const element = useEditorState(
     Substores.metadata,
@@ -1854,7 +1861,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
           left: bounds?.x ?? element.globalFrame.x,
           width: bounds?.width ?? element.globalFrame.width,
           height: bounds?.height ?? element.globalFrame.height,
-          backgroundColor: isResizing ? colorTheme.primary25.value : 'transparent',
+          backgroundColor: 'transparent',
         }}
       >
         <div
@@ -2196,7 +2203,6 @@ type RulerMarkerPositionData = {
 }
 
 interface RulerMarkersProps {
-  setShowGridCellOutlines: (show: boolean) => void
   path: ElementPath
 }
 
@@ -2261,7 +2267,11 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       }
 
       const parentGrid = elementMetadata.specialSizeMeasurements.parentContainerGridProperties
-      const cellRect = calculateGridCellRectangle(store.editor.jsxMetadata, props.path)
+      const cellRect = calculateGridCellRectangle(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        props.path,
+      )
       if (cellRect == null) {
         return null
       }
@@ -2408,17 +2418,19 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     [canvasOffsetRef, dispatch, canvasScale],
   )
 
+  const [, setForceShowGridPlaceholders] = useAtom(forceShowGridPlaceholdersAtom)
+
   const markerMouseUp = React.useCallback(
     (event: MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
       setShowExtraMarkers(null)
       setFrozenMarkers(null)
-      props.setShowGridCellOutlines(false)
+      setForceShowGridPlaceholders('not-visible')
 
       window.removeEventListener('mouseup', markerMouseUp)
     },
-    [props],
+    [setForceShowGridPlaceholders],
   )
 
   const rowMarkerMouseDown = React.useCallback(
@@ -2427,13 +2439,13 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       event.stopPropagation()
 
       setShowExtraMarkers('row')
-      props.setShowGridCellOutlines(true)
+      setForceShowGridPlaceholders('all')
       setFrozenMarkers(rulerMarkerData)
       startResizeInteraction(EP.toUid(props.path), edge)(event)
 
       window.addEventListener('mouseup', markerMouseUp)
     },
-    [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
+    [markerMouseUp, props, startResizeInteraction, rulerMarkerData, setForceShowGridPlaceholders],
   )
 
   const columnMarkerMouseDown = React.useCallback(
@@ -2442,13 +2454,13 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       event.stopPropagation()
 
       setShowExtraMarkers('column')
-      props.setShowGridCellOutlines(true)
+      setForceShowGridPlaceholders('all')
       setFrozenMarkers(rulerMarkerData)
       startResizeInteraction(EP.toUid(props.path), edge)(event)
 
       window.addEventListener('mouseup', markerMouseUp)
     },
-    [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
+    [markerMouseUp, props, startResizeInteraction, rulerMarkerData, setForceShowGridPlaceholders],
   )
 
   if (rulerMarkerData == null || gridRect == null) {
@@ -2644,23 +2656,41 @@ const SnapLine = React.memo(
   }) => {
     const colorTheme = useColorTheme()
 
-    const [targetMarker, targetFrozenMarker] = React.useMemo(() => {
-      if (props.edge == null || props.frozenMarkers == null) {
-        return []
+    const targetMarker = React.useMemo(() => {
+      if (props.edge == null) {
+        return null
       }
       switch (props.edge) {
         case 'column-end':
-          return [props.markers.columnEnd, props.frozenMarkers.columnEnd]
+          return props.markers.columnEnd
         case 'column-start':
-          return [props.markers.columnStart, props.frozenMarkers.columnStart]
+          return props.markers.columnStart
         case 'row-end':
-          return [props.markers.rowEnd, props.frozenMarkers.rowEnd]
+          return props.markers.rowEnd
         case 'row-start':
-          return [props.markers.rowStart, props.frozenMarkers.rowStart]
+          return props.markers.rowStart
         default:
           assertNever(props.edge)
       }
-    }, [props.edge, props.markers, props.frozenMarkers])
+    }, [props.edge, props.markers])
+
+    const targetFrozenMarker = React.useMemo(() => {
+      if (props.edge == null || props.frozenMarkers == null) {
+        return null
+      }
+      switch (props.edge) {
+        case 'column-end':
+          return props.frozenMarkers.columnEnd
+        case 'column-start':
+          return props.frozenMarkers.columnStart
+        case 'row-end':
+          return props.frozenMarkers.rowEnd
+        case 'row-start':
+          return props.frozenMarkers.rowStart
+        default:
+          assertNever(props.edge)
+      }
+    }, [props.edge, props.frozenMarkers])
 
     const axis = props.edge === 'column-end' || props.edge === 'column-start' ? 'column' : 'row'
 
@@ -2669,7 +2699,6 @@ const SnapLine = React.memo(
       (store) => store.editor.canvas.scale,
       'SnapLine canvasScale',
     )
-
     if (
       props.edge == null ||
       targetMarker == null ||
