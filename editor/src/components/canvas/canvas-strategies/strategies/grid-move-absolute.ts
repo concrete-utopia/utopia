@@ -1,33 +1,31 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { JSXElementChild } from '../../../../core/shared/element-template'
+import type {
+  JSXElementChild,
+  SpecialSizeMeasurements,
+} from '../../../../core/shared/element-template'
 import {
   isJSXElement,
   type ElementInstanceMetadata,
   type ElementInstanceMetadataMap,
   type GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   canvasRectangleToLocalRectangle,
   isNotNullFiniteRectangle,
   nullIfInfinity,
-  offsetPoint,
   offsetRect,
   rectangleContainsRectangleInclusive,
-  rectContainsPoint,
-  windowPoint,
-  zeroCanvasRect,
   zeroRectIfNullOrInfinity,
-  zeroSize,
 } from '../../../../core/shared/math-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import {
   controlsForGridPlaceholders,
-  GridElementChildContainingBlockKey,
+  controlsForGridRulers,
 } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -57,8 +55,6 @@ import { getMoveCommandsForDrag } from './shared-move-strategies-helpers'
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { eitherRight, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
 import { defaultEither } from '../../../../core/shared/either'
-import { forceNotNull } from '../../../..//core/shared/optional-utils'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -109,6 +105,7 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
     },
     controlsToRender: [
       controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+      controlsForGridRulers(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
     apply: () => {
@@ -197,8 +194,8 @@ export function getNewGridElementPropsCheckingOriginalGrid(
   // Identify the containing block position and size.
   const originalContainingBlockRectangle = getGridRelativeContainingBlock(
     originalGridMetadata,
-    selectedElementMetadata,
-    selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
+    [selectedElementMetadata],
+    selectedElementMetadata.elementPath,
   )
 
   // Capture the original position of the grid child.
@@ -347,11 +344,21 @@ function runGridMoveAbsolute(
   )
 
   // Get the containing block of the grid child.
+  const patchedSpecialSizeMeasurements: SpecialSizeMeasurements = {
+    ...selectedElementMetadata.specialSizeMeasurements,
+    elementGridProperties:
+      newGridElementProps?.gridElementProperties ??
+      selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
+  }
   const containingBlockRectangle = getGridRelativeContainingBlock(
     originalGrid,
-    selectedElementMetadata,
-    newGridElementProps?.gridElementProperties ??
-      selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
+    [
+      {
+        ...selectedElementMetadata,
+        specialSizeMeasurements: patchedSpecialSizeMeasurements,
+      },
+    ],
+    selectedElementMetadata.elementPath,
   )
 
   // Get the appropriately shifted and typed local frame value to use.
