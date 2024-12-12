@@ -1,11 +1,7 @@
 import type { Config } from 'tailwindcss/types/config'
-import { isStyleInfoKey, type StyleMediaSizeModifier, type StyleModifier } from '../../canvas-types'
+import { type StyleMediaSizeModifier, type StyleModifier } from '../../canvas-types'
 import type { ScreenSize } from '../../responsive-types'
 import { extractScreenSizeFromCss } from '../../responsive-utils'
-import { TailwindPropertyMapping } from '../tailwind-style-plugin'
-import { parseTailwindPropertyFactory } from '../tailwind-style-plugin'
-import { getTailwindClassMapping } from '../tailwind-style-plugin'
-import type { StylePluginContext } from '../style-plugins'
 
 export const TAILWIND_DEFAULT_SCREENS = {
   sm: '640px',
@@ -77,39 +73,4 @@ export function getModifiers(
       } as StyleMediaSizeModifier
     })
     .filter((m): m is StyleMediaSizeModifier => m != null)
-}
-
-export function getPropertiesToAppliedModifiersMap(
-  currentClassNameAttribute: string,
-  propertyNames: string[],
-  config: Config | null,
-  context: StylePluginContext,
-): Record<string, StyleModifier[]> {
-  const parseTailwindProperty = parseTailwindPropertyFactory(config, context)
-  const classMapping = getTailwindClassMapping(currentClassNameAttribute.split(' '), config)
-  return propertyNames.reduce((acc, propertyName) => {
-    if (!isStyleInfoKey(propertyName)) {
-      return acc
-    }
-    const parsedProperty = parseTailwindProperty(
-      classMapping[TailwindPropertyMapping[propertyName]],
-      propertyName,
-    )
-    if (parsedProperty?.type == 'property' && parsedProperty.currentVariant.modifiers != null) {
-      return {
-        ...acc,
-        [propertyName]: parsedProperty.currentVariant.modifiers,
-      }
-    } else {
-      return acc
-    }
-  }, {} as Record<string, StyleModifier[]>)
-}
-
-export function getTailwindVariantFromAppliedModifier(
-  appliedModifier: StyleMediaSizeModifier | null,
-): string | null {
-  return appliedModifier?.modifierOrigin?.type === 'tailwind'
-    ? appliedModifier.modifierOrigin.variant
-    : null
 }
