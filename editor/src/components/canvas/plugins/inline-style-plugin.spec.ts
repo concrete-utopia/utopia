@@ -110,6 +110,7 @@ function getStyleInfoFromInlineStyle(editor: EditorRenderResult) {
 
   const styleInfoReader = InlineStylePlugin.styleInfoFactory({
     projectContents: projectContents,
+    jsxMetadata: jsxMetadata,
   })
   const styleInfo = styleInfoReader(EP.fromString('sb/scene/div'))
   return styleInfo
