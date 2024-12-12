@@ -43,13 +43,21 @@ export var storyboard = (
     const { flexDirection, gap } = styleInfo!
     expect(flexDirection).toMatchObject({
       type: 'property',
-      value: 'column',
+      currentVariant: { value: 'column' },
       propertyValue: { value: 'column' },
+      variants: [{ value: 'column' }],
     })
     expect(gap).toMatchObject({
       type: 'property',
-      value: cssNumber(2, 'rem'),
+      currentVariant: {
+        value: cssNumber(2, 'rem'),
+      },
       propertyValue: { value: '2rem' },
+      variants: [
+        {
+          value: cssNumber(2, 'rem'),
+        },
+      ],
     })
   })
 
