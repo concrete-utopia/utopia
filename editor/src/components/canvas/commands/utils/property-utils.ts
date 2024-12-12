@@ -117,8 +117,8 @@ export function getCSSNumberFromStyleInfo(
     return { type: 'not-found' }
   }
 
-  if (prop.type === 'not-parsable' || !isCSSNumber(prop.value)) {
+  if (prop.type === 'not-parsable' || !isCSSNumber(prop.currentVariant.value)) {
     return { type: 'not-css-number' }
   }
-  return { type: 'css-number', number: prop.value }
+  return { type: 'css-number', number: prop.currentVariant.value }
 }

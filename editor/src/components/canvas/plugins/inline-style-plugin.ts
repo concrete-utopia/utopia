@@ -13,6 +13,7 @@ import {
   cssStyleProperty,
   cssStylePropertyNotParsable,
   cssStylePropertyNotFound,
+  cssVariant,
 } from '../canvas-types'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
@@ -45,7 +46,8 @@ function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSPropert
   if (Either.isLeft(parsed) || parsed.value == null) {
     return cssStylePropertyNotParsable(attribute)
   }
-  return cssStyleProperty(parsed.value, attribute)
+  const currentVariant = cssVariant(parsed.value, [])
+  return cssStyleProperty(attribute, currentVariant, [currentVariant])
 }
 
 export const InlineStylePlugin: StylePlugin = {
