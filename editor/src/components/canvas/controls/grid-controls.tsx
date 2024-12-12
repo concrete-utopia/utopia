@@ -2762,7 +2762,6 @@ const SnapLines = React.memo(
             top: props.container.y,
             width: props.container.width,
             height: props.container.height,
-            border: '1px solid red',
             display: 'grid',
             gridTemplateColumns: isColumn
               ? columns.map((d) => stringifyGridDimension(d)).join(' ')
