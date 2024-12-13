@@ -104,7 +104,7 @@ interface CanvasLabelProps {
   scale: number
   color: string
   textColor: string
-  value: string | number
+  value: string | number | null
   onMouseDown?: React.MouseEventHandler
   testId?: string
 }
@@ -168,17 +168,26 @@ export function useHoverWithDelay(
 ): [React.MouseEventHandler, React.MouseEventHandler] {
   const fadeInTimeout = React.useRef<Timeout | null>(null)
 
-  const onHoverEnd = () => {
-    if (fadeInTimeout.current != null) {
-      clearTimeout(fadeInTimeout.current)
-    }
-    fadeInTimeout.current = null
-    update(false)
-  }
+  const onHoverEnd = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (fadeInTimeout.current != null) {
+        clearTimeout(fadeInTimeout.current)
+      }
+      fadeInTimeout.current = null
+      update(false)
+    },
+    [update],
+  )
 
-  const onHoverStart = () => {
-    fadeInTimeout.current = setTimeout(() => update(true), delay)
-  }
+  const onHoverStart = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (fadeInTimeout.current != null) {
+        clearTimeout(fadeInTimeout.current)
+      }
+      fadeInTimeout.current = setTimeout(() => update(true), delay)
+    },
+    [update, delay],
+  )
 
   return [onHoverStart, onHoverEnd]
 }

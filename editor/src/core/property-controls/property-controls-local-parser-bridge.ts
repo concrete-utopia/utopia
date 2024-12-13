@@ -2,12 +2,15 @@ import type { ComponentElementToInsert } from '../../components/custom-code/code
 import type { Either } from '../shared/either'
 import { left, right } from '../shared/either'
 import type { ArbitraryJSBlock, UtopiaJSXComponent } from '../shared/element-template'
+import { getParseCacheOptions } from '../shared/parse-cache-utils'
 import type { Imports } from '../shared/project-file-types'
 import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
 import { isSteganographyEnabled } from '../shared/stegano-text'
+import { getParserChunkCount } from '../workers/common/concurrency-utils'
 import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { createParseFile, getParseResult } from '../workers/common/worker-types'
+import { ARBITRARY_CODE_FILE_NAME } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
   string,
@@ -45,10 +48,12 @@ async function getParseResultForUserStrings(
     }`
   const parseResult = await getParseResult(
     workers,
-    [createParseFile('code.tsx', codeToParse, null, Date.now())],
+    [createParseFile(ARBITRARY_CODE_FILE_NAME, codeToParse, null, Date.now())],
     [],
     emptySet(),
     isSteganographyEnabled(),
+    getParserChunkCount(),
+    getParseCacheOptions(),
   )
 
   if (parseResult[0].type === 'parsefileresult') {

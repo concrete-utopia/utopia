@@ -41,7 +41,7 @@ export interface LayoutBaseProps {
   flexShrink?: number
   // flex parent
   flexDirection?: FlexDirection
-  alignContent?: FlexAlignment
+  alignContent?: FlexJustifyContent
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
   wrap?: FlexWrap

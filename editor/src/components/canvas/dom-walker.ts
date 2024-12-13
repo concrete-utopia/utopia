@@ -1,24 +1,26 @@
 import React from 'react'
 import { sides } from 'utopia-api/core'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import * as EP from '../../core/shared/element-path'
 import type {
   DetectedLayoutSystem,
-  ComputedStyle,
   SpecialSizeMeasurements,
-  StyleAttributeMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
+  GridAutoOrTemplateBase,
+  BorderWidths,
+  GridPositionOrSpan,
 } from '../../core/shared/element-template'
 import {
-  elementInstanceMetadata,
   specialSizeMeasurements,
   gridContainerProperties,
   gridElementProperties,
   gridAutoOrTemplateFallback,
   domElementMetadata,
+  gridAutoOrTemplateDimensions,
+  isGridSpan,
+  isGridAutoOrTemplateDimensions,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -47,7 +49,6 @@ import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
   parseCSSLength,
   positionValues,
-  computedStyleKeys,
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
@@ -56,28 +57,32 @@ import {
   parseGridAutoOrTemplateBase,
   parseGridAutoFlow,
   isCSSKeyword,
+  isDynamicGridRepeat,
 } from '../inspector/common/css-utils'
-import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
-import { UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
-import { CanvasContainerID } from './canvas-types'
+import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import type { PathWithString } from '../../core/shared/uid-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { pick } from '../../core/shared/object-utils'
-import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
+import {
+  getAlignContent,
+  getFlexAlignment,
+  getFlexJustifyContent,
+  getSelfAlignment,
+  MaxContent,
+} from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-
-export const ResizeObserver =
-  window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
+import { CanvasContainerOuterId } from './canvas-component-entry'
+import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
+import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
+import { GridMeasurementHelperMap } from './controls/grid-controls-for-strategies'
+import { ObserversAvailable, ResizeObserver } from './observers'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
-const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
   if (computedStyle == null) {
@@ -142,7 +147,12 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   return false
 }
 
-const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
+export const applicativeSidesPxTransform = (
+  t: CSSNumber,
+  r: CSSNumber,
+  b: CSSNumber,
+  l: CSSNumber,
+) =>
   sides(
     t.unit === 'px' ? t.value : undefined,
     r.unit === 'px' ? r.value : undefined,
@@ -258,6 +268,7 @@ export interface DomWalkerMutableStateData {
   initComplete: boolean
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  gridControlObserver: MutationObserver
 }
 
 export function createDomWalkerMutableState(
@@ -270,12 +281,13 @@ export function createDomWalkerMutableState(
     initComplete: true,
     mutationObserver: null as any,
     resizeObserver: null as any,
+    gridControlObserver: null as any,
   }
 
   const observers = initDomWalkerObservers(mutableData, editorStoreApi, dispatch)
   mutableData.mutationObserver = observers.mutationObserver
   mutableData.resizeObserver = observers.resizeObserver
-
+  mutableData.gridControlObserver = observers.gridControlObserver
   return mutableData
 }
 
@@ -290,31 +302,51 @@ function useDomWalkerMutableStateContext() {
 export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  gridControlObserver: MutationObserver
 }) {
-  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  const canvasRootContainer = document.getElementById(CanvasContainerOuterId)
+  const gridControls = document.getElementById('grid-controls')
+
   if (
     ObserversAvailable &&
     canvasRootContainer != null &&
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
-    document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
+    document.querySelectorAll(`#${CanvasContainerOuterId} [${UTOPIA_UID_KEY}]`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
     domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+    if (gridControls != null) {
+      domWalkerMutableState.gridControlObserver.observe(gridControls, MutationObserverConfig)
+    }
   }
 }
 
-function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
+function isCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
-  return interactionSessionActive
+  return interactionSessionActive || ElementsToRerenderGLOBAL.current !== 'rerender-all-elements'
 }
 
 export function initDomWalkerObservers(
   domWalkerMutableState: DomWalkerMutableStateData,
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
-): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+): {
+  resizeObserver: ResizeObserver
+  mutationObserver: MutationObserver
+  gridControlObserver: MutationObserver
+} {
+  let domWalkerTimeoutID: number | null = null
+  function queueUpDomWalker(restrictToElements: Array<ElementPath> | null): void {
+    if (domWalkerTimeoutID == null) {
+      domWalkerTimeoutID = window.setTimeout(() => {
+        dispatch([runDOMWalker(restrictToElements)])
+        domWalkerTimeoutID = null
+      })
+    }
+  }
+
   // Warning: I modified this code so it runs in all modes, not just in live mode. We still don't trigger
   // the DOM walker during canvas interactions, so the performance impact doesn't seem that bad. But it is
   // necessary, because after remix navigation, and after dynamic changes coming from loaders sometimes the
@@ -328,7 +360,7 @@ export function initDomWalkerObservers(
   // adequately assess the performance impact of doing so, and ideally find a way to only do so when the observed
   // change was not triggered by a user interaction
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
+    const canvasInteractionHappening = isCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
       // Warning this only adds the selected views instead of the observed element
@@ -345,13 +377,13 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker(null)
       }
     }
   })
 
   const mutationObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
-    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
+    const canvasInteractionHappening = isCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
 
     if (canvasInteractionHappening) {
@@ -377,12 +409,29 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker(null)
       }
     }
   })
 
-  return { resizeObserver, mutationObserver }
+  const gridControlObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
+    let shouldRunDOMWalkerOnPath = null
+    mutations.forEach((mutation) => {
+      if (mutation.target instanceof HTMLElement) {
+        for (const child of mutation.target.children) {
+          const gridPath = child.getAttribute('data-grid-path')
+          if (gridPath != null) {
+            shouldRunDOMWalkerOnPath = EP.fromString(gridPath)
+          }
+        }
+      }
+    })
+    if (shouldRunDOMWalkerOnPath != null) {
+      queueUpDomWalker([shouldRunDOMWalkerOnPath])
+    }
+  })
+
+  return { resizeObserver, mutationObserver, gridControlObserver }
 }
 
 export function invalidateDomWalkerIfNecessary(
@@ -510,8 +559,12 @@ export function collectDomElementMetadataForElement(
   )
 }
 
-function getGridContainerProperties(
+export function getGridContainerProperties(
   elementStyle: CSSStyleDeclaration | null,
+  options?: {
+    dynamicCols: boolean
+    dynamicRows: boolean
+  },
 ): GridContainerProperties {
   if (elementStyle == null) {
     return {
@@ -522,14 +575,23 @@ function getGridContainerProperties(
       gridAutoFlow: null,
     }
   }
-  const gridTemplateColumns = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+
+  const gridTemplateColumns = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+    ),
+    options?.dynamicCols === true,
   )
-  const gridTemplateRows = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+
+  const gridTemplateRows = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+    ),
+    options?.dynamicRows === true,
   )
+
   const gridAutoColumns = defaultEither(
     gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
     parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
@@ -547,66 +609,72 @@ function getGridContainerProperties(
   )
 }
 
-function getGridElementProperties(
+function trimDynamicEmptyDimensions(
+  template: GridAutoOrTemplateBase,
+  isDynamic: boolean,
+): GridAutoOrTemplateBase {
+  if (!isDynamic) {
+    return template
+  }
+  if (template.type !== 'DIMENSIONS') {
+    return template
+  }
+
+  const lastNonEmptyColumn = template.dimensions.findLastIndex(
+    (d) => d.type === 'KEYWORD' || (d.type === 'NUMBER' && d.value.value !== 0),
+  )
+  return gridAutoOrTemplateDimensions(template.dimensions.slice(0, lastNonEmptyColumn + 1))
+}
+
+export function getGridElementProperties(
   container: GridContainerProperties,
   elementStyle: CSSStyleDeclaration,
 ): GridElementProperties {
+  function getPlacementPin(
+    value: GridPositionOrSpan | null,
+    axis: 'row' | 'column',
+    pin: 'start' | 'end',
+    style: string,
+  ) {
+    if (isGridSpan(value) || value != null) {
+      return value
+    }
+    return defaultEither(null, parseGridPosition(container, axis, pin, value ?? null, style))
+  }
+
   const gridColumn = defaultEither(
     null,
     parseGridRange(container, 'column', elementStyle.gridColumn),
   )
-
-  const gridColumnStart =
-    gridColumn?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'start',
-        gridColumn?.start ?? null,
-        elementStyle.gridColumnStart,
-      ),
-    ) ??
-    null
-  const gridColumnEnd =
-    gridColumn?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'end',
-        gridColumn?.end ?? null,
-        elementStyle.gridColumnEnd,
-      ),
-    ) ??
-    null
+  const gridColumnStart = getPlacementPin(
+    gridColumn?.start ?? null,
+    'column',
+    'start',
+    elementStyle.gridColumnStart,
+  )
+  const gridColumnEnd = getPlacementPin(
+    gridColumn?.end ?? null,
+    'column',
+    'end',
+    elementStyle.gridColumnEnd,
+  )
   const adjustedColumnEnd =
-    isCSSKeyword(gridColumnEnd) && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+    isGridSpan(gridColumn?.end) || (isCSSKeyword(gridColumnEnd) && gridColumn?.end != null)
+      ? gridColumn.end
+      : gridColumnEnd
 
   const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
-  const gridRowStart =
-    gridRow?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'row',
-        'start',
-        gridRow?.start ?? null,
-        elementStyle.gridRowStart,
-      ),
-    ) ??
-    null
-  const gridRowEnd =
-    gridRow?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
-    ) ??
-    null
-  const adjustedRowEnd = isCSSKeyword(gridRowEnd) && gridRow?.end != null ? gridRow.end : gridRowEnd
+  const gridRowStart = getPlacementPin(
+    gridRow?.start ?? null,
+    'row',
+    'start',
+    elementStyle.gridRowStart,
+  )
+  const gridRowEnd = getPlacementPin(gridRow?.end ?? null, 'row', 'end', elementStyle.gridRowEnd)
+  const adjustedRowEnd =
+    isGridSpan(gridRow?.end) || (isCSSKeyword(gridRowEnd) && gridRow?.end != null)
+      ? gridRow.end
+      : gridRowEnd
 
   const result = gridElementProperties(
     gridColumnStart,
@@ -624,9 +692,9 @@ function getSpecialMeasurements(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): SpecialSizeMeasurements {
-  const elementStyle = window.getComputedStyle(element)
-  const layoutSystemForChildren = elementLayoutSystem(elementStyle)
-  const position = getPosition(elementStyle)
+  const computedStyle = window.getComputedStyle(element)
+  const layoutSystemForChildren = elementLayoutSystem(computedStyle)
+  const position = getPosition(computedStyle)
 
   const offset = {
     x: roundToNearestHalf(element.offsetLeft),
@@ -661,7 +729,7 @@ function getSpecialMeasurements(
     element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
   const isParentNonStatic = isElementNonStatic(parentElementStyle)
 
-  const providesBoundsForAbsoluteChildren = isElementAContainingBlockForAbsolute(elementStyle)
+  const providesBoundsForAbsoluteChildren = isElementAContainingBlockForAbsolute(computedStyle)
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
@@ -676,26 +744,29 @@ function getSpecialMeasurements(
     element.parentElement != null &&
     element.parentElement.style[sizeMainAxis] === MaxContent
 
-  const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
+  const flexDirection = eitherToMaybe(parseFlexDirection(computedStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
-  const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
-  const alignItems = getFlexAlignment(elementStyle.alignItems)
+  const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
+  const alignContent = getAlignContent(computedStyle.alignContent)
+  const alignItems = getFlexAlignment(computedStyle.alignItems)
+  const alignSelf = getSelfAlignment(computedStyle.alignSelf)
+  const justifySelf = getSelfAlignment(computedStyle.justifySelf)
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
-    parseCSSLength(elementStyle.marginTop),
-    parseCSSLength(elementStyle.marginRight),
-    parseCSSLength(elementStyle.marginBottom),
-    parseCSSLength(elementStyle.marginLeft),
+    parseCSSLength(computedStyle.marginTop),
+    parseCSSLength(computedStyle.marginRight),
+    parseCSSLength(computedStyle.marginBottom),
+    parseCSSLength(computedStyle.marginLeft),
   )
 
   const padding = applicative4Either(
     applicativeSidesPxTransform,
-    parseCSSLength(elementStyle.paddingTop),
-    parseCSSLength(elementStyle.paddingRight),
-    parseCSSLength(elementStyle.paddingBottom),
-    parseCSSLength(elementStyle.paddingLeft),
+    parseCSSLength(computedStyle.paddingTop),
+    parseCSSLength(computedStyle.paddingRight),
+    parseCSSLength(computedStyle.paddingBottom),
+    parseCSSLength(computedStyle.paddingLeft),
   )
 
   const parentPadding = applicative4Either(
@@ -718,11 +789,11 @@ function getSpecialMeasurements(
 
   const childrenCount = element.childElementCount
 
-  const borderTopWidth = parseCSSLength(elementStyle.borderTopWidth)
-  const borderRightWidth = parseCSSLength(elementStyle.borderRightWidth)
-  const borderBottomWidth = parseCSSLength(elementStyle.borderBottomWidth)
-  const borderLeftWidth = parseCSSLength(elementStyle.borderLeftWidth)
-  const border = {
+  const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
+  const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
+  const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
+  const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
+  const border: BorderWidths = {
     top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
     right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
     bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
@@ -763,25 +834,25 @@ function getSpecialMeasurements(
   }
 
   const hasPositionOffset =
-    !positionValueIsDefault(elementStyle.top) ||
-    !positionValueIsDefault(elementStyle.right) ||
-    !positionValueIsDefault(elementStyle.bottom) ||
-    !positionValueIsDefault(elementStyle.left)
-  const hasTransform = elementStyle.transform !== 'none'
+    !positionValueIsDefault(computedStyle.top) ||
+    !positionValueIsDefault(computedStyle.right) ||
+    !positionValueIsDefault(computedStyle.bottom) ||
+    !positionValueIsDefault(computedStyle.left)
+  const hasTransform = computedStyle.transform !== 'none'
 
   const gap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
   )
 
   const rowGap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.rowGap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
   )
 
   const columnGap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.columnGap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
   )
 
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
@@ -791,17 +862,17 @@ function getSpecialMeasurements(
     null,
     applicative4Either(
       applicativeSidesPxTransform,
-      parseCSSLength(elementStyle.borderTopLeftRadius),
-      parseCSSLength(elementStyle.borderTopRightRadius),
-      parseCSSLength(elementStyle.borderBottomLeftRadius),
-      parseCSSLength(elementStyle.borderBottomRightRadius),
+      parseCSSLength(computedStyle.borderTopLeftRadius),
+      parseCSSLength(computedStyle.borderTopRightRadius),
+      parseCSSLength(computedStyle.borderBottomLeftRadius),
+      parseCSSLength(computedStyle.borderBottomRightRadius),
     ),
   )
 
-  const fontSize = elementStyle.fontSize
-  const fontWeight = elementStyle.fontWeight
-  const fontStyle = elementStyle.fontStyle
-  const textDecorationLine = elementStyle.textDecorationLine
+  const fontSize = computedStyle.fontSize
+  const fontWeight = computedStyle.fontWeight
+  const fontStyle = computedStyle.fontStyle
+  const textDecorationLine = computedStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
     ? stretchRect(
@@ -814,15 +885,15 @@ function getSpecialMeasurements(
         ),
         {
           w:
-            maybeValueFromComputedStyle(elementStyle.paddingLeft) +
-            maybeValueFromComputedStyle(elementStyle.paddingRight) +
-            maybeValueFromComputedStyle(elementStyle.marginLeft) +
-            maybeValueFromComputedStyle(elementStyle.marginRight),
+            maybeValueFromComputedStyle(computedStyle.paddingLeft) +
+            maybeValueFromComputedStyle(computedStyle.paddingRight) +
+            maybeValueFromComputedStyle(computedStyle.marginLeft) +
+            maybeValueFromComputedStyle(computedStyle.marginRight),
           h:
-            maybeValueFromComputedStyle(elementStyle.paddingTop) +
-            maybeValueFromComputedStyle(elementStyle.paddingBottom) +
-            maybeValueFromComputedStyle(elementStyle.marginTop) +
-            maybeValueFromComputedStyle(elementStyle.marginBottom),
+            maybeValueFromComputedStyle(computedStyle.paddingTop) +
+            maybeValueFromComputedStyle(computedStyle.paddingBottom) +
+            maybeValueFromComputedStyle(computedStyle.marginTop) +
+            maybeValueFromComputedStyle(computedStyle.marginBottom),
         },
       )
     : null
@@ -834,17 +905,59 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
-  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
+  const paddingValue = isRight(padding)
+    ? padding.value
+    : sides(undefined, undefined, undefined, undefined)
 
-  const containerGridProperties = getGridContainerProperties(elementStyle)
-  const containerElementProperties = getGridElementProperties(
-    parentContainerGridProperties,
-    elementStyle,
-  )
+  const gridCellGlobalFrames =
+    layoutSystemForChildren === 'grid'
+      ? measureGlobalFramesOfGridCells(
+          element,
+          scale,
+          containerRectLazy,
+          elementCanvasRectangleCache,
+        )
+      : null
+
+  const parentGridCellGlobalFrames =
+    element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
+      ? measureGlobalFramesOfGridCells(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          elementCanvasRectangleCache,
+        )
+      : null
+
+  const parentGridFrame =
+    element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
+      ? globalFrameForElement(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          'without-text-content',
+          'nearest-half',
+          elementCanvasRectangleCache,
+        )
+      : null
+
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const parentContainerGridPropertiesFromProps = getGridContainerProperties(
+    element.parentElement?.style ?? parentElementStyle,
+  )
+  const containerGridProperties = getGridContainerProperties(computedStyle, {
+    dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
+    dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
+  })
+
+  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
   const containerElementPropertiesFromProps = getGridElementProperties(
     parentContainerGridProperties,
     element.style,
+  )
+  const containerElementProperties = getGridElementProperties(
+    parentContainerGridProperties,
+    computedStyle,
   )
 
   return specialSizeMeasurements(
@@ -857,11 +970,12 @@ function getSpecialMeasurements(
     isParentNonStatic,
     parentLayoutSystem,
     layoutSystemForChildren,
+    false, // layoutSystemForChildrenInherited
     providesBoundsForAbsoluteChildren,
-    elementStyle.display,
+    computedStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
-    isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
+    paddingValue,
     naturalWidth,
     naturalHeight,
     clientWidth,
@@ -876,11 +990,12 @@ function getSpecialMeasurements(
     gap,
     flexDirection,
     justifyContent,
+    alignContent,
     alignItems,
     element.localName,
     childrenCount,
     globalContentBoxForChildren,
-    elementStyle.float,
+    computedStyle.float,
     hasPositionOffset,
     parentTextDirection,
     hasTransform,
@@ -892,12 +1007,24 @@ function getSpecialMeasurements(
     textBounds,
     computedHugProperty,
     containerGridProperties,
+    parentContainerGridProperties,
     containerElementProperties,
     containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
+    gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
+    justifySelf,
+    alignSelf,
+    border,
+    parentGridFrame,
   )
+}
+
+export function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+  return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 
 function elementContainsOnlyText(element: HTMLElement): boolean {
@@ -952,4 +1079,50 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
     currentElement = currentElement.parentElement
   }
   return null
+}
+
+function measureGlobalFramesOfGridCells(
+  element: HTMLElement,
+  scale: number,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
+): GridCellGlobalFrames | null {
+  let gridCellGlobalFrames: GridCellGlobalFrames | null = null
+
+  const gridMeasurementHelperId = GridMeasurementHelperMap.current.get(element)
+
+  const gridControlElement =
+    gridMeasurementHelperId != null ? document.getElementById(gridMeasurementHelperId) : null
+
+  if (gridControlElement != null) {
+    gridCellGlobalFrames = []
+    for (const cell of gridControlElement.children) {
+      if (!(cell instanceof HTMLElement)) {
+        continue
+      }
+      const rowIndexAttr = cell.getAttribute('data-grid-row')
+      const columnIndexAttr = cell.getAttribute('data-grid-column')
+      if (rowIndexAttr == null || columnIndexAttr == null) {
+        continue
+      }
+      const rowIndex = parseInt(rowIndexAttr)
+      const columnIndex = parseInt(columnIndexAttr)
+      if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
+        continue
+      }
+      const row = gridCellGlobalFrames[rowIndex - 1]
+      if (row == null) {
+        gridCellGlobalFrames[rowIndex - 1] = []
+      }
+      gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
+        cell,
+        scale,
+        containerRectLazy,
+        'without-text-content',
+        'nearest-half',
+        elementCanvasRectangleCache,
+      )
+    }
+  }
+  return gridCellGlobalFrames
 }

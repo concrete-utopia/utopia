@@ -14,6 +14,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       data-path=\\"sb/scene\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -158,8 +159,16 @@ Object {
     "label": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
+      "alignContent": null,
       "alignItems": null,
+      "alignSelf": null,
       "borderRadius": null,
+      "borderWidths": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
       "clientHeight": 0,
       "clientWidth": 0,
       "closestOffsetParentPath": Object {
@@ -207,6 +216,7 @@ Object {
       "gap": null,
       "globalContentBoxForChildren": null,
       "globalFrameWithTextContent": null,
+      "gridCellGlobalFrames": null,
       "hasPositionOffset": false,
       "hasTransform": false,
       "htmlElementName": "div",
@@ -218,7 +228,9 @@ Object {
       },
       "immediateParentProvidesLayout": true,
       "justifyContent": null,
+      "justifySelf": null,
       "layoutSystemForChildren": null,
+      "layoutSystemForChildrenInherited": false,
       "margin": Object {},
       "naturalHeight": null,
       "naturalWidth": null,
@@ -227,8 +239,24 @@ Object {
         "y": 0,
       },
       "padding": Object {},
+      "parentContainerGridProperties": Object {
+        "gridAutoColumns": null,
+        "gridAutoFlow": null,
+        "gridAutoRows": null,
+        "gridTemplateColumns": null,
+        "gridTemplateRows": null,
+      },
+      "parentContainerGridPropertiesFromProps": Object {
+        "gridAutoColumns": null,
+        "gridAutoFlow": null,
+        "gridAutoRows": null,
+        "gridTemplateColumns": null,
+        "gridTemplateRows": null,
+      },
       "parentFlexDirection": null,
       "parentFlexGap": 0,
+      "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -304,8 +332,16 @@ Object {
     "label": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
+      "alignContent": null,
       "alignItems": null,
+      "alignSelf": null,
       "borderRadius": null,
+      "borderWidths": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
       "clientHeight": 0,
       "clientWidth": 0,
       "closestOffsetParentPath": Object {
@@ -353,6 +389,7 @@ Object {
       "gap": null,
       "globalContentBoxForChildren": null,
       "globalFrameWithTextContent": null,
+      "gridCellGlobalFrames": null,
       "hasPositionOffset": false,
       "hasTransform": false,
       "htmlElementName": "div",
@@ -364,7 +401,9 @@ Object {
       },
       "immediateParentProvidesLayout": true,
       "justifyContent": null,
+      "justifySelf": null,
       "layoutSystemForChildren": null,
+      "layoutSystemForChildrenInherited": false,
       "margin": Object {},
       "naturalHeight": null,
       "naturalWidth": null,
@@ -373,8 +412,24 @@ Object {
         "y": 0,
       },
       "padding": Object {},
+      "parentContainerGridProperties": Object {
+        "gridAutoColumns": null,
+        "gridAutoFlow": null,
+        "gridAutoRows": null,
+        "gridTemplateColumns": null,
+        "gridTemplateRows": null,
+      },
+      "parentContainerGridPropertiesFromProps": Object {
+        "gridAutoColumns": null,
+        "gridAutoFlow": null,
+        "gridAutoRows": null,
+        "gridTemplateColumns": null,
+        "gridTemplateRows": null,
+      },
       "parentFlexDirection": null,
       "parentFlexGap": 0,
+      "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",

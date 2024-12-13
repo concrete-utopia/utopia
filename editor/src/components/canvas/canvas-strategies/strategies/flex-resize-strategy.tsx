@@ -24,7 +24,7 @@ import {
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -67,6 +67,7 @@ import { treatElementAsGroupLike } from './group-helpers'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -109,7 +110,7 @@ export function flexResizeStrategy(
     elementParentBounds.width !== 0 &&
     elementParentBounds.height !== 0
 
-  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
+  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
     return null
   }
 
@@ -127,6 +128,14 @@ export function flexResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
@@ -353,24 +362,29 @@ export function flexResizeStrategy(
             'center-based',
           )
 
-          return strategyApplicationResult([
-            ...resizeCommands,
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateGroups(
-              [{ target: selectedElement, frame: newFrame }],
-              'starting-metadata',
-            ),
-            ...groupChildren.map((c) =>
-              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
-            ),
-          ])
+          return strategyApplicationResult(
+            [
+              ...resizeCommands,
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              pushIntendedBoundsAndUpdateGroups(
+                [{ target: selectedElement, frame: newFrame }],
+                'starting-metadata',
+              ),
+              ...groupChildren.map((c) =>
+                queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+              ),
+            ],
+            selectedElements,
+          )
         } else {
-          return strategyApplicationResult([
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-          ])
+          return strategyApplicationResult(
+            [
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.

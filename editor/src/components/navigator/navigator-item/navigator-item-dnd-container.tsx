@@ -541,11 +541,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       canDrag: () => {
         const editorState = editorStateRef.current
         return (
-          isAllowedToNavigatorReparent(
-            editorState.projectContents,
-            editorState.jsxMetadata,
-            props.elementPath,
-          ) && !EP.isRootElementOfInstance(props.elementPath)
+          isAllowedToNavigatorReparent(editorState.jsxMetadata, props.elementPath) &&
+          !EP.isRootElementOfInstance(props.elementPath)
         )
       },
     }),

@@ -29,6 +29,7 @@ import {
   dragElementWithDNDEvents,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  mouseDownAtPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
@@ -5226,7 +5227,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('(empty)'),
@@ -5272,7 +5273,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Span with Title'),
@@ -5308,7 +5309,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/d93',
       ])
     })
-    it('can insert an third-party component into render prop', async () => {
+    it('can insert a third-party component into render prop', async () => {
       const renderResult = await renderTestEditorWithModel(
         projectWithThirdPartyRenderProp(''), // <- no render prop
         'await-first-dom-report',
@@ -5318,7 +5319,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Heading with Title'),
@@ -5495,16 +5496,14 @@ describe('Navigator row order', () => {
         navigatorEntryToKey,
       ),
     ).toEqual([
-      'regular-sb/1e7',
       'regular-sb/sc',
       'regular-sb/sc/app',
       'regular-sb/sc/app:app-root',
       'regular-sb/sc/app:app-root/card',
       'regular-sb/sc/app:app-root/card:card-root',
-      'regular-sb/sc/app:app-root/card:card-root/30d',
       'regular-sb/sc/app:app-root/card:card-root/card-span',
+      'regular-sb/sc/app:app-root/card:card-root/30d',
       'regular-sb/sc/app:app-root/card/card-child',
-      'regular-sb/sc/app:app-root/children-code-block',
       'regular-sb/sc/app:app-root/frag',
       'regular-sb/sc/app:app-root/frag/frag-child',
       'regular-sb/sc/app:app-root/frag/cond-1',
@@ -5518,7 +5517,9 @@ describe('Navigator row order', () => {
       'synthetic-sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/d84-attribute',
       'conditional-clause-sb/sc/app:app-root/frag/cond-1-false-case',
       'synthetic-sb/sc/app:app-root/frag/cond-1/019-attribute',
+      'regular-sb/sc/app:app-root/children-code-block',
       'regular-sb/sc/app/app-child',
+      'regular-sb/1e7',
     ])
   })
 

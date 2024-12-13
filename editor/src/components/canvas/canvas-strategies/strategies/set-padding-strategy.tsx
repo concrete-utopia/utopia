@@ -14,7 +14,7 @@ import type { EdgePiece } from '../../canvas-types'
 import { CSSCursor, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { isZeroSizedElement } from '../../controls/outline-utils'
@@ -32,11 +32,11 @@ import {
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
-  simplePaddingFromMetadata,
+  simplePaddingFromStyleInfo,
 } from '../../padding-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionCanvasState, StyleInfoReader } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -72,10 +72,6 @@ import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { Axis } from '../../../inspector/inspector-common'
 import { detectFillHugFixedState, isHuggingFixedHugFill } from '../../../inspector/inspector-common'
-import {
-  AdjustCssLengthProperties,
-  adjustCssLengthProperties,
-} from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
@@ -118,6 +114,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       selectedElements[0],
+      canvasState.styleInfoReader,
     )
   ) {
     return null
@@ -134,6 +131,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     props: { targets: selectedElements },
     key: 'padding-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
+    priority: 'bottom',
   })
 
   const controlsToRender = optionalMap(
@@ -184,7 +182,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const edgePiece = interactionSession.activeControl.edgePiece
       const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+      const padding = simplePaddingFromStyleInfo(
+        canvasState.startingMetadata,
+        selectedElement,
+        canvasState.styleInfoReader(selectedElement),
+      )
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
       const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
@@ -207,7 +209,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const basicCommands: CanvasCommand[] = [
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand(pickCursorFromEdge(edgePiece)),
-        setElementsToRerenderCommand(selectedElements),
       ]
 
       const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
@@ -246,11 +247,70 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
-        return strategyApplicationResult([
+        return strategyApplicationResult(
+          [
+            ...basicCommands,
+            deleteProperties('always', selectedElement, [
+              StylePaddingProp,
+              stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
+            ]),
+            ...nonZeroPropsToAdd.map(([p, value]) =>
+              setProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(p, styleStringInArray),
+                value,
+              ),
+            ),
+            setActiveFrames(
+              selectedElements.map((path) => ({
+                action: 'set-padding',
+                target: activeFrameTargetPath(path),
+                source: zeroRectIfNullOrInfinity(
+                  MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+                ),
+              })),
+            ),
+          ],
+          selectedElements,
+        )
+      }
+
+      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
+
+      // all 4 sides present - can be represented via the padding shorthand property
+      if (allPaddingPropsDefined != null) {
+        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
+        return strategyApplicationResult(
+          [
+            ...basicCommands,
+            ...IndividualPaddingProps.map((p) =>
+              deleteProperties('always', selectedElement, [
+                stylePropPathMappingFn(p, styleStringInArray),
+              ]),
+            ),
+            setProperty('always', selectedElement, StylePaddingProp, paddingString),
+            setActiveFrames(
+              selectedElements.map((path) => ({
+                action: 'set-padding',
+                target: activeFrameTargetPath(path),
+                source: zeroRectIfNullOrInfinity(
+                  MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+                ),
+              })),
+            ),
+          ],
+          selectedElements,
+        )
+      }
+
+      // only some sides are present - longhand properties have to be used
+      return strategyApplicationResult(
+        [
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
-            stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
+            ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
           ]),
           ...nonZeroPropsToAdd.map(([p, value]) =>
             setProperty(
@@ -269,59 +329,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               ),
             })),
           ),
-        ])
-      }
-
-      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
-
-      // all 4 sides present - can be represented via the padding shorthand property
-      if (allPaddingPropsDefined != null) {
-        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
-        return strategyApplicationResult([
-          ...basicCommands,
-          ...IndividualPaddingProps.map((p) =>
-            deleteProperties('always', selectedElement, [
-              stylePropPathMappingFn(p, styleStringInArray),
-            ]),
-          ),
-          setProperty('always', selectedElement, StylePaddingProp, paddingString),
-          setActiveFrames(
-            selectedElements.map((path) => ({
-              action: 'set-padding',
-              target: activeFrameTargetPath(path),
-              source: zeroRectIfNullOrInfinity(
-                MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-              ),
-            })),
-          ),
-        ])
-      }
-
-      // only some sides are present - longhand properties have to be used
-      return strategyApplicationResult([
-        ...basicCommands,
-        deleteProperties('always', selectedElement, [
-          StylePaddingProp,
-          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
-        ]),
-        ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(p, styleStringInArray),
-            value,
-          ),
-        ),
-        setActiveFrames(
-          selectedElements.map((path) => ({
-            action: 'set-padding',
-            target: activeFrameTargetPath(path),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-            ),
-          })),
-        ),
-      ])
+        ],
+        selectedElements,
+      )
     },
   }
 }
@@ -343,6 +353,7 @@ function supportsPaddingControls(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  styleInfoReader: StyleInfoReader,
 ): boolean {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
@@ -357,7 +368,7 @@ function supportsPaddingControls(
     return false
   }
 
-  const padding = simplePaddingFromMetadata(metadata, path)
+  const padding = simplePaddingFromStyleInfo(metadata, path, styleInfoReader(path))
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
   const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
     (s) => s != null && s > 0,
@@ -422,9 +433,10 @@ function paddingValueIndicatorProps(
 
   const edgePiece = interactionSession.activeControl.edgePiece
 
-  const padding = simplePaddingFromMetadata(
+  const padding = simplePaddingFromStyleInfo(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
+    canvasState.styleInfoReader(filteredSelectedElements[0]),
   )
   const currentPadding =
     padding[paddingPropForEdge(edgePiece)] ?? unitlessCSSNumberWithRenderedValue(0)
@@ -550,7 +562,11 @@ function calculateAdjustDelta(
 
   const edgePiece = interactionSession.activeControl.edgePiece
   const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-  const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+  const padding = simplePaddingFromStyleInfo(
+    canvasState.startingMetadata,
+    selectedElement,
+    canvasState.styleInfoReader(selectedElement),
+  )
   const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
   const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
   const rawDelta = deltaFromEdge(drag, edgePiece)

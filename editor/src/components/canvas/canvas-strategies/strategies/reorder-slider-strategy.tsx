@@ -4,7 +4,7 @@ import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ReorderSliderControl } from '../../controls/reorder-slider-control'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
@@ -83,6 +83,7 @@ export function reorderSliderStategy(
         if (!isReorderAllowed(siblingsOfTarget)) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
+            [],
             {},
             'failure',
           )
@@ -103,17 +104,17 @@ export function reorderSliderStategy(
           return strategyApplicationResult(
             [
               reorderElement('always', target, absolute(newIndex)),
-              setElementsToRerenderCommand(siblingsAndParent),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.ResizeEW),
             ],
+            siblingsAndParent,
             {
               lastReorderIdx: newIndex,
             },
           )
         } else {
           // Fallback for when the checks above are not satisfied.
-          return strategyApplicationResult([setCursorCommand(CSSCursor.ResizeEW)])
+          return strategyApplicationResult([setCursorCommand(CSSCursor.ResizeEW)], [])
         }
       } else {
         return emptyStrategyApplicationResult

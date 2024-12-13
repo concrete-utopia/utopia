@@ -31,7 +31,6 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   emptyJsxMetadata,
-  getElementsByUIDFromTopLevelElements,
   isJSExpression,
   isJSXConditionalExpression,
   isJSXElement,
@@ -61,14 +60,12 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
-  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
 import {
   RevisionsState,
   codeFile,
-  foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isParsedTextFile,
@@ -125,7 +122,6 @@ import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
-  ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
   RenderPropNavigatorEntryKeepDeepEquality,
   RenderPropValueNavigatorEntryKeepDeepEquality,
@@ -192,6 +188,18 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
+import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+import {
+  emptyImportState,
+  type ImportState,
+} from '../../../core/shared/import/import-operation-types'
+import {
+  emptyProjectRequirements,
+  type ProjectRequirements,
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type { UpdatedProperties } from '../../canvas/plugins/style-plugins'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -214,7 +222,6 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
-  RollYourOwn = 'roll-your-own',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -357,6 +364,8 @@ export function githubOperationLocksEditor(op: GithubOperation): boolean {
     case 'loadRepositories':
     case 'listPullRequestsForBranch':
       return false
+    case 'loadBranch':
+      return !isFeatureEnabled('Import Wizard')
     default:
       return true
   }
@@ -485,7 +494,7 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
-type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+type StoreName = 'editor-store' | 'canvas-store' | 'helper-controls-store' | 'low-priority-store'
 
 export type EditorStorePatched = EditorStoreShared & {
   storeName: StoreName
@@ -813,6 +822,49 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
+
+export interface GridContainerIdentifier {
+  type: 'GRID_CONTAINER'
+  container: ElementPath
+}
+
+export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
+  return {
+    type: 'GRID_CONTAINER',
+    container: path,
+  }
+}
+
+export interface GridItemIdentifier {
+  type: 'GRID_ITEM'
+  item: ElementPath
+}
+
+export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
+  return {
+    type: 'GRID_ITEM',
+    item: path,
+  }
+}
+
+export function pathOfGridFromGridIdentifier(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.item)
+    case 'GRID_CONTAINER':
+      return identifier.container
+    default:
+      assertNever(identifier)
+  }
+}
+
+export interface GridControlData {
+  grid: GridIdentifier
+  targetCell: GridCellCoordinates | null // the cell under the mouse
+  rootCell: GridCellCoordinates | null // the top-left cell of the target child
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -823,7 +875,7 @@ export interface EditorStateCanvasControls {
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
-  gridControls: ElementPath | null
+  gridControlData: GridControlData | null
 }
 
 export function editorStateCanvasControls(
@@ -835,7 +887,7 @@ export function editorStateCanvasControls(
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
-  gridControls: ElementPath | null,
+  gridControlData: GridControlData | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -846,7 +898,7 @@ export function editorStateCanvasControls(
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
-    gridControls: gridControls,
+    gridControlData: gridControlData,
   }
 }
 
@@ -1075,18 +1127,6 @@ export function editorStateTopMenu(
   return {
     formulaBarMode: formulaBarMode,
     formulaBarFocusCounter: formulaBarFocusCounter,
-  }
-}
-
-export interface EditorStatePreview {
-  visible: boolean
-  connected: boolean
-}
-
-export function editorStatePreview(visible: boolean, connected: boolean): EditorStatePreview {
-  return {
-    visible: visible,
-    connected: connected,
   }
 }
 
@@ -1365,17 +1405,23 @@ export function trueUpChildrenOfGroupChanged(
 export interface TrueUpHuggingElement {
   type: 'TRUE_UP_HUGGING_ELEMENT'
   target: ElementPath
+  elementFrame: CanvasRectangle
   frame: CanvasRectangle
+  huggingElementContentsStatus: HuggingElementContentsStatus
 }
 
 export function trueUpHuggingElement(
   target: ElementPath,
+  elementFrame: CanvasRectangle,
   frame: CanvasRectangle,
+  huggingElementContentsStatus: HuggingElementContentsStatus,
 ): TrueUpHuggingElement {
   return {
     type: 'TRUE_UP_HUGGING_ELEMENT',
     target: target,
+    elementFrame: elementFrame,
     frame: frame,
+    huggingElementContentsStatus: huggingElementContentsStatus,
   }
 }
 
@@ -1435,7 +1481,6 @@ export interface EditorState {
   projectSettings: EditorStateProjectSettings
   navigator: NavigatorState
   topmenu: EditorStateTopMenu
-  preview: EditorStatePreview
   home: EditorStateHome
   lastUsedFont: FontSettings | null
   modal: ModalDialog | null
@@ -1463,6 +1508,9 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  importState: ImportState
+  projectRequirements: ProjectRequirements
+  importWizardOpen: boolean
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1474,6 +1522,7 @@ export interface EditorState {
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
   editorRemixConfig: EditorRemixConfig
+  propertiesUpdatedDuringInteraction: UpdatedProperties
 }
 
 export function editorState(
@@ -1519,7 +1568,6 @@ export function editorState(
   projectSettings: EditorStateProjectSettings,
   editorStateNavigator: NavigatorState,
   topmenu: EditorStateTopMenu,
-  preview: EditorStatePreview,
   home: EditorStateHome,
   lastUsedFont: FontSettings | null,
   modal: ModalDialog | null,
@@ -1547,6 +1595,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  importState: ImportState,
+  importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1559,6 +1610,7 @@ export function editorState(
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
   remixConfig: EditorRemixConfig,
+  propertiesUpdatedDuringInteraction: UpdatedProperties,
 ): EditorState {
   return {
     id: id,
@@ -1604,7 +1656,6 @@ export function editorState(
     projectSettings: projectSettings,
     navigator: editorStateNavigator,
     topmenu: topmenu,
-    preview: preview,
     home: home,
     lastUsedFont: lastUsedFont,
     modal: modal,
@@ -1632,6 +1683,9 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
+    importState: importState,
+    importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -1643,6 +1697,7 @@ export function editorState(
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
     editorRemixConfig: remixConfig,
+    propertiesUpdatedDuringInteraction: propertiesUpdatedDuringInteraction,
   }
 }
 
@@ -2640,7 +2695,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
-        gridControls: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -2676,10 +2731,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
-    preview: {
-      visible: false,
-      connected: false,
-    },
     home: {
       visible: false,
     },
@@ -2713,6 +2764,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importState: emptyImportState(),
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -2730,6 +2784,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
 }
 
@@ -3019,7 +3074,7 @@ export function editorModelFromPersistentModel(
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
-        gridControls: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -3037,10 +3092,6 @@ export function editorModelFromPersistentModel(
     topmenu: {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
-    },
-    preview: {
-      visible: false,
-      connected: false,
     },
     home: {
       visible: false,
@@ -3084,6 +3135,9 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importState: emptyImportState(),
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),
@@ -3101,6 +3155,7 @@ export function editorModelFromPersistentModel(
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
   return editor
 }
@@ -3278,14 +3333,17 @@ export function updatePackageJsonInEditorState(
       // There is a package.json file, we should update it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
-        RevisionsState.CodeAhead,
+        null,
         packageJsonFile.versionNumber + 1,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(JSON.stringify(DefaultPackageJson)),
         null,
+        0,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     }
   }

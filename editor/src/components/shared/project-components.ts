@@ -63,6 +63,7 @@ import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 import { type Icon } from 'utopia-api'
 import type { FileRootPath } from '../canvas/ui-jsx-canvas'
+import type { CSSProperties } from 'react'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -124,6 +125,14 @@ export interface InsertableComponentGroupDiv {
 
 export function insertableComponentGroupDiv(): InsertableComponentGroupDiv {
   return { type: 'HTML_DIV' }
+}
+
+export interface InsertableComponentGroupGrid {
+  type: 'HTML_GRID'
+}
+
+export function insertableComponentGroupGrid(): InsertableComponentGroupGrid {
+  return { type: 'HTML_GRID' }
 }
 
 export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
@@ -207,6 +216,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupSamples
   | InsertableComponentGroupGroups
   | InsertableComponentGroupMap
+  | InsertableComponentGroupGrid
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -254,6 +264,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return 'Div'
     case 'MAP_GROUP':
       return 'List'
+    case 'HTML_GRID':
+      return 'Grid'
     default:
       assertNever(insertableType)
   }
@@ -271,6 +283,7 @@ export function getInsertableGroupPackageStatus(
     case 'GROUPS_GROUP':
     case 'HTML_DIV':
     case 'MAP_GROUP':
+    case 'HTML_GRID':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
@@ -460,6 +473,47 @@ const divComponentGroup = {
       style: defaultElementStyle(),
     }),
   ),
+}
+
+export function insertableGridStyle(): CSSProperties {
+  return {
+    position: 'absolute',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gridTemplateRows: '1fr 1fr 1fr',
+    gap: 10,
+  }
+}
+
+const gridComponentGroup: ComponentDescriptorsForFile = {
+  grid: {
+    properties: {},
+    supportsChildren: true,
+    preferredChildComponents: [],
+    source: defaultComponentDescriptor(),
+    variants: [
+      {
+        insertMenuLabel: 'Grid',
+        elementToInsert: () =>
+          jsxElementWithoutUID(
+            'div',
+            jsxAttributesFromMap({
+              style: jsExpressionValue(
+                {
+                  ...insertableGridStyle(),
+                  width: 150,
+                  height: 150,
+                },
+                emptyComments,
+              ),
+            }),
+            [],
+          ),
+        importsToAdd: {},
+      },
+    ],
+    ...ComponentDescriptorDefaults,
+  },
 }
 
 const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
@@ -832,6 +886,11 @@ export function getComponentGroups(
   // Add groups group.
   addDependencyDescriptor(insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
 
+  addDependencyDescriptor(insertableComponentGroupGrid(), gridComponentGroup, {
+    width: 150,
+    height: 150,
+  })
+
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
     if (isResolvedNpmDependency(dependency)) {
@@ -909,6 +968,7 @@ export function insertMenuModesForInsertableComponentGroupType(
     case 'SAMPLES_GROUP':
     case 'HTML_DIV':
     case 'MAP_GROUP':
+    case 'HTML_GRID':
       return insertMenuModes.all
     case 'GROUPS_GROUP':
       return insertMenuModes.onlyWrap

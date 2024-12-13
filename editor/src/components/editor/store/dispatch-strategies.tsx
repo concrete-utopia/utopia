@@ -5,6 +5,8 @@ import type {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   applyCanvasStrategy,
+  applyElementsToRerenderFromStrategyResult,
+  applyElementsToRerenderFromStrategyResultAndPatchRemovedProps,
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
@@ -47,15 +49,15 @@ import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
+import { canMeasurePerformance } from '../../../core/performance/performance-utils'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -77,6 +79,7 @@ export function interactionFinished(
       newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -91,7 +94,7 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult =
+    const strategyResult: StrategyApplicationResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -100,10 +103,9 @@ export function interactionFinished(
             result.strategyState.customStrategyState,
             'end-interaction',
           )
-        : {
-            commands: [],
-          }
-    const commandResult = foldAndApplyCommands(
+        : strategyApplicationResult([], [])
+
+    const { editorState } = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       [],
@@ -111,13 +113,16 @@ export function interactionFinished(
       'end-interaction',
     )
 
-    const finalEditor: EditorState = {
-      ...commandResult.editorState,
-      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
-      jsxMetadata: {},
-      domMetadata: {},
-      spyMetadata: {},
-    }
+    const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
+      {
+        ...editorState,
+        // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+        jsxMetadata: {},
+        domMetadata: {},
+        spyMetadata: {},
+      },
+      strategyResult,
+    )
 
     return {
       unpatchedEditorState: finalEditor,
@@ -153,6 +158,7 @@ export function interactionHardReset(
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -217,7 +223,10 @@ export function interactionHardReset(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -238,6 +247,7 @@ export function interactionUpdate(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -320,6 +330,7 @@ export function interactionStart(
       newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -380,7 +391,10 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -393,22 +407,16 @@ export function interactionStart(
   }
 }
 
-export function interactionCancel(
-  storedState: EditorStoreFull,
-  result: EditorStoreUnpatched,
-): HandleStrategiesResult {
-  const interactionWasInProgress = interactionInProgress(
-    storedState.unpatchedEditor.canvas.interactionSession,
-  )
+export function interactionCancel(result: EditorStoreUnpatched): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
     ...result.unpatchedEditor,
     canvas: {
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
-    jsxMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.jsxMetadata,
-    domMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.domMetadata,
-    spyMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.spyMetadata,
+    jsxMetadata: result.unpatchedEditor.jsxMetadata,
+    domMetadata: result.unpatchedEditor.domMetadata,
+    spyMetadata: result.unpatchedEditor.spyMetadata,
   }
 
   return {
@@ -428,6 +436,7 @@ function handleUserChangedStrategy(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -483,7 +492,10 @@ function handleUserChangedStrategy(
 
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {
@@ -505,6 +517,7 @@ function handleAccumulatingKeypresses(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -537,7 +550,7 @@ function handleAccumulatingKeypresses(
               strategyState.customStrategyState,
               'mid-interaction',
             )
-          : strategyApplicationResult([])
+          : strategyApplicationResult([], [])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -565,7 +578,10 @@ function handleAccumulatingKeypresses(
 
       return {
         unpatchedEditorState: updatedEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     }
@@ -587,6 +603,7 @@ function handleUpdate(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -601,7 +618,7 @@ function handleUpdate(
             strategyState.customStrategyState,
             'mid-interaction',
           )
-        : strategyApplicationResult([])
+        : strategyApplicationResult([], [])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -628,7 +645,10 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {
@@ -647,10 +667,7 @@ export function handleStrategies(
   result: EditorStoreUnpatched,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
-  const MeasureDispatchTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const MeasureDispatchTime = canMeasurePerformance()
 
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
@@ -711,7 +728,7 @@ export function handleStrategies(
   return {
     unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
-    patchedDerivedState,
+    patchedDerivedState: patchedDerivedState,
     newStrategyState: newStrategyState,
   }
 }
@@ -800,7 +817,7 @@ function handleStrategiesInner(
     }
   } else {
     if (cancelInteraction) {
-      return interactionCancel(storedState, result)
+      return interactionCancel(result)
     } else if (makeChangesPermanent) {
       return interactionFinished(strategies, storedState, result)
     } else {

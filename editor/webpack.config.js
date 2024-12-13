@@ -68,9 +68,6 @@ const config = {
     editor: hot
       ? ['react-hot-loader/patch', './src/templates/editor-entry-point.tsx']
       : './src/templates/editor-entry-point.tsx',
-    preview: hot
-      ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
-      : './src/templates/preview/preview.tsx',
   },
 
   output: {
@@ -97,16 +94,6 @@ const config = {
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/index.html',
-      minify: false,
-      templateParameters: htmlTemplateParameters,
-    }),
-    new HtmlWebpackPlugin({
-      // Run it again to generate the preview.html
-      chunks: ['preview'],
-      inject: 'head', // Add the script tags to the end of the <head>
-      scriptLoading: 'defer',
-      template: './src/templates/preview/index.html',
-      filename: 'preview/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
     }),
@@ -202,6 +189,7 @@ const config = {
     extensions: ['.ts', '.tsx', '.js', '.json', '.ttf'],
     symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
+      'tailwindcss/resolveConfig': 'tailwindcss/resolveConfig.js',
       uuiui: srcPath('uuiui'),
       'worker-imports': path.resolve(__dirname, 'src/core/workers/worker-import-utils.ts'),
       'uuiui-deps': srcPath('uuiui-deps'),

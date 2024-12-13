@@ -180,7 +180,7 @@ interface VisiblityIndicatorProps {
   visibilityEnabled: boolean
   selected: boolean
   iconColor: IcnProps['color']
-  onClick: () => void
+  onMouseDown: () => void
 }
 
 export const VisibilityIndicator: React.FunctionComponent<
@@ -190,7 +190,7 @@ export const VisibilityIndicator: React.FunctionComponent<
 
   return (
     <Button
-      onClick={props.onClick}
+      onMouseDown={props.onMouseDown}
       style={{
         height: 12,
         width: 12,
@@ -228,7 +228,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
     'AddChildButton supportsChildren',
   )
 
-  const onClick = useCreateCallbackToShowComponentPicker()(
+  const onMouseDown = useCreateCallbackToShowComponentPicker()(
     [target],
     EditorActions.insertAsChildTarget(),
   )
@@ -239,7 +239,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
 
   return (
     <Button
-      onClick={onClick}
+      onMouseDown={onMouseDown}
       style={{
         height: 12,
         width: 12,
@@ -292,12 +292,12 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
     }
   })()
 
-  const onClick = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
+  const onMouseDown = useCreateCallbackToShowComponentPicker()([realTarget], insertionTarget)
 
   return (
     <Button
       data-testid={ReplaceElementButtonTestId(target, prop)}
-      onClick={onClick}
+      onMouseDown={onMouseDown}
       style={{
         height: 12,
         width: 12,
@@ -320,37 +320,36 @@ interface SelectionLockedIndicatorProps {
   selected: boolean
   iconColor: IcnProps['color']
   isDescendantOfLocked: boolean
-  onClick: (value: SelectionLocked) => void
+  onMouseDown: (value: SelectionLocked) => void
 }
 
 export const SelectionLockedIndicator: React.FunctionComponent<
   React.PropsWithChildren<SelectionLockedIndicatorProps>
 > = React.memo((props) => {
-  const { shouldShow, value, selected, iconColor, isDescendantOfLocked, onClick } = props
+  const { shouldShow, value, iconColor, isDescendantOfLocked, onMouseDown } = props
   const color = iconColor
 
-  const handleClick = React.useCallback(
+  const handleMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation()
       switch (value) {
         case 'selectable':
-          onClick('locked-hierarchy')
+          onMouseDown('locked-hierarchy')
           break
         case 'locked-hierarchy':
-          onClick('locked')
+          onMouseDown('locked')
           break
         case 'locked':
         default:
-          onClick('selectable')
+          onMouseDown('selectable')
           break
       }
     },
-    [onClick, value],
+    [onMouseDown, value],
   )
   return (
     <Button
-      onClick={handleClick}
-      onMouseDown={stopPropagation}
+      onMouseDown={handleMouseDown}
       style={{
         height: 12,
         width: 12,
@@ -474,7 +473,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     props.navigatorEntry.elementPath,
   )
 
-  const collapse = React.useCallback(
+  const toggleCollapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       event.stopPropagation()
       dispatch([EditorActions.toggleCollapse(navigatorEntry.elementPath)])
@@ -539,7 +538,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             isDescendantOfLocked={isDescendantOfLocked}
             selected={props.selected}
             iconColor={props.iconColor}
-            onClick={toggleSelectable}
+            onMouseDown={toggleSelectable}
           />
           <VisibilityIndicator
             key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
@@ -549,7 +548,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             visibilityEnabled={props.isVisibleOnCanvas}
             selected={props.selected}
             iconColor={props.iconColor}
-            onClick={toggleHidden}
+            onMouseDown={toggleHidden}
           />
         </>,
       )}
@@ -560,7 +559,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
           visible={true}
           collapsed={props.collapsed}
           selected={props.selected}
-          onClick={collapse}
+          onMouseDown={toggleCollapse}
           style={{
             opacity: 'var(--paneHoverOpacity)',
           }}

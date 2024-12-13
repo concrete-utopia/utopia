@@ -1,4 +1,3 @@
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { getParseResult } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
@@ -6,7 +5,6 @@ import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
-import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import {
@@ -29,6 +27,7 @@ import type {
 } from './editor-state'
 import {
   deriveState,
+  getJSXElementFromProjectContents,
   persistentModelFromEditorModel,
   storedEditorStateFromEditorState,
 } from './editor-state'
@@ -42,11 +41,11 @@ import {
   runResetOnlineState,
   runUpdateProjectServerState,
 } from './editor-update'
-import { isBrowserEnvironment } from '../../../core/shared/utils'
+import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { treeToContents } from '../../assets'
-import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import { restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
   reduxDevtoolsSendActions,
@@ -60,7 +59,6 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -78,18 +76,25 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
-import {
-  createModuleEvaluator,
-  isComponentDescriptorFile,
-} from '../../../core/property-controls/property-controls-local'
-import {
-  hasReactRouterErrorBeenLogged,
-  setReactRouterErrorHasBeenLogged,
-} from '../../../core/shared/runtime-report-logs'
-import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { isComponentDescriptorFile } from '../../../core/property-controls/property-controls-local'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import {
+  getParserChunkCount,
+  getParserWorkerCount,
+  isConcurrencyLoggingEnabled,
+} from '../../../core/workers/common/concurrency-utils'
+import {
+  canMeasurePerformance,
+  startPerformanceMeasure,
+} from '../../../core/performance/performance-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { resetUpdatedProperties } from '../../canvas/plugins/style-plugins'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+} from '../../../core/shared/import/import-operation-service'
+import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
+import { updateImportStatus } from '../actions/action-creators'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -183,7 +188,7 @@ function processAction(
       }
 
       if (action.action === 'UPDATE_TEXT') {
-        working = UPDATE_FNS.UPDATE_TEXT(action, working)
+        working = UPDATE_FNS.UPDATE_TEXT(action, working, dispatchEvent)
       }
 
       if (action.action === 'TRUNCATE_HISTORY') {
@@ -309,26 +314,6 @@ function processActions(
   }, working)
 }
 
-export function updateEmbeddedPreview(
-  modelId: string | null,
-  projectContents: ProjectContentTreeRoot,
-): void {
-  const embeddedPreviewElement = document.getElementById(PreviewIframeId)
-  if (embeddedPreviewElement != null) {
-    const embeddedPreviewIframe = embeddedPreviewElement as any as HTMLIFrameElement
-    const contentWindow = embeddedPreviewIframe.contentWindow
-    if (contentWindow != null) {
-      try {
-        contentWindow.postMessage(projectContentsUpdateMessage(projectContents), '*')
-      } catch (exception) {
-        // Don't nuke the editor if there's an exception posting the message.
-        // This can happen if a value can't be cloned when posted.
-        console.error('Error updating preview.', exception)
-      }
-    }
-  }
-}
-
 function maybeRequestModelUpdate(
   projectContents: ProjectContentTreeRoot,
   workers: UtopiaTsWorkers,
@@ -347,14 +332,29 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
+    const { endMeasure } = startPerformanceMeasure('file-parse', { uniqueId: true })
+    notifyOperationStarted(dispatch, { type: 'parseFiles' })
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
+      getParserChunkCount(),
+      getParseCacheOptions(),
     )
       .then((parseResult) => {
+        notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
+        const duration = endMeasure()
+        if (isConcurrencyLoggingEnabled() && filesToUpdate.length > 1) {
+          console.info(
+            `parse finished for ${
+              filesToUpdate.length
+            } files, using ${getParserChunkCount()} chunks and ${getParserWorkerCount()} workers, in ${duration.toFixed(
+              2,
+            )}ms`,
+          )
+        }
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
@@ -372,12 +372,19 @@ function maybeRequestModelUpdate(
           )
         }
 
-        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
+        dispatch([
+          EditorActions.mergeWithPrevUndo(actionsToDispatch),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
       })
       .catch((e) => {
         console.error('error during parse', e)
-        dispatch([EditorActions.clearParseOrPrintInFlight()])
+        notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Error)
+        dispatch([
+          EditorActions.clearParseOrPrintInFlight(),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
       })
     return {
@@ -445,7 +452,7 @@ function reducerToSplitToActionGroups(
       [[]],
     )
     const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-      EditorActions.transientActions(actionGroup),
+      EditorActions.transientActions(actionGroup, currentAction.elementsToRerender),
     ])
     return [...actionGroups, ...wrappedTransientActionGroups]
   } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
@@ -525,14 +532,13 @@ export function editorDispatchClosingOut(
   })
   const anyWorkerUpdates = checkAnyWorkerUpdates(dispatchedActions)
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
-  const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
   // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
   // as it's likely that action on it's own didn't change anything, but the actions that paired with
   // START_CHECKPOINT_TIMER likely did.
   const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
 
-  const unpatchedEditorState = result.unpatchedEditor
+  const unpatchedEditorState = resetUnpatchedEditorTransientFields(result.unpatchedEditor)
   const patchedEditorState = result.patchedEditor
   const newStrategyState = result.strategyState
   const patchedDerivedState = result.patchedDerived
@@ -723,13 +729,6 @@ export function editorDispatchClosingOut(
     }
   }
 
-  const shouldUpdatePreview =
-    anySendPreviewModel ||
-    frozenEditorState.projectContents !== storedState.unpatchedEditor.projectContents
-  if (shouldUpdatePreview) {
-    updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
-  }
-
   if (frozenEditorState.id != null && frozenEditorState.id != storedState.unpatchedEditor.id) {
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
@@ -837,10 +836,7 @@ function editorDispatchInner(
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
-  const MeasureDispatchTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const MeasureDispatchTime = canMeasurePerformance()
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')
@@ -1014,13 +1010,19 @@ function editorDispatchInner(
       )
     }
 
+    const storedStateForStrategies: EditorStoreFull = {
+      ...storedState,
+      patchedEditor: resetUpdatedProperties(storedState.patchedEditor),
+      unpatchedEditor: resetUpdatedProperties(storedState.unpatchedEditor),
+    }
+
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
       handleStrategies(
         strategiesToUse,
         dispatchedActions,
-        storedState,
+        storedStateForStrategies,
         result,
-        storedState.patchedDerived,
+        storedStateForStrategies.patchedDerived,
       )
 
     return {
@@ -1069,6 +1071,17 @@ function filterEditorForFiles(editor: EditorState) {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
       componentDescriptorErrors: pick(allFiles, editor.codeEditorErrors.componentDescriptorErrors),
+    },
+  }
+}
+
+function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
+  // reset all parts of the state which is meant to be "empty" or "default", and mostly expect the non-default values to come from patchedEditor
+  return {
+    ...editor,
+    canvas: {
+      ...editor.canvas,
+      elementsToRerender: 'rerender-all-elements',
     },
   }
 }

@@ -3,9 +3,13 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  metadataHasPositionAbsoluteOrNull,
+  type ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import type { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
 import type { IndexPosition } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { AllElementProps } from '../../../editor/store/editor-state'
@@ -13,7 +17,7 @@ import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
@@ -37,6 +41,7 @@ import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import type { ShouldAddContainLayout } from './reparent-helpers/reparent-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import type { ForcePins } from './reparent-helpers/reparent-property-changes'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
@@ -74,10 +79,18 @@ export function baseAbsoluteReparentStrategy(
         element,
       )
 
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsPosition(canvasState, element)
-      )
+      const honoursPosition = honoursPropsPosition(canvasState, element)
+
+      switch (honoursPosition) {
+        case 'does-not-honour':
+          return false
+        case 'absolute-position-and-honours-numeric-props':
+          return metadataHasPositionAbsoluteOrNull(elementMetadata)
+        case 'honours-numeric-props-only':
+          return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        default:
+          assertNever(honoursPosition)
+      }
     })
     if (!isApplicable) {
       return null
@@ -163,7 +176,6 @@ export function applyAbsoluteReparent(
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
           return isAllowedToReparent(
-            canvasState.projectContents,
             canvasState.startingMetadata,
             selectedElement,
             newParent.intendedParentPath,
@@ -184,6 +196,12 @@ export function applyAbsoluteReparent(
                 projectContents,
                 nodeModules,
                 'force-pins',
+                shouldAddContainLayout(
+                  canvasState.startingMetadata,
+                  canvasState.startingAllElementProps,
+                  canvasState.startingElementPathTree,
+                  newParent.intendedParentPath,
+                ),
               ),
             selectedElements,
           )
@@ -217,7 +235,6 @@ export function applyAbsoluteReparent(
               ...moveCommands,
               ...commands.flatMap((c) => c.commands),
               updateSelectedViews('always', newPaths),
-              setElementsToRerenderCommand(elementsToRerender),
               ...maybeAddContainLayout(
                 canvasState.startingMetadata,
                 canvasState.startingAllElementProps,
@@ -226,17 +243,18 @@ export function applyAbsoluteReparent(
               ),
               setCursorCommand(CSSCursor.Reparent),
             ],
+            elementsToRerender,
             {
               elementsToRerender,
             },
           )
         } else {
-          const moveCommands =
+          return (
             absoluteMoveStrategy(canvasState, interactionSession, {
               ...defaultCustomStrategyState(),
               action: 'reparent',
-            })?.strategy.apply(strategyLifecycle).commands ?? []
-          return strategyApplicationResult(moveCommands)
+            })?.strategy.apply(strategyLifecycle) ?? emptyStrategyApplicationResult
+          )
         }
       },
     )
@@ -254,6 +272,7 @@ export function createAbsoluteReparentAndOffsetCommands(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   forcePins: ForcePins,
+  willContainLayoutBeAdded: ShouldAddContainLayout,
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
@@ -271,12 +290,13 @@ export function createAbsoluteReparentAndOffsetCommands(
   if (reparentResult == null) {
     return null
   } else {
-    const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    const replacedPaths = replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       elementProps,
       pathTree,
       [target],
-    ).flatMap((p) => {
+    )
+    const offsetCommands = replacedPaths.flatMap((p) => {
       return getAbsoluteReparentPropertyChanges(
         p,
         newParent.intendedParentPath,
@@ -284,6 +304,7 @@ export function createAbsoluteReparentAndOffsetCommands(
         metadata,
         projectContents,
         forcePins,
+        willContainLayoutBeAdded,
       )
     })
 
@@ -296,12 +317,12 @@ export function createAbsoluteReparentAndOffsetCommands(
   }
 }
 
-function maybeAddContainLayout(
+export function shouldAddContainLayout(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
-): CanvasCommand[] {
+): ShouldAddContainLayout {
   const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
     metadata,
     allElementProps,
@@ -310,14 +331,23 @@ function maybeAddContainLayout(
   )
 
   if (EP.isStoryboardPath(closestNonFragmentParent)) {
-    return []
+    return 'dont-add-contain-layout'
   }
 
   const parentProvidesBoundsForAbsoluteChildren =
     MetadataUtils.findElementByElementPath(metadata, closestNonFragmentParent)
       ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren === true
 
-  return parentProvidesBoundsForAbsoluteChildren
-    ? []
-    : [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
+  return parentProvidesBoundsForAbsoluteChildren ? 'dont-add-contain-layout' : 'add-contain-layout'
+}
+
+function maybeAddContainLayout(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): CanvasCommand[] {
+  return shouldAddContainLayout(metadata, allElementProps, pathTrees, path) === 'add-contain-layout'
+    ? [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
+    : []
 }

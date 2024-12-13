@@ -63,7 +63,12 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
+import {
+  importsEquals,
+  isExportDefault,
+  isParseSuccess,
+  isTextFile,
+} from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
@@ -140,7 +145,11 @@ import { getStoryboardUID } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getProjectFileByFilePath } from '../assets'
+import {
+  getProjectFileByFilePath,
+  isProjectContentDirectory,
+  isProjectContentFile,
+} from '../assets'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
@@ -168,6 +177,7 @@ import { getComponentDescriptorForTarget } from '../../core/property-controls/pr
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { addAll } from '../../core/shared/set-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -346,6 +356,7 @@ export function updateFramesOfScenesAndComponents(
             const localFrame = MetadataUtils.getLocalFrame(
               frameAndTarget.target,
               workingEditorState.jsxMetadata,
+              null,
             )
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
@@ -429,7 +440,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.frame,
             )
             const currentLocalFrame = nullIfInfinity(
-              MetadataUtils.getLocalFrame(target, workingEditorState.jsxMetadata),
+              MetadataUtils.getLocalFrame(target, workingEditorState.jsxMetadata, null),
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
@@ -925,7 +936,7 @@ export function collectGuidelines(
       }
 
       const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
-      const localFrame = MetadataUtils.getLocalFrame(selectedView, metadata)
+      const localFrame = MetadataUtils.getLocalFrame(selectedView, metadata, null)
       if (
         instance != null &&
         MetadataUtils.isImg(instance) &&
@@ -1729,9 +1740,9 @@ export function getValidElementPaths(
       const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
         getParseSuccessForFilePath(resolvedFilePath, projectContents)
       // Handle default exports as they may actually be named.
-      if (originTopLevelName == null) {
+      if (originTopLevelName == null || originTopLevelName === 'default') {
         for (const exportDetail of exportsDetail) {
-          if (exportDetail.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS') {
+          if (isExportDefault(exportDetail)) {
             originTopLevelName = exportDetail.name
           }
         }
@@ -1782,7 +1793,10 @@ function getValidElementPathsFromElement(
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     : parentPath
-  let paths = includeElementInPath ? [path] : []
+  let paths: Set<ElementPath> = new Set()
+  if (includeElementInPath) {
+    paths.add(path)
+  }
   if (isJSXElementLike(element)) {
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
     if (isRemixScene) {
@@ -1800,8 +1814,9 @@ function getValidElementPathsFromElement(
             return
           }
 
-          paths.push(
-            ...getValidElementPathsFromElement(
+          addAll(
+            paths,
+            getValidElementPathsFromElement(
               focusedElementPath,
               topLevelElement,
               parentPathInner,
@@ -1834,7 +1849,7 @@ function getValidElementPathsFromElement(
           }
         }
 
-        return paths
+        return Array.from(paths)
       }
     }
 
@@ -1866,7 +1881,7 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       )
-      paths.push(...result)
+      addAll(paths, result)
     }
     matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
       const result = getValidElementPaths(
@@ -1879,13 +1894,14 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       )
-      paths.push(...result)
+      addAll(paths, result)
     })
 
     // finally, add children elements
     fastForEach(element.children, (c) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           c,
           path,
@@ -1907,8 +1923,9 @@ function getValidElementPathsFromElement(
         if (p.type === 'JSX_ATTRIBUTES_ENTRY') {
           const prop = p.value
           if (prop.type === 'JSX_ELEMENT') {
-            paths.push(
-              ...getValidElementPathsFromElement(
+            addAll(
+              paths,
+              getValidElementPathsFromElement(
                 focusedElementPath,
                 prop,
                 path,
@@ -1928,17 +1945,18 @@ function getValidElementPathsFromElement(
       })
     }
 
-    return paths
+    return Array.from(paths)
   } else if (
     (isJSXTextBlock(element) && isFeatureEnabled('Condensed Navigator Entries')) ||
     isJSIdentifier(element) ||
     isJSPropertyAccess(element) ||
     isJSElementAccess(element)
   ) {
-    return paths
+    return Array.from(paths)
   } else if (isJSXMapExpression(element)) {
-    paths.push(
-      ...getValidElementPathsFromElement(
+    addAll(
+      paths,
+      getValidElementPathsFromElement(
         focusedElementPath,
         element.valueToMap,
         path,
@@ -1952,7 +1970,10 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       ),
-      ...getValidElementPathsFromElement(
+    )
+    addAll(
+      paths,
+      getValidElementPathsFromElement(
         focusedElementPath,
         element.mapFunction,
         path,
@@ -1967,7 +1988,7 @@ function getValidElementPathsFromElement(
         getRemixValidPathsGenerationContext,
       ),
     )
-    return paths
+    return Array.from(paths)
   } else if (isJSExpressionOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
@@ -1988,8 +2009,9 @@ function getValidElementPathsFromElement(
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
       // generated, creating a chicken and egg situation.
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           e,
           path,
@@ -2005,11 +2027,12 @@ function getValidElementPathsFromElement(
         ),
       ),
     )
-    return paths
+    return Array.from(paths)
   } else if (isJSXConditionalExpression(element)) {
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           e,
           path,
@@ -2025,7 +2048,7 @@ function getValidElementPathsFromElement(
         ),
       )
     })
-    return paths
+    return Array.from(paths)
   } else {
     return []
   }
@@ -2166,4 +2189,74 @@ export function canvasPanelOffsets(): {
     left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
     right: inspector?.clientWidth ?? 0,
   }
+}
+
+export function projectContentsSameForRefreshRequire(
+  oldProjectContents: ProjectContentTreeRoot,
+  newProjectContents: ProjectContentTreeRoot,
+): boolean {
+  if (oldProjectContents === newProjectContents) {
+    // Identical references, so the imports are the same.
+    return true
+  } else {
+    for (const [filename, oldProjectTree] of Object.entries(oldProjectContents)) {
+      const newProjectTree = newProjectContents[filename]
+      // No need to check these further if they have the same reference.
+      if (oldProjectTree === newProjectTree) {
+        continue
+      }
+      // If the file can't be found in the other tree, the imports are not the same.
+      if (newProjectTree == null) {
+        return false
+      }
+      if (isProjectContentFile(oldProjectTree) && isProjectContentFile(newProjectTree)) {
+        // Both entries are files.
+        const oldContent = oldProjectTree.content
+        const newContent = newProjectTree.content
+        if (isTextFile(oldContent) || isTextFile(newContent)) {
+          if (isTextFile(oldContent) && isTextFile(newContent)) {
+            const oldParsed = oldContent.fileContents.parsed
+            const newParsed = newContent.fileContents.parsed
+            if (isParseSuccess(oldParsed) || isParseSuccess(newParsed)) {
+              if (isParseSuccess(oldParsed) && isParseSuccess(newParsed)) {
+                if (
+                  !importsEquals(oldParsed.imports, newParsed.imports) ||
+                  oldParsed.combinedTopLevelArbitraryBlock !==
+                    newParsed.combinedTopLevelArbitraryBlock ||
+                  oldParsed.exportsDetail !== newParsed.exportsDetail
+                ) {
+                  // For the same file the imports, combined top
+                  // level arbitrary block or exports have changed.
+                  return false
+                }
+              } else {
+                // One of the files is a parse success but the other is not.
+                return false
+              }
+            }
+          } else {
+            // One of the files is a text file but the other is not.
+            return false
+          }
+        }
+      } else if (
+        isProjectContentDirectory(oldProjectTree) &&
+        isProjectContentDirectory(newProjectTree)
+      ) {
+        // Both entries are directories.
+        if (
+          !projectContentsSameForRefreshRequire(oldProjectTree.children, newProjectTree.children)
+        ) {
+          // The imports of the subdirectories differ.
+          return false
+        }
+      } else {
+        // One of the entries is a file and the other is a directory.
+        return false
+      }
+    }
+  }
+
+  // If nothing differs, return true.
+  return true
 }

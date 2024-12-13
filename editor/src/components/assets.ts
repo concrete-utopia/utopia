@@ -19,7 +19,6 @@ import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { assertNever, fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
-import { sha1 } from 'sha.js'
 import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
 import type { FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize, valueDependentCache } from '../core/shared/memoize'
@@ -34,6 +33,8 @@ import type {
 } from 'utopia-shared/src/types/assets'
 import { filtered, fromField, fromTypeGuard } from '../core/shared/optics/optic-creators'
 import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
+import { gitBlobChecksumFromBuffer } from '../core/shared/file-utils'
+
 export type {
   AssetFileWithFileName,
   ProjectContentTreeRoot,
@@ -60,34 +61,12 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-function getSHA1ChecksumInner(contents: string | Buffer): string {
-  return new sha1().update(contents).digest('hex')
-}
-
-// Memoized because it can be called for the same piece of code more than once before the
-// checksum gets cached. For example in the canvas strategies and the regular dispatch flow, which don't share
-// those cached checksum objects.
-export const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
-  maxSize: 10,
-  matchesArg: (first, second) => first === second,
-})
-
 export function gitBlobChecksumFromBase64(base64: string): string {
   return gitBlobChecksumFromBuffer(Buffer.from(base64, 'base64'))
 }
 
 export function gitBlobChecksumFromText(text: string): string {
   return gitBlobChecksumFromBuffer(Buffer.from(text, 'utf8'))
-}
-
-export function gitBlobChecksumFromBuffer(buffer: Buffer): string {
-  // This function returns the same SHA1 checksum string that git would return for the same contents.
-  // Given the contents in the buffer variable, the final checksum is calculated by hashing
-  // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
-  // Ref: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
-  const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
-  const wrapped = Buffer.concat([prefix, buffer])
-  return getSHA1Checksum(wrapped)
 }
 
 export function checkFilesHaveSameContent(first: ProjectFile, second: ProjectFile): boolean {
@@ -781,4 +760,37 @@ export function ensureDirectoriesExist(projectContents: ProjectContents): Projec
     })
     return result
   }
+}
+
+function getFileAsJson<T>(projectContents: ProjectContentTreeRoot, fileName: string): T | null {
+  const file = getProjectFileByFilePath(projectContents, fileName)
+  if (file != null && isTextFile(file)) {
+    return JSON.parse(file.fileContents.code) as T
+  }
+  return null
+}
+
+type PackageJson = { utopia?: Record<string, string>; dependencies?: Record<string, string> }
+export function getPackageJson(projectContents: ProjectContentTreeRoot): PackageJson | null {
+  return getFileAsJson<PackageJson>(projectContents, '/package.json')
+}
+
+type PackageLockJson = { dependencies?: Record<string, { version?: string }> }
+export function getPackageLockJson(
+  projectContents: ProjectContentTreeRoot,
+): PackageLockJson | null {
+  return getFileAsJson<PackageLockJson>(projectContents, '/package-lock.json')
+}
+
+export function getProjectDependencies(
+  projectContents: ProjectContentTreeRoot,
+): Record<string, string> | null {
+  const packageJsonDependencies = getPackageJson(projectContents)?.dependencies ?? {}
+  const packageLockJsonDependencies = getPackageLockJson(projectContents)?.dependencies ?? {}
+  for (const packageName of Object.keys(packageJsonDependencies)) {
+    if (packageLockJsonDependencies[packageName]?.version != null) {
+      packageJsonDependencies[packageName] = packageLockJsonDependencies[packageName].version
+    }
+  }
+  return packageJsonDependencies
 }

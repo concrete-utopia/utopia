@@ -1,30 +1,26 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  Size,
-  WindowRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, Size } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
-  canvasVector,
-  offsetPoint,
+  pointDifference,
   roundRectangleToNearestWhole,
-  scaleVector,
   size,
-  windowPoint,
 } from '../../../../core/shared/math-utils'
+import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
+import { showGridControls } from '../../commands/show-grid-controls-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { GridControls } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,
@@ -47,11 +43,12 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { getTargetCell, setGridPropsCommands } from './grid-helpers'
+import { getCommandsForGridItemPlacement } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
-import { stripNulls } from '../../../../core/shared/array-utils'
-import { showGridControls } from '../../commands/show-grid-controls-command'
+import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
+import { nukeAllAbsolutePositioningPropsCommands } from '../../../inspector/inspector-common'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -153,22 +150,13 @@ const gridDrawToInsertStrategyInner =
         category: 'tools',
         type: 'pointer',
       },
-      controlsToRender: [
-        {
-          control: GridControls,
-          props: { targets: [targetParent] },
-          key: `draw-into-grid-strategy-controls`,
-          show: 'always-visible',
-          priority: 'bottom',
-        },
-      ],
+      controlsToRender: [controlsForGridPlaceholders(gridContainerIdentifier(targetParent))],
       fitness: 5,
       apply: (strategyLifecycle) => {
-        const newTargetCell = getGridCellUnderCursor(
-          interactionData,
-          canvasState,
-          customStrategyState,
-        )
+        const canvasPointToUse =
+          interactionData.type === 'DRAG' ? interactionData.dragStart : interactionData.point
+
+        const newTargetCell = getGridCellUnderMouseFromMetadata(parent, canvasPointToUse)
 
         if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
           return strategyApplicationResult(
@@ -176,19 +164,15 @@ const gridDrawToInsertStrategyInner =
               wildcardPatch('mid-interaction', {
                 selectedViews: { $set: [] },
               }),
-              showGridControls('mid-interaction', targetParent),
+              showGridControls(
+                'mid-interaction',
+                gridContainerIdentifier(targetParent),
+                newTargetCell?.gridCellCoordinates ?? null,
+                null,
+              ),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            {
-              ...customStrategyState,
-              grid: {
-                ...customStrategyState.grid,
-                // this is added here during the hover interaction so that
-                // `GridControls` can render the hover highlight based on the
-                // coordinates in `targetCellData`
-                targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
-              },
-            },
+            [],
           )
         }
 
@@ -196,9 +180,7 @@ const gridDrawToInsertStrategyInner =
           return emptyStrategyApplicationResult
         }
 
-        const { gridCellCoordinates, cellWindowRectangle } = newTargetCell
-
-        const offset = getOffsetFromGridCell(interactionData, canvasState, cellWindowRectangle)
+        const { gridCellCoordinates, cellCanvasRectangle } = newTargetCell
 
         const defaultSize =
           interactionData.type === 'DRAG' &&
@@ -210,7 +192,7 @@ const gridDrawToInsertStrategyInner =
         const insertionCommand = getInsertionCommand(
           targetParent,
           insertionSubject,
-          getFrameForInsertion(interactionData, defaultSize, offset),
+          getFrameForInsertion(interactionData, defaultSize, cellCanvasRectangle),
         )
 
         const gridTemplate = parent.specialSizeMeasurements.containerGridProperties
@@ -229,11 +211,15 @@ const gridDrawToInsertStrategyInner =
         return strategyApplicationResult(
           [
             insertionCommand,
-            ...setGridPropsCommands(insertedElementPath, gridTemplate, {
+            ...nukeAllAbsolutePositioningPropsCommands(insertedElementPath), // do not use absolute positioning in grid cells
+            ...getCommandsForGridItemPlacement(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
               gridRowEnd: { numericalPosition: gridCellCoordinates.row + 1 },
               gridColumnEnd: { numericalPosition: gridCellCoordinates.column + 1 },
+              // TODO! this is currently going to assign the element to the cell the interaction started in,
+              // however it would be good to instead assign the element to _all_ cells overlapping with the final
+              // inserted frame.
             }),
             ...wrappingCommands,
             ...stripNulls([
@@ -255,6 +241,7 @@ const gridDrawToInsertStrategyInner =
                 : null,
             ]),
           ],
+          [targetParent],
           {
             strategyGeneratedUidsCache: {
               [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -268,17 +255,22 @@ const gridDrawToInsertStrategyInner =
 function getFrameForInsertion(
   interactionData: DragInteractionData | HoverInteractionData,
   defaultSize: Size,
-  offset: CanvasPoint,
+  cellOrigin: CanvasPoint,
 ): CanvasRectangle {
   if (interactionData.type === 'DRAG') {
-    const origin = interactionData.drag ?? { x: defaultSize.width / 2, y: defaultSize.height / 2 }
+    const dragStart = interactionData.dragStart
+    const mouseAt = {
+      x: interactionData.dragStart.x + (interactionData.drag?.x ?? 0),
+      y: interactionData.dragStart.y + (interactionData.drag?.y ?? 0),
+    }
+    const width = Math.abs(interactionData.drag?.x ?? defaultSize.width)
+    const height = Math.abs(interactionData.drag?.y ?? defaultSize.height)
 
-    const { x, y } = { x: offset.x - origin.x, y: offset.y - origin.y }
-
-    const { width, height } =
-      interactionData.drag == null
-        ? defaultSize
-        : { width: interactionData.drag.x, height: interactionData.drag.y }
+    const origin = canvasPoint({
+      x: Math.min(dragStart.x, mouseAt.x),
+      y: Math.min(dragStart.y, mouseAt.y),
+    })
+    const { x, y } = pointDifference(cellOrigin, origin)
 
     return roundRectangleToNearestWhole(canvasRectangle({ x, y, width, height }))
   }
@@ -314,52 +306,4 @@ function getInsertionCommand(
   const insertionPath = childInsertionPath(parentPath)
 
   return insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath)
-}
-
-function getGridCellUnderCursor(
-  interactionData: DragInteractionData | HoverInteractionData,
-  canvasState: InteractionCanvasState,
-  customStrategyState: CustomStrategyState,
-) {
-  const windowPointToUse =
-    interactionData.type === 'DRAG' ? interactionData.dragStart : interactionData.point
-
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    windowPointToUse,
-    canvasState.scale,
-    canvasState.canvasOffset,
-  )
-
-  return getTargetCell(
-    customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
-    false,
-    mouseWindowPoint,
-  )
-}
-
-function getOffsetFromGridCell(
-  interactionData: DragInteractionData | HoverInteractionData,
-  canvasState: InteractionCanvasState,
-  cellWindowRectangle: WindowRectangle,
-) {
-  const windowPointToUse =
-    interactionData.type === 'DRAG'
-      ? offsetPoint(interactionData.dragStart, interactionData.drag ?? canvasVector({ x: 0, y: 0 }))
-      : interactionData.point
-
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    windowPointToUse,
-    canvasState.scale,
-    canvasState.canvasOffset,
-  )
-
-  const { x, y } = scaleVector(
-    windowPoint({
-      x: mouseWindowPoint.x - cellWindowRectangle.x,
-      y: mouseWindowPoint.y - cellWindowRectangle.y,
-    }),
-    1 / canvasState.scale,
-  )
-
-  return canvasPoint({ x, y })
 }

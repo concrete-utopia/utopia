@@ -29,13 +29,14 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import {
   getDescriptiveStrategyLabelWithRetargetedPaths,
@@ -98,7 +99,7 @@ export function absoluteResizeBoundingBoxStrategy(
   }
 
   if (
-    retargetedTargets.some((path) => MetadataUtils.isGridCell(canvasState.startingMetadata, path))
+    retargetedTargets.some((path) => MetadataUtils.isGridItem(canvasState.startingMetadata, path))
   ) {
     return null
   }
@@ -120,6 +121,14 @@ export function absoluteResizeBoundingBoxStrategy(
         props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
@@ -141,7 +150,7 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'RESIZE_HANDLE', 1),
-    apply: () => {
+    apply: (lifecycle) => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
@@ -289,19 +298,24 @@ export function absoluteResizeBoundingBoxStrategy(
               ]
             })
 
-            return strategyApplicationResult([
-              ...commandsForSelectedElements,
-              setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-              updateHighlightedViews('mid-interaction', []),
-              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(retargetedTargets),
-            ])
+            return strategyApplicationResult(
+              [
+                ...commandsForSelectedElements,
+                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+                updateHighlightedViews('mid-interaction', []),
+                setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              ],
+              retargetedTargets,
+            )
           }
         } else {
-          return strategyApplicationResult([
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('mid-interaction', []),
-          ])
+          return strategyApplicationResult(
+            [
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              updateHighlightedViews('mid-interaction', []),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.
@@ -476,7 +490,7 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
-    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata)
+    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata, null)
     if (
       isConstrained &&
       localFrame != null &&

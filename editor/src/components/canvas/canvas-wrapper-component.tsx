@@ -85,17 +85,16 @@ export const CanvasWrapperComponent = React.memo(() => {
         // ^ prevents Monaco from pushing the inspector out
       }}
     >
-      {fatalErrors.length === 0 && !safeMode ? (
-        <EditorCanvas
-          userState={userState}
-          editor={editorState}
-          derived={derivedState}
-          model={createCanvasModelKILLME(editorState, derivedState)}
-          builtinDependencies={builtinDependencies}
-          updateCanvasSize={updateCanvasSize}
-          dispatch={dispatch}
-        />
-      ) : null}
+      <EditorCanvas
+        userState={userState}
+        editor={editorState}
+        derived={derivedState}
+        model={createCanvasModelKILLME(editorState, derivedState)}
+        builtinDependencies={builtinDependencies}
+        updateCanvasSize={updateCanvasSize}
+        dispatch={dispatch}
+        shouldRenderCanvas={fatalErrors.length === 0 && !safeMode}
+      />
 
       <FlexRow
         style={{

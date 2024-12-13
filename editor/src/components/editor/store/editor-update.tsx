@@ -220,6 +220,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_OPERATIONS':
+      return UPDATE_FNS.UPDATE_IMPORT_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_STATUS':
+      return UPDATE_FNS.UPDATE_IMPORT_STATUS(action, state)
+    case 'SET_IMPORT_WIZARD_OPEN':
+      return UPDATE_FNS.SET_IMPORT_WIZARD_OPEN(action, state)
+    case 'UPDATE_PROJECT_REQUIREMENTS':
+      return UPDATE_FNS.UPDATE_PROJECT_REQUIREMENTS(action, state, dispatch)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEWS':
@@ -262,14 +270,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
       return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
-    case 'UPDATE_PREVIEW_CONNECTED':
-      return UPDATE_FNS.UPDATE_PREVIEW_CONNECTED(action, state)
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
       return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch)
-    case 'SEND_PREVIEW_MODEL':
-      return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'UPDATE_REMIX_ROUTE':
@@ -291,7 +295,7 @@ export function runSimpleLocalEditorAction(
     case 'REMOVE_FILE_CONFLICT':
       return UPDATE_FNS.REMOVE_FILE_CONFLICT(action, state)
     case 'UPDATE_FROM_WORKER':
-      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState)
+      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState, dispatch)
     case 'UPDATE_FROM_CODE_EDITOR':
       return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(
         action,

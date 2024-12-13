@@ -1,6 +1,6 @@
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import { getProjectFileByFilePath, walkContentsTree } from '../../../../components/assets'
+import { getProjectFileByFilePath } from '../../../../components/assets'
 import {
   packageJsonFileFromProjectContents,
   walkContentsTreeAsync,
@@ -12,6 +12,7 @@ import {
   showToast,
   truncateHistory,
   updateBranchContents,
+  updateImportStatus,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
 import type {
@@ -24,7 +25,12 @@ import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
-import type { BranchContent, GithubOperationSource } from '../helpers'
+import type {
+  BranchContent,
+  GetBranchContentResponse,
+  GetBranchContentSuccess,
+  GithubOperationSource,
+} from '../helpers'
 import {
   connectRepo,
   getExistingAssets,
@@ -33,12 +39,29 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
-import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
-import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import {
+  notifyOperationCriticalError,
+  notifyOperationFinished,
+  notifyOperationStarted,
+  pauseImport,
+  startImportProcess,
+} from '../../import/import-operation-service'
+import {
+  RequirementResolutionResult,
+  resetRequirementsResolutions,
+  startPostParseValidation,
+  startPreParseValidation,
+} from '../../import/project-health-check/utopia-requirements-service'
+import {
+  checkAndFixUtopiaRequirementsParsed,
+  checkAndFixUtopiaRequirementsPreParsed,
+} from '../../import/project-health-check/check-utopia-requirements'
+import { ImportOperationResult } from '../../import/import-operation-types'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -115,6 +138,12 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    startImportProcess(dispatch)
+    notifyOperationStarted(dispatch, {
+      type: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    })
     await runGithubOperation(
       {
         name: 'loadBranch',
@@ -136,9 +165,15 @@ export const updateProjectWithBranchContent =
 
         switch (responseBody.type) {
           case 'FAILURE':
+            if (isFeatureEnabled('Import Wizard')) {
+              notifyOperationCriticalError(dispatch, { type: 'loadBranch' })
+            }
             throw githubAPIError(operation, responseBody.failureReason)
           case 'SUCCESS':
             if (responseBody.branch == null) {
+              if (isFeatureEnabled('Import Wizard')) {
+                notifyOperationCriticalError(dispatch, { type: 'loadBranch' })
+              }
               throw githubAPIError(operation, `Could not find branch ${branchName}`)
             }
             const newGithubData: Partial<GithubData> = {
@@ -147,13 +182,38 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
+            notifyOperationFinished(dispatch, { type: 'loadBranch' }, ImportOperationResult.Success)
 
+            // pre parse validation
+            resetRequirementsResolutions(dispatch)
+            startPreParseValidation(dispatch)
+            const {
+              fixedProjectContents: projectContents,
+              result: preParsedRequirementResolutionResult,
+            } = checkAndFixUtopiaRequirementsPreParsed(dispatch, responseBody.branch.content)
+            if (preParsedRequirementResolutionResult === RequirementResolutionResult.Critical) {
+              // wait for the user to resume the import if they choose to
+              await pauseImport(dispatch)
+            }
+
+            // parse files
+            notifyOperationStarted(dispatch, { type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
-              'create-placeholder',
+            const parseResults = await updateProjectContentsWithParseResults(
+              workers,
+              projectContents,
             )
+            notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
+
+            // post parse validation
+            startPostParseValidation(dispatch)
+            const { fixedProjectContents, result: postParsedRequirementResolutionResult } =
+              checkAndFixUtopiaRequirementsParsed(dispatch, parseResults)
+            if (postParsedRequirementResolutionResult === RequirementResolutionResult.Critical) {
+              // wait for the user to resume the import if they choose to
+              await pauseImport(dispatch)
+            }
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
@@ -166,20 +226,21 @@ export const updateProjectWithBranchContent =
                   branchName,
                   true,
                 ),
-                updateProjectContents(parsedProjectContents),
-                updateBranchContents(parsedProjectContents),
+                updateProjectContents(fixedProjectContents),
+                updateBranchContents(fixedProjectContents),
                 truncateHistory(),
               ],
               'everyone',
             )
 
             const componentDescriptorFiles =
-              getAllComponentDescriptorFilePaths(parsedProjectContents)
+              getAllComponentDescriptorFilePaths(fixedProjectContents)
 
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+            const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
+              notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(
                 dispatch,
                 packageJson.fileContents.code,
@@ -192,28 +253,33 @@ export const updateProjectWithBranchContent =
             // When the dependencies update has gone through, then indicate that the project was imported.
             await dependenciesPromise
               .catch(() => {
-                dispatch(
-                  [
-                    showToast(
-                      notice(
-                        `Github: There was an error when attempting to update the dependencies.`,
-                        'ERROR',
-                      ),
+                if (isFeatureEnabled('Import Wizard')) {
+                  notifyOperationFinished(
+                    dispatch,
+                    { type: 'refreshDependencies' },
+                    ImportOperationResult.Error,
+                  )
+                } else {
+                  showToast(
+                    notice(
+                      `Github: There was an error when attempting to update the dependencies.`,
+                      'ERROR',
                     ),
-                  ],
-                  'everyone',
-                )
+                  )
+                }
               })
               .finally(() => {
                 dispatch(
                   [
                     extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
-                    showToast(
-                      notice(
-                        `Github: Updated the project with the content from ${branchName}`,
-                        'SUCCESS',
-                      ),
-                    ),
+                    isFeatureEnabled('Import Wizard')
+                      ? updateImportStatus({ status: 'done' })
+                      : showToast(
+                          notice(
+                            `Github: Updated the project with the content from ${branchName}`,
+                            'SUCCESS',
+                          ),
+                        ),
                   ],
                   'everyone',
                 )

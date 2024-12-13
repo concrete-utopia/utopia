@@ -7,7 +7,7 @@ import { StoryboardFilePath } from '../../editor/store/editor-state'
 
 async function renderRemixProject(project: PersistentModel) {
   const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-  await renderResult.dispatch([runDOMWalker()], true)
+  await renderResult.dispatch([runDOMWalker(null)], true)
   return renderResult
 }
 
@@ -55,6 +55,7 @@ describe('Settings Pane', () => {
   it('Project name is editable if the user can edit project', async () => {
     const renderResult = await renderRemixProject(project)
     await renderResult.dispatch([updateProjectServerState({ isMyProject: 'yes' })], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     const settingsTabButton = await renderResult.renderedDOM.findByText('Settings')
 
@@ -71,6 +72,7 @@ describe('Settings Pane', () => {
   it('Project name is not editable if the user can not edit project', async () => {
     const renderResult = await renderRemixProject(project)
     await renderResult.dispatch([updateProjectServerState({ isMyProject: 'no' })], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
 
     const settingsTabButton = await renderResult.renderedDOM.findByText('Settings')
 

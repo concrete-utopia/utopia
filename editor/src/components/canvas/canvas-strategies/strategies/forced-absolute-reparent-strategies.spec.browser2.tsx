@@ -281,7 +281,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
         <div
           style={{
             position: 'absolute',
-            left: 100,
+            left: 0,
             top: 0,
             width: 100,
             height: 100,
@@ -511,7 +511,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
         <div
           style={{
             position: 'absolute',
-            left: 100,
+            left: 0,
             top: 0,        
             width: 100,
             height: 100,

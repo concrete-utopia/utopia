@@ -66,6 +66,25 @@ function tryToGetInstancePath(
   }
 }
 
+type EmptyBuildResult = {
+  type: 'EMPTY_BUILD_RESULT'
+}
+
+type RenderedBuildResult = {
+  type: 'RENDERED_BUILD_RESULT'
+  result: React.ReactElement | null
+}
+
+type BuildResult = EmptyBuildResult | RenderedBuildResult
+
+function emptyBuildResult(): EmptyBuildResult {
+  return { type: 'EMPTY_BUILD_RESULT' }
+}
+
+function renderedBuildResult(result: React.ReactElement | null): RenderedBuildResult {
+  return { type: 'RENDERED_BUILD_RESULT', result: result }
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
@@ -247,7 +266,7 @@ export function createComponentRendererComponent(params: {
       filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
-    const buildResult = React.useRef<React.ReactElement | null>(null)
+    const buildResult = React.useRef<BuildResult>(emptyBuildResult())
 
     let earlyReturn: EarlyReturn | null = null
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
@@ -299,11 +318,11 @@ export function createComponentRendererComponent(params: {
           break
         case 'EARLY_RETURN_VOID':
           earlyReturn = arbitraryBlockResult
-          buildResult.current = undefined as any
+          buildResult.current = renderedBuildResult(undefined as any)
           break
         case 'EARLY_RETURN_RESULT':
           earlyReturn = arbitraryBlockResult
-          buildResult.current = arbitraryBlockResult.result as any
+          buildResult.current = renderedBuildResult(arbitraryBlockResult.result as any)
           break
         default:
           assertNever(arbitraryBlockResult)
@@ -350,10 +369,19 @@ export function createComponentRendererComponent(params: {
           null,
         )
       }
-    } else if (shouldUpdate() || buildResult.current === null) {
-      buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    } else if (shouldUpdate() || buildResult.current.type === 'EMPTY_BUILD_RESULT') {
+      buildResult.current = renderedBuildResult(
+        buildComponentRenderResult(utopiaJsxComponent.rootElement),
+      )
     }
-    return buildResult.current
+    switch (buildResult.current.type) {
+      case 'EMPTY_BUILD_RESULT':
+        return null
+      case 'RENDERED_BUILD_RESULT':
+        return buildResult.current.result
+      default:
+        assertNever(buildResult.current)
+    }
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName

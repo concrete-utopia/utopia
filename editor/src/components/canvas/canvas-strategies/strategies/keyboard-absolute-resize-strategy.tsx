@@ -12,7 +12,7 @@ import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
@@ -44,6 +44,7 @@ import type { ElementInstanceMetadataMap } from '../../../../core/shared/element
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -145,7 +146,7 @@ export function keyboardAbsoluteResizeStrategy(
     return null
   }
 
-  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
+  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
     return null
   }
 
@@ -166,6 +167,14 @@ export function keyboardAbsoluteResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
     ],
     fitness: getFitness(interactionSession),
@@ -225,8 +234,7 @@ export function keyboardAbsoluteResizeStrategy(
         const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
-        commands.push(setElementsToRerenderCommand(selectedElements))
-        return strategyApplicationResult(commands)
+        return strategyApplicationResult(commands, selectedElements)
       } else {
         return emptyStrategyApplicationResult
       }

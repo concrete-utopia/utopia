@@ -26,6 +26,11 @@ import { CloneParamKey } from '../editor/persistence/persistence-backend'
 import { getPublicRepositoryEntryOrNull } from '../../core/shared/github/operations/load-repositories'
 import { OperationContext } from '../../core/shared/github/operations/github-operation-context'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  notifyOperationCriticalError,
+  startImportProcess,
+} from '../../core/shared/import/import-operation-service'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -123,7 +128,16 @@ async function cloneGithubRepo(
     repo: githubRepo.repository,
   })
   if (repositoryEntry == null) {
-    dispatch([showToast(notice('Cannot find repository', 'ERROR'))])
+    if (isFeatureEnabled('Import Wizard')) {
+      startImportProcess(dispatch)
+      notifyOperationCriticalError(dispatch, {
+        type: 'loadBranch',
+        branchName: githubRepo.branch ?? undefined,
+        githubRepo: githubRepo,
+      })
+    } else {
+      dispatch([showToast(notice('Cannot find repository', 'ERROR'))])
+    }
     return
   }
   const githubBranch = githubRepo.branch ?? repositoryEntry.defaultBranch

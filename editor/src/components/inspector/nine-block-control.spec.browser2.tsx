@@ -3,14 +3,20 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
-import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode, renderTestEditorWithModel } from '../canvas/ui-jsx.test-utils'
 import type { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
+import {
+  AlignItemsClassMapping,
+  JustifyContentClassMapping,
+  TailwindProject,
+} from './sections/flex-section.test-utils'
 
 describe('Nine-block control', () => {
   describe('in flex row', () => {
@@ -49,6 +55,27 @@ describe('Nine-block control', () => {
       expect(controls.length).toEqual(4)
     })
   })
+
+  describe('Tailwind', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    for (const [justifyContent, alignItems] of NineBlockSectors) {
+      it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('flex flex-row'),
+          'await-first-dom-report',
+        )
+
+        const div = await doTest(editor, alignItems, justifyContent)
+
+        expect(getComputedStyle(div).justifyContent).toEqual(justifyContent)
+        expect(getComputedStyle(div).alignItems).toEqual(alignItems)
+        expect(div.className).toEqual(
+          `top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row ${AlignItemsClassMapping[alignItems]} ${JustifyContentClassMapping[justifyContent]}`,
+        )
+      })
+    }
+  })
 })
 
 async function doTest(
@@ -60,8 +87,8 @@ async function doTest(
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+    x: divBounds.x + 5,
+    y: divBounds.y + 4,
   }
 
   await mouseClickAtPoint(canvasControlsLayer, divCorner)

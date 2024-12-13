@@ -465,7 +465,7 @@ function getHighlightBoundsForProjectImpl(
       forEachParseSuccess((parsedFile) => {
         const fileHighlightBounds = parsedFile.highlightBounds
         forEachValue((bounds, uid) => {
-          allHighlightBounds[uid] = { ...bounds, filePath: fullPath }
+          allHighlightBounds[uid] = { bounds: bounds, filePath: fullPath }
         }, fileHighlightBounds)
       }, file.fileContents.parsed)
     }
@@ -840,7 +840,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
   }
 
   const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
+    file.fileContents.parsed.exportsDetail.find(isExportDefault)?.name ?? null
 
   if (defaultExportName == null) {
     return null

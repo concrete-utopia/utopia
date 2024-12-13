@@ -13,7 +13,7 @@ import { getFeaturedRoutesFromPackageJSON } from '../../printer-parsers/html/ext
 
 async function renderRemixProject(project: PersistentModel): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-  await renderResult.dispatch([runDOMWalker()], true)
+  await renderResult.dispatch([runDOMWalker(null)], true)
   return renderResult
 }
 

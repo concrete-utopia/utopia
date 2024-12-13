@@ -274,7 +274,8 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   if (
     reparentSubjects.length === 0 ||
     interactionSession == null ||
-    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    (interactionSession.activeControl.type !== 'BOUNDING_AREA' &&
+      interactionSession.activeControl.type !== 'GRID_CELL_HANDLE') ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||
     interactionSession.interactionData.modifiers.alt

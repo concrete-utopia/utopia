@@ -216,6 +216,7 @@ function dragToInsertStrategyFactory(
         if (insertionSubjects.length === 0) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
+            [],
             {},
             'failure',
           )
@@ -280,6 +281,7 @@ function dragToInsertStrategyFactory(
               reparentCommand,
               ...optionalWrappingCommand,
             ],
+            [targetParent.intendedParentPath],
             {
               strategyGeneratedUidsCache: {
                 [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
@@ -389,6 +391,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   // because that element is inserted to the storyboard before reparenting to the correct location,
   // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,

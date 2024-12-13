@@ -646,13 +646,13 @@ export function reorderSlider(): ReorderSlider {
 
 export interface GridCellHandle {
   type: 'GRID_CELL_HANDLE'
-  id: string
+  path: ElementPath
 }
 
-export function gridCellHandle(params: { id: string }): GridCellHandle {
+export function gridCellHandle(params: { path: ElementPath }): GridCellHandle {
   return {
     type: 'GRID_CELL_HANDLE',
-    id: params.id,
+    path: params.path,
   }
 }
 
@@ -689,6 +689,20 @@ export function gridResizeHandle(id: string, edge: GridResizeEdge): GridResizeHa
   }
 }
 
+export interface GridResizeRulerHandle {
+  type: 'GRID_RESIZE_RULER_HANDLE'
+  id: string
+  edge: GridResizeEdge
+}
+
+export function gridResizeRulerHandle(id: string, edge: GridResizeEdge): GridResizeRulerHandle {
+  return {
+    type: 'GRID_RESIZE_RULER_HANDLE',
+    id: id,
+    edge: edge,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -701,6 +715,7 @@ export type CanvasControlType =
   | GridCellHandle
   | GridAxisHandle
   | GridResizeHandle
+  | GridResizeRulerHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

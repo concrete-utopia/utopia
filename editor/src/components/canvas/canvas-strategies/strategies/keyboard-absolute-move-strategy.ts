@@ -19,7 +19,7 @@ import {
   getInteractionMoveCommandsForSelectedElement,
   getMultiselectBounds,
 } from './shared-move-strategies-helpers'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import type { CanvasCommand } from '../../commands/commands'
 import {
@@ -120,8 +120,7 @@ export function keyboardAbsoluteMoveStrategy(
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
-        commands.push(setElementsToRerenderCommand(selectedElements))
-        return strategyApplicationResult(commands)
+        return strategyApplicationResult(commands, selectedElements)
       } else {
         return emptyStrategyApplicationResult
       }

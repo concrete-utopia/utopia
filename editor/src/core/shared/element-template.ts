@@ -4,12 +4,7 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import type {
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
-} from './math-utils'
+import type { CanvasRectangle, LocalPoint, MaybeInfinityCanvasRectangle } from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
 import { flatMapEither, isRight, left, mapEither, right } from './either'
@@ -34,7 +29,12 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
-import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
+import type {
+  AlignContent,
+  FlexAlignment,
+  FlexJustifyContent,
+  SelfAlignment,
+} from '../../components/inspector/inspector-common'
 import { allComments } from './utopia-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
@@ -207,6 +207,7 @@ import {
   emptyAttributeMetadata,
   simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
+import type { GridCellGlobalFrames } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
 export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
@@ -2660,9 +2661,14 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
+export function isGridPositionValue(p: GridPositionOrSpan | null): p is GridPositionValue {
+  const maybe = p as GridPositionValue
+  return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
+}
+
 export const validGridPositionKeywords = ['auto']
 
-export type ValidGridPositionKeyword = string // using <string> because valid keywords are also area names we cannot know in advance
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance
 
 export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
 
@@ -2679,21 +2685,21 @@ export const isValidGridPositionKeyword =
   }
 
 export interface GridRange {
-  start: GridPosition
-  end: GridPosition | null
+  start: GridPositionOrSpan
+  end: GridPositionOrSpan | null
 }
 
-export function gridRange(start: GridPosition, end: GridPosition | null): GridRange {
+export function gridRange(start: GridPositionOrSpan, end: GridPositionOrSpan | null): GridRange {
   return {
     start: start,
     end: end,
   }
 }
 
-export type GridColumnStart = GridPosition
-export type GridColumnEnd = GridPosition
-export type GridRowStart = GridPosition
-export type GridRowEnd = GridPosition
+export type GridColumnStart = GridPositionOrSpan
+export type GridColumnEnd = GridPositionOrSpan
+export type GridRowStart = GridPositionOrSpan
+export type GridRowEnd = GridPositionOrSpan
 
 export interface GridAutoOrTemplateFallback {
   type: 'FALLBACK'
@@ -2782,6 +2788,13 @@ export function gridElementProperties(
   }
 }
 
+export type BorderWidths = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
@@ -2793,6 +2806,7 @@ export interface SpecialSizeMeasurements {
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem | null
+  layoutSystemForChildrenInherited: boolean
   providesBoundsForAbsoluteChildren: boolean
   display: string
   position: CSSPosition | null
@@ -2810,7 +2824,10 @@ export interface SpecialSizeMeasurements {
   gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
+  alignContent: AlignContent | null
   alignItems: FlexAlignment | null
+  alignSelf: SelfAlignment | null
+  justifySelf: SelfAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null
@@ -2825,11 +2842,17 @@ export interface SpecialSizeMeasurements {
   textDecorationLine: string | null
   computedHugProperty: HugPropertyWidthHeight
   containerGridProperties: GridContainerProperties
+  parentContainerGridProperties: GridContainerProperties
   elementGridProperties: GridElementProperties
   containerGridPropertiesFromProps: GridContainerProperties
+  parentContainerGridPropertiesFromProps: GridContainerProperties
   elementGridPropertiesFromProps: GridElementProperties
   rowGap: number | null
   columnGap: number | null
+  gridCellGlobalFrames: GridCellGlobalFrames | null
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null
+  borderWidths: BorderWidths
+  parentGridFrame: CanvasRectangle | null
 }
 
 export function specialSizeMeasurements(
@@ -2842,6 +2865,7 @@ export function specialSizeMeasurements(
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem | null,
+  layoutSystemForChildrenInherited: boolean,
   providesBoundsForAbsoluteChildren: boolean,
   display: string,
   position: CSSPosition | null,
@@ -2859,6 +2883,7 @@ export function specialSizeMeasurements(
   gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
+  alignContent: AlignContent | null,
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
@@ -2875,11 +2900,19 @@ export function specialSizeMeasurements(
   textBounds: CanvasRectangle | null,
   computedHugProperty: HugPropertyWidthHeight,
   containerGridProperties: GridContainerProperties,
+  parentContainerGridProperties: GridContainerProperties,
   elementGridProperties: GridElementProperties,
   containerGridPropertiesFromProps: GridContainerProperties,
+  parentContainerGridPropertiesFromProps: GridContainerProperties,
   elementGridPropertiesFromProps: GridElementProperties,
   rowGap: number | null,
   columnGap: number | null,
+  gridCellGlobalFrames: GridCellGlobalFrames | null,
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null,
+  justifySelf: SelfAlignment | null,
+  alignSelf: SelfAlignment | null,
+  borderWidths: BorderWidths,
+  parentGridFrame: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2892,6 +2925,7 @@ export function specialSizeMeasurements(
     usesParentBounds,
     parentLayoutSystem,
     layoutSystemForChildren,
+    layoutSystemForChildrenInherited,
     providesBoundsForAbsoluteChildren,
     display,
     position,
@@ -2909,6 +2943,7 @@ export function specialSizeMeasurements(
     gap,
     flexDirection,
     justifyContent,
+    alignContent,
     alignItems,
     htmlElementName,
     renderedChildrenCount,
@@ -2924,11 +2959,19 @@ export function specialSizeMeasurements(
     textDecorationLine,
     computedHugProperty,
     containerGridProperties,
+    parentContainerGridProperties,
     elementGridProperties,
     containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
     elementGridPropertiesFromProps,
     rowGap,
     columnGap,
+    gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
+    justifySelf,
+    alignSelf,
+    borderWidths,
+    parentGridFrame,
   }
 }
 
@@ -2946,6 +2989,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   'flow',
   null,
   false,
+  false,
   'initial',
   null,
   sides(undefined, undefined, undefined, undefined),
@@ -2959,6 +3003,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   sides(undefined, undefined, undefined, undefined),
   false,
+  null,
   null,
   null,
   null,
@@ -2985,10 +3030,24 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridAutoFlow: null,
   },
   {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
     gridColumnStart: null,
     gridColumnEnd: null,
     gridRowStart: null,
     gridRowEnd: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridTemplateColumns: null,
@@ -3004,6 +3063,17 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridRowEnd: null,
   },
   null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   null,
 )
 
@@ -3167,4 +3237,51 @@ export function clearJSArbitraryStatementSourceMaps(
     default:
       assertNever(statement)
   }
+}
+
+export type GridPositionOrSpan = GridPosition | GridSpan
+
+export type GridSpan = GridSpanNumeric | GridSpanArea
+
+export function isGridSpan(u: unknown): u is GridSpan {
+  const maybe = u as GridSpan
+  return (
+    maybe != null && typeof u === 'object' && (isGridSpanNumeric(maybe) || isGridSpanArea(maybe))
+  )
+}
+
+export function stringifyGridSpan(span: GridSpan): string {
+  return `span ${span.value}`
+}
+
+export type GridSpanNumeric = {
+  type: 'SPAN_NUMERIC'
+  value: number
+}
+
+export function gridSpanNumeric(value: number): GridSpanNumeric {
+  return {
+    type: 'SPAN_NUMERIC',
+    value: value,
+  }
+}
+
+function isGridSpanNumeric(span: GridSpan): span is GridSpanNumeric {
+  return span.type === 'SPAN_NUMERIC'
+}
+
+export type GridSpanArea = {
+  type: 'SPAN_AREA'
+  value: string
+}
+
+export function gridSpanArea(areaName: string): GridSpanArea {
+  return {
+    type: 'SPAN_AREA',
+    value: areaName,
+  }
+}
+
+function isGridSpanArea(span: GridSpan): span is GridSpanArea {
+  return span.type === 'SPAN_AREA'
 }

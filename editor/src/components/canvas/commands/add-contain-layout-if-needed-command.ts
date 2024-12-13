@@ -2,11 +2,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { applyValuesAtPath } from './utils/property-utils'
 
 export interface AddContainLayoutIfNeeded extends BaseCommand {
   type: 'ADD_CONTAIN_LAYOUT_IF_NEEDED'

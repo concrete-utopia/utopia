@@ -16,8 +16,8 @@ import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { CSSNumber } from '../../inspector/common/css-utils'
 import { parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { applyValuesAtPath } from './utils/property-utils'
 
 export interface ConvertCssPercentToPx extends BaseCommand {
   type: 'CONVERT_CSS_PERCENT_TO_PX'

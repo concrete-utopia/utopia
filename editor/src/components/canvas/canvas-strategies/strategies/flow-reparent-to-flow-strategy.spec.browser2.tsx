@@ -259,6 +259,263 @@ describe('Flow Reparent To Flow Strategy', () => {
   `),
     )
   })
+
+  it('reparents flow component without style prop support to flow parent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `import * as React from 'react'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: 700,
+        height: 600,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 0,
+          top: 0,
+          backgroundColor: 'blue',
+        }}
+        data-uid='flowparent1'
+        data-testid='flowparent1'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'purple',
+          }}
+          data-uid='flowchild1'
+          data-testid='flowchild1'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'pink',
+          }}
+          data-uid='flowchild2'
+          data-testid='flowchild2'
+        />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 350,
+          top: 0,
+          backgroundColor: 'lightgreen',
+        }}
+        data-uid='flowparent2'
+        data-testid='flowparent2'
+      >
+        <CompNoStyle data-uid='flowchild3' />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'red',
+          }}
+          data-uid='flowchild4'
+          data-testid='flowchild4'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{
+          left: 0,
+          top: 0,
+          width: 2000,
+          height: 2000,
+        }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+
+function CompNoStyle(props) {
+  return (
+    <div
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: 'teal',
+      }}
+      data-testid="compnostyle"
+      data-uid='compnostyle'
+    />
+  )
+}
+`,
+      'await-first-dom-report',
+    )
+
+    const targetFlowParent = await renderResult.renderedDOM.findByTestId('flowparent1')
+    const targetFlowParentRect = targetFlowParent.getBoundingClientRect()
+    const targetFlowParentEnd = {
+      x: targetFlowParentRect.x + targetFlowParentRect.width / 2,
+      y: targetFlowParentRect.y + targetFlowParentRect.height - 15,
+    }
+    const flowChildToReparent = await renderResult.renderedDOM.findByTestId('compnostyle')
+    const flowChildToReparentRect = flowChildToReparent.getBoundingClientRect()
+    const flowChildToReparentCenter = {
+      x: flowChildToReparentRect.x + flowChildToReparentRect.width / 2,
+      y: flowChildToReparentRect.y + flowChildToReparentRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const dragDelta = windowPoint({
+      x: targetFlowParentEnd.x - flowChildToReparentCenter.x + 5,
+      y: targetFlowParentEnd.y - flowChildToReparentCenter.y,
+    })
+
+    await dragElement(renderResult, 'compnostyle', dragDelta, cmdModifier)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(`import * as React from 'react'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: 700,
+        height: 600,
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 0,
+          top: 0,
+          backgroundColor: 'blue',
+        }}
+        data-uid='flowparent1'
+        data-testid='flowparent1'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'purple',
+          }}
+          data-uid='flowchild1'
+          data-testid='flowchild1'
+        />
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'pink',
+          }}
+          data-uid='flowchild2'
+          data-testid='flowchild2'
+        />
+        <CompNoStyle data-uid='flowchild3' />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          width: 250,
+          height: 500,
+          left: 350,
+          top: 0,
+          backgroundColor: 'lightgreen',
+        }}
+        data-uid='flowparent2'
+        data-testid='flowparent2'
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: 'red',
+          }}
+          data-uid='flowchild4'
+          data-testid='flowchild4'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='utopia-storyboard-uid'>
+      <Scene
+        style={{
+          left: 0,
+          top: 0,
+          width: 2000,
+          height: 2000,
+        }}
+        data-uid='scene-aaa'
+      >
+        <App
+          data-uid='app-entity'
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+
+function CompNoStyle(props) {
+  return (
+    <div
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: 'teal',
+      }}
+      data-testid="compnostyle"
+      data-uid='compnostyle'
+    />
+  )
+}`),
+    )
+  })
+
   it('reparents flow element to flow parent in row layout', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

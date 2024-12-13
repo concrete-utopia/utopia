@@ -80,6 +80,7 @@ export function pressKeys(
 
   const strategy = strategyFactoryFunction(
     pickCanvasStateFromEditorStateWithMetadata(
+      editorState.selectedViews,
       editorState,
       createBuiltInDependenciesList(null),
       metadata,

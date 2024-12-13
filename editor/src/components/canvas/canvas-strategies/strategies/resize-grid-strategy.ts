@@ -7,12 +7,16 @@ import {
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
-import { setProperty } from '../../commands/set-property-command'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
 import {
-  GridControls,
-  GridControlsKey,
+  propertyToDelete,
+  propertyToSet,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
+import {
+  controlsForGridPlaceholders,
   GridRowColumnResizingControls,
-} from '../../controls/grid-controls'
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -24,15 +28,28 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridDimension } from '../../../../components/inspector/common/css-utils'
 import {
+  cssNumber,
+  gridCSSNumber,
+  isDynamicGridRepeat,
   isGridCSSNumber,
-  printArrayGridDimension,
+  printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
-import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
-import type { Either } from '../../../../core/shared/either'
-import { foldEither, isRight } from '../../../../core/shared/either'
+import { toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { isLeft } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
+import {
+  expandGridDimensions,
+  findOriginalGrid,
+  isJustAutoGridDimension,
+  replaceGridTemplateDimensionAtIndex,
+} from './grid-helpers'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { CSSCursor } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
+import type { Axis } from '../../gap-utils'
+import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -44,8 +61,24 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
 
-  const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
+  const supportsStyleProp = MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+    canvasState.projectContents,
+    selectedElementMetadata,
+    canvasState.propertyControlsInfo,
+    'layout-system',
+    ['gridTemplateColumns', 'gridTemplateRows'],
+    'some',
+  )
+
+  const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
   const isGrid = MetadataUtils.isGridLayoutedContainer(
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
   )
@@ -55,7 +88,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
+  const gridPath = isGrid
+    ? selectedElement
+    : findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
+  if (gridPath == null) {
+    return null
+  }
 
   return {
     id: 'resize-grid-strategy',
@@ -68,20 +106,15 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridRowColumnResizingControls,
-        props: { target: gridPath },
+        props: { target: gridContainerIdentifier(gridPath) },
         key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
         show: 'always-visible',
-        priority: 'top',
       },
-      {
-        control: GridControls,
-        props: { targets: [gridPath] },
-        key: GridControlsKey(gridPath),
-        show: 'always-visible',
-        priority: 'bottom',
-      },
+      controlsForGridPlaceholders(gridContainerIdentifier(gridPath)),
     ],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1),
+    fitness: supportsStyleProp
+      ? onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1)
+      : 0,
     apply: () => {
       if (
         interactionSession == null ||
@@ -110,6 +143,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ? gridSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
           : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
+      const otherAxis: Axis = control.axis === 'column' ? 'row' : 'column'
+      const otherAxisValues =
+        otherAxis === 'column'
+          ? gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
+          : gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
+
       if (
         calculatedValues == null ||
         calculatedValues.type !== 'DIMENSIONS' ||
@@ -119,11 +158,16 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      if (!canResizeGridTemplate(originalValues)) {
+        return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], [])
+      }
+
+      const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)
       const mergedValues: GridAutoOrTemplateBase = {
         type: calculatedValues.type,
         dimensions: calculatedValues.dimensions.map((dim, index) => {
-          if (index < originalValues.dimensions.length) {
-            return originalValues.dimensions[index]
+          if (index < expandedOriginalValues.length) {
+            return expandedOriginalValues[index]
           }
           return dim
         }),
@@ -140,38 +184,70 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         .compose(fromField('value'))
 
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
+      if (isLeft(calculatedValue)) {
+        return emptyStrategyApplicationResult
+      }
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
+      if (isLeft(mergedValue)) {
+        return emptyStrategyApplicationResult
+      }
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
-      const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
+      if (isLeft(mergedUnit)) {
+        return emptyStrategyApplicationResult
+      }
+
+      const isFractional = mergedUnit.value === 'fr'
       const precision = modifiers.cmd ? 'coarse' : 'precise'
+      const lineName = mergedValues.dimensions[control.columnOrRow]?.lineName ?? null
 
-      const newSetting = modify(
-        valueOptic,
-        (current) =>
-          newResizedValue(
-            current,
-            getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
-            precision,
-            isFractional,
-          ),
-        mergedValues.dimensions,
-      )
-      const propertyValueAsString = printArrayGridDimension(newSetting)
-
-      const commands = [
-        setProperty(
-          'always',
-          gridPath,
-          PP.create(
-            'style',
-            control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
-          ),
-          propertyValueAsString,
+      const newValue = Math.max(
+        0,
+        newResizedValue(
+          mergedValue.value,
+          getNewDragValue(dragAmount, isFractional, calculatedValue.value, mergedValue.value),
+          precision,
+          isFractional,
         ),
-        setElementsToRerenderCommand([gridPath]),
+      )
+
+      const newDimensions = replaceGridTemplateDimensionAtIndex(
+        originalValues.dimensions,
+        expandedOriginalValues,
+        control.columnOrRow,
+        gridCSSNumber(cssNumber(newValue, mergedUnit.value), lineName),
+      )
+
+      const propertyValueAsString = printArrayGridDimensions(newDimensions)
+
+      const propertyAxis = PP.create(
+        'style',
+        control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+      )
+      let propertiesToUpdate: PropertyToUpdate[] = [
+        propertyToSet(propertyAxis, propertyValueAsString),
+        propertyToDelete(PP.create('style', 'gridTemplate')), // delete the shorthand in favor of the longhands
       ]
 
-      return strategyApplicationResult(commands)
+      if (
+        otherAxisValues?.type === 'DIMENSIONS' &&
+        otherAxisValues.dimensions.length > 0 &&
+        !isJustAutoGridDimension(otherAxisValues.dimensions)
+      ) {
+        // if the other axis has dimensions, serialize them in their longhand
+        const propertyOtherAxis = PP.create(
+          'style',
+          otherAxis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+        )
+        const otherAxisValueAsString = printArrayGridDimensions(otherAxisValues.dimensions)
+        propertiesToUpdate.push(propertyToSet(propertyOtherAxis, otherAxisValueAsString))
+      }
+
+      let commands: CanvasCommand[] = [
+        updateBulkProperties('always', gridPath, propertiesToUpdate),
+        setCursorCommand(control.axis === 'column' ? CSSCursor.ColResize : CSSCursor.RowResize),
+      ]
+
+      return strategyApplicationResult(commands, [gridPath])
     },
   }
 }
@@ -179,27 +255,24 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 function getNewDragValue(
   dragAmount: number,
   isFractional: boolean,
-  possibleCalculatedValue: Either<string, number>,
-  mergedValue: Either<string, number>,
-) {
+  calculatedValue: number,
+  mergedValue: number,
+): number {
   if (!isFractional) {
     return dragAmount
   }
 
-  if (!isRight(possibleCalculatedValue)) {
+  if (calculatedValue === 0) {
     return 0
   }
 
-  const mergedFractionalValue = foldEither(
-    () => 0,
-    (r) => r,
-    mergedValue,
-  )
-  const calculatedValue = possibleCalculatedValue.value
-  const perPointOne =
-    mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
-  const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
-  return newValue
+  // for fr units, adjust the value to proportionally to .1
+  let proportionalResize = calculatedValue * 0.1
+  if (mergedValue !== 0) {
+    proportionalResize /= mergedValue
+  }
+
+  return roundToNearestWhole(dragAmount / proportionalResize) * 0.1
 }
 
 function newResizedValue(
@@ -218,4 +291,8 @@ function newResizedValue(
     // 10x steps
     return Math.round(newValue / 10) * 10
   }
+}
+
+export function canResizeGridTemplate(template: GridAutoOrTemplateBase): boolean {
+  return template.type === 'DIMENSIONS' && !template.dimensions.some(isDynamicGridRepeat)
 }

@@ -1,20 +1,18 @@
-import type { JSXElement } from '../../../core/shared/element-template'
-import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
-import { modifyUnderlyingElementForOpenFile } from '../../../components/editor/store/editor-state'
-import { foldEither } from '../../../core/shared/either'
-import { unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
+import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { patchParseSuccessAtElementPath } from './patch-utils'
+import { deleteValuesAtPath, maybeCssPropertyFromInlineStyle } from './utils/property-utils'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { runStyleUpdateForStrategy } from '../plugins/style-plugins'
+import * as SU from '../plugins/style-plugins'
 
 export interface DeleteProperties extends BaseCommand {
   type: 'DELETE_PROPERTIES'
   element: ElementPath
   properties: Array<PropertyPath>
 }
-
 export function deleteProperties(
   whenToRun: WhenToRun,
   element: ElementPath,
@@ -28,61 +26,42 @@ export function deleteProperties(
   }
 }
 
-export const runDeleteProperties: CommandFunction<DeleteProperties> = (
+export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
+  interactionLifecycle: InteractionLifecycle,
 ) => {
+  const propsToDelete = command.properties.reduce(
+    (acc: { styleProps: string[]; rest: PropertyPath[] }, p) => {
+      const prop = maybeCssPropertyFromInlineStyle(p)
+      if (prop == null) {
+        acc.rest.push(p)
+      } else {
+        acc.styleProps.push(prop)
+      }
+      return acc
+    },
+    { styleProps: [], rest: [] },
+  )
+
   // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = deleteValuesAtPath(
+  const { editorStateWithChanges } = deleteValuesAtPath(
     editorState,
     command.element,
-    command.properties,
+    propsToDelete.rest,
+  )
+
+  const { editorStatePatches } = runStyleUpdateForStrategy(
+    interactionLifecycle,
+    editorStateWithChanges,
+    command.element,
+    propsToDelete.styleProps.map(SU.deleteCSSProp),
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: editorStatePatches,
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,
-  }
-}
-
-export function deleteValuesAtPath(
-  editorState: EditorState,
-  target: ElementPath,
-  properties: Array<PropertyPath>,
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
-  const workingEditorState = modifyUnderlyingElementForOpenFile(
-    target,
-    editorState,
-    (element: JSXElement) => {
-      return foldEither(
-        () => {
-          return element
-        },
-        (updatedProps) => {
-          return {
-            ...element,
-            props: updatedProps,
-          }
-        },
-        unsetJSXValuesAtPaths(element.props, properties),
-      )
-    },
-  )
-
-  const editorStatePatch = patchParseSuccessAtElementPath(target, workingEditorState, (success) => {
-    return {
-      topLevelElements: {
-        $set: success.topLevelElements,
-      },
-      imports: {
-        $set: success.imports,
-      },
-    }
-  })
-  return {
-    editorStateWithChanges: workingEditorState,
-    editorStatePatch: editorStatePatch,
   }
 }

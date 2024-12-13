@@ -1,9 +1,10 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import type { EditorDispatch } from '../editor/action-types'
 import { updateMetadataInEditorState } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'
 import { editorDispatchActionRunner } from '../editor/store/dispatch'
 import type { EditorStoreFull } from '../editor/store/editor-state'
-import { runDomSampler } from './dom-sampler'
+import { runDomSamplerRegular } from './dom-sampler'
 import { resubscribeObservers } from './dom-walker'
 import { ElementsToRerenderGLOBAL, type UiJsxCanvasContextData } from './ui-jsx-canvas'
 
@@ -29,11 +30,20 @@ export function runDomSamplerAndSaveResults(
   domWalkerMutableState: {
     mutationObserver: MutationObserver
     resizeObserver: ResizeObserver
+    gridControlObserver: MutationObserver
   },
   spyCollector: UiJsxCanvasContextData,
+  restrictToElements:
+    | 'run-full'
+    | {
+        restrictToElements: Array<ElementPath>
+      },
 ) {
-  const metadataResult = runDomSampler({
-    elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+  const metadataResult = runDomSamplerRegular({
+    elementsToFocusOn:
+      restrictToElements === 'run-full'
+        ? ElementsToRerenderGLOBAL.current
+        : restrictToElements.restrictToElements,
     domWalkerAdditionalElementsToFocusOn:
       storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
     scale: storedState.patchedEditor.canvas.scale,

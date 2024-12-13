@@ -1648,7 +1648,7 @@ describe('registered property controls', () => {
                 Object {
                   "elementToInsert": [Function],
                   "importsToAdd": Object {
-                    "/src/card2.js": Object {
+                    "/src/card2": Object {
                       "importedAs": null,
                       "importedFromWithin": Array [
                         Object {
@@ -1914,7 +1914,7 @@ describe('registered property controls', () => {
                       Object {
                         "elementToInsert": [Function],
                         "importsToAdd": Object {
-                          "/src/card2.js": Object {
+                          "/src/card2": Object {
                             "importedAs": null,
                             "importedFromWithin": Array [
                               Object {

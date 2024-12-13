@@ -148,7 +148,7 @@ export function switchPinnedChildToFlex(
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: ReadonlyArray<string>,
 ): SwitchLayoutTypeResult {
-  const currentFrame = MetadataUtils.getLocalFrame(target, targetOriginalContextMetadata)
+  const currentFrame = MetadataUtils.getLocalFrame(target, targetOriginalContextMetadata, null)
   const newParent = findJSXElementAtPath(newParentPath, components)
   const element = findJSXElementAtPath(target, components)
 

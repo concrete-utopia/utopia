@@ -223,6 +223,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
         padding: shownInToolbar ? undefined : '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
+        marginBottom: 2,
       }}
       tabIndex={0}
     >

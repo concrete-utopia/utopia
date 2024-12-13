@@ -80,6 +80,7 @@ export const CollapsedLabel = 'Collapsed' as const
 export const HugGroupContentsLabel = 'Hug' as const
 export const ComputedLabel = 'Computed' as const
 export const DetectedLabel = 'Detected' as const
+export const StretchLabel = 'Stretch' as const
 
 export function selectOptionLabel(mode: FixedHugFillMode): string {
   switch (mode) {
@@ -101,6 +102,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return ComputedLabel
     case 'detected':
       return DetectedLabel
+    case 'stretch':
+      return StretchLabel
     default:
       assertNever(mode)
   }
@@ -126,6 +129,8 @@ export function selectOptionIconType(
       return `fixed-${dimension}`
     case 'detected':
       return `fixed-${dimension}`
+    case 'stretch':
+      return `fill-${dimension}`
     default:
       assertNever(mode)
   }
@@ -396,6 +401,7 @@ function strategyForChangingFillFixedHugType(
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
+    case 'stretch':
       return setPropFillStrategies(metadata, selectedElements, axis, 'default', otherAxisSetToFill)
     case 'hug':
     case 'squeeze':
@@ -427,6 +433,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'fill':
     case 'hug-group':
       return value.value
+    case 'stretch':
     case 'hug':
     case 'squeeze':
     case 'collapsed':

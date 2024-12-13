@@ -1,4 +1,6 @@
-import type { EditorState } from './editor-state'
+import { type EditorState } from './editor-state'
+import { emptyProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import { emptyImportState } from '../../../core/shared/import/import-operation-types'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
@@ -88,7 +90,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
-      gridControls: null,
+      gridControlData: null,
     },
   },
   inspector: {
@@ -124,10 +126,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     formulaBarMode: 'content',
     formulaBarFocusCounter: 0,
   },
-  preview: {
-    visible: false,
-    connected: false,
-  },
   home: {
     visible: false,
   },
@@ -161,6 +159,9 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
+  importState: emptyImportState(),
+  importWizardOpen: false,
+  projectRequirements: emptyProjectRequirements(),
   branchOriginContents: null,
   githubData: null as any,
   refreshingDependencies: false,
@@ -178,4 +179,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   editorRemixConfig: {
     errorBoundaryHandling: 'ignore-error-boundaries',
   },
+  propertiesUpdatedDuringInteraction: {},
 }

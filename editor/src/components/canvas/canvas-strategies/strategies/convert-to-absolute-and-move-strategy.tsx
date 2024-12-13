@@ -44,7 +44,6 @@ import { getFullFrame } from '../../../frame'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
-import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
@@ -181,7 +180,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       originalTargets,
     ).filter(
       // don't show the siblings control for grid cells
-      (sibling) => !MetadataUtils.isGridCell(canvasState.startingMetadata, sibling.elementPath),
+      (sibling) => !MetadataUtils.isGridItem(canvasState.startingMetadata, sibling.elementPath),
     )
 
     const showSiblingsControl = autoLayoutSiblingsExceptGridCells.length > 1
@@ -278,10 +277,10 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
             },
           })
 
-          return strategyApplicationResult([
-            ...absoluteMoveApplyResult.commands,
-            strategyIndicatorCommand,
-          ])
+          return strategyApplicationResult(
+            [...absoluteMoveApplyResult.commands, strategyIndicatorCommand],
+            absoluteMoveApplyResult.elementsToRerender,
+          )
         }
         // Fallback for when the checks above are not satisfied.
         return emptyStrategyApplicationResult

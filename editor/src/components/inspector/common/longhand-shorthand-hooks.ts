@@ -190,7 +190,11 @@ export function useInspectorInfoLonghandShorthand<
             setProp_UNSAFE(selectedView, shorthandPropertyPath, printedValue),
           ]
         }, selectedViewsRef.current)
-        dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
+        dispatch(
+          transient
+            ? [transientActions(actionsToDispatch, selectedViewsRef.current)]
+            : actionsToDispatch,
+        )
       } else {
         // we either have a dominant longhand key, or we need to append a new one
         const propertyPath = pathMappingFn(longhand, inspectorTargetPath)
@@ -203,7 +207,11 @@ export function useInspectorInfoLonghandShorthand<
             setProp_UNSAFE(selectedView, propertyPath, printedValue),
           ]
         }, selectedViewsRef.current)
-        dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
+        dispatch(
+          transient
+            ? [transientActions(actionsToDispatch, selectedViewsRef.current)]
+            : actionsToDispatch,
+        )
       }
     }
 

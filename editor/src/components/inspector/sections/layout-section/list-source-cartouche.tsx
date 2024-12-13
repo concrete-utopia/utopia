@@ -100,11 +100,14 @@ const MapListSourceCartoucheInner = React.memo(
     const { popupIsOpen, DataPickerComponent, setReferenceElement, openPopup } =
       useDataPickerButton(variableNamesInScope, onPickMappedElement, pathToMappedExpression, target)
 
-    const onClick = React.useCallback(() => {
-      if (openOn === 'single-click') {
-        openPopup()
-      }
-    }, [openOn, openPopup])
+    const onClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        if (openOn === 'single-click') {
+          openPopup()
+        }
+      },
+      [openOn, openPopup],
+    )
 
     const onDoubleClick = React.useCallback(() => {
       if (openOn === 'double-click') {

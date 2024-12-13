@@ -58,7 +58,8 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     selectedElements.length === 0 ||
     selectedElements.some(EP.isRootElementOfInstance) ||
     interactionSession == null ||
-    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    (interactionSession.activeControl.type !== 'BOUNDING_AREA' &&
+      interactionSession.activeControl.type !== 'GRID_CELL_HANDLE') ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.modifiers.alt
   ) {
@@ -153,23 +154,26 @@ export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasSt
     ],
     fitness: DoNothingFitness,
     apply: () => {
-      return strategyApplicationResult([
-        wildcardPatch('mid-interaction', {
-          canvas: {
-            controls: {
-              dragToMoveIndicatorFlags: {
-                $set: {
-                  showIndicator: true,
-                  dragType: 'none',
-                  reparent: 'none',
-                  ancestor: false,
+      return strategyApplicationResult(
+        [
+          wildcardPatch('mid-interaction', {
+            canvas: {
+              controls: {
+                dragToMoveIndicatorFlags: {
+                  $set: {
+                    showIndicator: true,
+                    dragType: 'none',
+                    reparent: 'none',
+                    ancestor: false,
+                  },
                 },
               },
             },
-          },
-        }),
-        setCursorCommand(CSSCursor.NotPermitted),
-      ])
+          }),
+          setCursorCommand(CSSCursor.NotPermitted),
+        ],
+        [],
+      )
     },
   }
 }

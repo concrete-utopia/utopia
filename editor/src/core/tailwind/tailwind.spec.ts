@@ -1,55 +1,72 @@
-import { adjustRuleScopeImpl } from './tailwind'
+import { Project, TailwindConfigFileContents } from './tailwind.test-utils'
+import { renderTestEditorWithModel } from '../../components/canvas/ui-jsx.test-utils'
+import { TailwindConfigPath } from './tailwind-config'
+import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
+import { getTailwindConfigCached } from './tailwind-compilation'
 
-describe('adjustRuleScope', () => {
-  it('Returns a rule unchanged if no prefix is provided', () => {
-    const input = '.container{width:100%}'
-    const output = adjustRuleScopeImpl(input, null)
-    const expected = input
-    expect(output).toEqual(expected)
+describe('tailwind config file in the editor', () => {
+  it('is set during editor load', async () => {
+    const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+
+    expect(getTailwindConfigCached(editor.getEditorState().editor)).toMatchInlineSnapshot(`
+      Object {
+        "plugins": Array [
+          [Function],
+        ],
+        "theme": Object {
+          "colors": Object {
+            "bermuda": "#78dcca",
+            "bubble-gum": "#ff77e9",
+            "current": "currentColor",
+            "metal": "#565584",
+            "midnight": "#121063",
+            "purple": "#3f3cbb",
+            "silver": "#ecebff",
+            "tahiti": "#3ab7bf",
+            "transparent": "transparent",
+            "white": "#ffffff",
+          },
+        },
+      }
+    `)
   })
+  it('is updated in the editor state when the tailwind config is updated', async () => {
+    const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
 
-  it('Returns a rule unchanged if it is an at-rule but not a media query', () => {
-    const input = '@keyframes spin{to{transform:rotate(360deg)}}'
-    const output = adjustRuleScopeImpl(input, '#canvas-container')
-    const expected = input
-    expect(output).toEqual(expected)
-  })
+    await editor.dispatch(
+      [
+        updateFromCodeEditor(
+          TailwindConfigPath,
+          TailwindConfigFileContents,
+          `
+const Tailwind = {
+    theme: {
+      colors: {
+        transparent: 'transparent',
+        current: 'currentColor',
+        white: '#ffffff',
+      },
+    },
+    plugins: [ ],
+  }
+  export default Tailwind
+`,
+        ),
+      ],
+      true,
+    )
 
-  it('Prefixes a regular selector', () => {
-    const input = '.container{width:100%}'
-    const output = adjustRuleScopeImpl(input, '#canvas-container')
-    const expected = '#canvas-container .container{width:100%}'
-    expect(output).toEqual(expected)
-  })
-
-  it('Handles comma separated selectors', () => {
-    const input = '.container,.other-container{width:100%}'
-    const output = adjustRuleScopeImpl(input, '#canvas-container')
-    const expected = '#canvas-container .container,#canvas-container .other-container{width:100%}'
-    expect(output).toEqual(expected)
-  })
-
-  it('Replaces :root, html, or head with the provided prefix', () => {
-    const rootOutput = adjustRuleScopeImpl(':root{width:100%}', '#canvas-container')
-    const htmlOutput = adjustRuleScopeImpl('html{width:100%}', '#canvas-container')
-    const headOutput = adjustRuleScopeImpl('head{width:100%}', '#canvas-container')
-    const expected = '#canvas-container{width:100%}'
-    expect(rootOutput).toEqual(expected)
-    expect(htmlOutput).toEqual(expected)
-    expect(headOutput).toEqual(expected)
-  })
-
-  it('Replaces body with a selector for children of the provided prefix', () => {
-    const input = 'body{width:100%}'
-    const output = adjustRuleScopeImpl(input, '#canvas-container')
-    const expected = '#canvas-container > *{width:100%}'
-    expect(output).toEqual(expected)
-  })
-
-  it('Handles a media query', () => {
-    const input = '@media (min-width:640px){.container{max-width:640px}}'
-    const output = adjustRuleScopeImpl(input, '#canvas-container')
-    const expected = '@media (min-width:640px){#canvas-container .container{max-width:640px}}'
-    expect(output).toEqual(expected)
+    expect(getTailwindConfigCached(editor.getEditorState().editor)).toMatchInlineSnapshot(`
+      Object {
+        "plugins": Array [],
+        "theme": Object {
+          "colors": Object {
+            "current": "currentColor",
+            "transparent": "transparent",
+            "white": "#ffffff",
+          },
+        },
+      }
+    `)
   })
 })

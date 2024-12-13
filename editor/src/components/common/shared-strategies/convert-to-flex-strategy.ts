@@ -174,7 +174,7 @@ function convertThreeElementGroupRow(
     ).map((element) => {
       return {
         ...element,
-        localFrame: MetadataUtils.getLocalFrame(element.elementPath, metadata),
+        localFrame: MetadataUtils.getLocalFrame(element.elementPath, metadata, null),
       }
     })
     if (childrenMetadata.length === 3) {

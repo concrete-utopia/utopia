@@ -303,6 +303,7 @@ export function drawToInsertStrategyFactory(
                   resizeCommand,
                   ...optionalWrappingCommand,
                 ],
+                [targetParent.intendedParentPath],
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -348,6 +349,7 @@ export function drawToInsertStrategyFactory(
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                [targetParent.intendedParentPath],
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -359,11 +361,13 @@ export function drawToInsertStrategyFactory(
             // drag is null, the cursor is not moved yet, but the mousedown already happened
             return strategyApplicationResult(
               getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+              [],
             )
           }
         } else if (interactionSession.interactionData.type === 'HOVER') {
           return strategyApplicationResult(
             getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+            [],
           )
         }
       }
@@ -580,7 +584,11 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   strategyLifecycle: InteractionLifecycle,
   startingMetadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const canvasState = pickCanvasStateFromEditorState(
+    editorState.selectedViews,
+    editorState,
+    builtInDependencies,
+  )
 
   const rootPath = getRootPath(startingMetadata)
   if (rootPath == null) {
@@ -669,6 +677,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   // when actually applying the strategies. If we ever need to pick a resize strategy based on the target
   // element's index, we will need to update the elementPathTree with the new element and pass it in here.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,

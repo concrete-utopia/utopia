@@ -62,8 +62,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_PROJECT_ID':
     case 'SET_CODE_EDITOR_VISIBILITY':
     case 'OPEN_CODE_EDITOR':
-    case 'UPDATE_PREVIEW_CONNECTED':
-    case 'SEND_PREVIEW_MODEL':
     case 'CLOSE_DESIGNER_FILE':
     case 'UPDATE_CODE_RESULT_CACHE':
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
@@ -121,7 +119,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_INTERACTION_SESSION':
     case 'UPDATE_DRAG_INTERACTION_DATA':
     case 'SET_USERS_PREFERRED_STRATEGY':
-    case 'SET_ELEMENTS_TO_RERENDER':
     case 'TOGGLE_SELECTION_LOCK':
     case 'UPDATE_GITHUB_OPERATIONS':
     case 'SET_REFRESHING_DEPENDENCIES':
@@ -139,6 +136,10 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RESET_ONLINE_STATE':
     case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
     case 'SET_ERROR_BOUNDARY_HANDLING':
+    case 'SET_IMPORT_WIZARD_OPEN':
+    case 'UPDATE_IMPORT_OPERATIONS':
+    case 'UPDATE_IMPORT_STATUS':
+    case 'UPDATE_PROJECT_REQUIREMENTS':
       return true
 
     case 'TRUE_UP_ELEMENTS':

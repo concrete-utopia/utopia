@@ -28,9 +28,9 @@ import {
 } from '../shared/jsx-attribute-utils'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { isTwindEnabled } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
+import { isTailwindEnabled } from './tailwind-compilation'
 
 export interface TailWindOption {
   label: string
@@ -165,7 +165,7 @@ export function useFilteredOptions(
   onEmptyResults: () => void = NO_OP,
 ): Array<TailWindOption> {
   return React.useMemo(() => {
-    if (isTwindEnabled()) {
+    if (isTailwindEnabled()) {
       const sanitisedFilter = filter.trim().toLowerCase()
       const searchTerms = searchStringToIndividualTerms(sanitisedFilter)
       let results: Array<TailWindOption>
@@ -222,8 +222,8 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-function getClassNameAttribute(element: JSXElementChild | null): {
-  value: string | null
+function getClassNameJSXAttribute(element: JSXElementChild | null): {
+  value: any | null
   isSettable: boolean
 } {
   if (element != null && isJSXElement(element)) {
@@ -246,6 +246,26 @@ function getClassNameAttribute(element: JSXElementChild | null): {
       isSettable: true,
     }
   }
+}
+
+export function getClassNameAttribute(element: JSXElementChild | null): {
+  value: string | null
+  isSettable: boolean
+} {
+  const classNameJSXAttribute = getClassNameJSXAttribute(element)
+  if (
+    classNameJSXAttribute.value == null ||
+    // The type check here is necessary because in <div className /> the value
+    // of `className` would be `true`
+    typeof classNameJSXAttribute.value !== 'string'
+  ) {
+    return {
+      value: null,
+      isSettable: classNameJSXAttribute.isSettable,
+    }
+  }
+
+  return classNameJSXAttribute
 }
 
 export function useGetSelectedClasses(): {

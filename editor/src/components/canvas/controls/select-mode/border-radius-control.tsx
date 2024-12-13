@@ -1,6 +1,5 @@
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
@@ -15,6 +14,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../../editor/st
 import type {
   CanvasSubstate,
   MetadataSubstate,
+  StyleInfoSubstate,
 } from '../../../editor/store/store-hook-substore-types'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { metadataSelector } from '../../../inspector/inpector-selectors'
@@ -24,7 +24,6 @@ import {
   BorderRadiusCorners,
   BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
-  BorderRadiusSides,
   handlePosition,
 } from '../../border-radius-control-utils'
 import CanvasActions from '../../canvas-actions'
@@ -41,6 +40,8 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, fallbackEmptyValue } from './controls-common'
+import { getActivePlugin } from '../../plugins/style-plugins'
+import type { EditorStorePatched } from '../../../editor/store/editor-state'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
@@ -59,13 +60,18 @@ const isDraggingSelector = (store: CanvasSubstate): boolean => {
 
 const borderRadiusSelector = createCachedSelector(
   metadataSelector,
+  (store: StyleInfoSubstate) =>
+    getActivePlugin(store.editor).styleInfoFactory({
+      projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
+    }),
   (_: MetadataSubstate, x: ElementPath) => x,
-  (metadata, selectedElement) => {
+  (metadata, styleInfoReader, selectedElement) => {
     const element = MetadataUtils.findElementByElementPath(metadata, selectedElement)
     if (element == null) {
       return null
     }
-    return borderRadiusFromElement(element)
+    return borderRadiusFromElement(element, styleInfoReader(selectedElement))
   },
 )((_, x) => EP.toString(x))
 
@@ -117,7 +123,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   )
 
   const borderRadius = useEditorState(
-    Substores.metadata,
+    Substores.styleInfo,
     (store) => borderRadiusSelector(store, selectedElement),
     'BorderRadiusControl borderRadius',
   )

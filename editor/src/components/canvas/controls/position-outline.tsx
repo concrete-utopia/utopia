@@ -31,8 +31,12 @@ export const PinLines = React.memo(() => {
       return mapDropNulls((path) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const isAbsolute = MetadataUtils.isPositionAbsolute(element)
+        const isGridItem = MetadataUtils.isGridItemWithLayoutProvidingGridParent(
+          store.editor.jsxMetadata,
+          path,
+        )
         const frame = element?.globalFrame
-        if (isAbsolute && frame != null && isFiniteRectangle(frame)) {
+        if (isAbsolute && !isGridItem && frame != null && isFiniteRectangle(frame)) {
           return {
             path: path,
             frame: frame,
@@ -78,26 +82,26 @@ interface PositionOutlineProps {
 export const PositionOutline = React.memo((props: PositionOutlineProps) => {
   const containingFrame = useContainingFrameForElement(props.path)
   const attributes = usePropsOrJSXAttributes(props.path)
-  if (containingFrame != null) {
-    let pins: PinOutlineProps[] = collectPinOutlines(
-      attributes,
-      props.frame,
-      containingFrame,
-      props.scale,
-    )
-    return (
-      <CanvasOffsetWrapper>
-        {pins.map((pin) => (
-          <PinOutline {...pin} key={pin.name} />
-        ))}
-      </CanvasOffsetWrapper>
-    )
-  } else {
+  if (containingFrame == null) {
     return null
   }
+
+  const pins: PinOutlineProps[] = collectPinOutlines(
+    attributes,
+    props.frame,
+    containingFrame,
+    props.scale,
+  )
+  return (
+    <CanvasOffsetWrapper>
+      {pins.map((pin) => (
+        <PinOutline {...pin} key={pin.name} />
+      ))}
+    </CanvasOffsetWrapper>
+  )
 })
 
-const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
+export const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -128,7 +132,7 @@ const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null
   )
 }
 
-const collectPinOutlines = (
+export const collectPinOutlines = (
   attributes: PropsOrJSXAttributes,
   frame: CanvasRectangle,
   containingFrame: CanvasRectangle,
@@ -182,31 +186,66 @@ const collectPinOutlines = (
   return pins
 }
 
-interface PinOutlineProps {
+export interface PinOutlineProps {
   name: string
   isHorizontalLine: boolean
-  startX: number
-  startY: number
-  size: number
+  startX?: number | string
+  endX?: number | string
+  startY?: number | string
+  endY?: number | string
+  size: number | string
   scale: number
 }
 
-const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
+const PinOutlineUnscaledSize = 1
+
+export const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
   const colorTheme = useColorTheme()
-  const width = props.isHorizontalLine ? props.size : 0
-  const height = props.isHorizontalLine ? 0 : props.size
+  function numberOrStringToSize(value: number | string): string {
+    return typeof value === 'number' ? `${value}px` : value
+  }
+  const width = numberOrStringToSize(props.isHorizontalLine ? props.size : 0)
+  const height = numberOrStringToSize(props.isHorizontalLine ? 0 : props.size)
   const borderTop = props.isHorizontalLine
-    ? `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+    ? `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
     : 'none'
   const borderLeft = props.isHorizontalLine
     ? 'none'
-    : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+    : `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
+
+  function lineStart(startValue?: number | string): string | undefined {
+    if (startValue == null) {
+      return undefined
+    } else {
+      return `calc(${numberOrStringToSize(startValue)} - ${
+        PinOutlineUnscaledSize / 2 / props.scale
+      }px)`
+    }
+  }
+
+  function lineEnd(endValue?: number | string): string | undefined {
+    if (endValue == null) {
+      return undefined
+    } else {
+      return `calc(${numberOrStringToSize(endValue)} - ${
+        PinOutlineUnscaledSize / 2 / props.scale
+      }px)`
+    }
+  }
+
+  const lineLeft = lineStart(props.startX)
+  const lineTop = lineStart(props.startY)
+  const lineRight = lineEnd(props.endX)
+  const lineBottom = lineEnd(props.endY)
+
   return (
     <div
       style={{
         position: 'absolute',
-        left: props.startX,
-        top: props.startY,
+        left: lineLeft,
+        top: lineTop,
+        right: lineRight,
+        bottom: lineBottom,
         width: width,
         height: height,
         borderTop: borderTop,

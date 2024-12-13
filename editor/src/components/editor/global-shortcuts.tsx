@@ -653,9 +653,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
               newUID,
-              {
-                'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
-              },
+              {},
               null,
             ),
             modifiers,
@@ -963,6 +961,7 @@ export function handleKeyDown(
           editor.allElementProps,
           editor.elementPathTree,
           editor.selectedViews,
+          { scale: editor.canvas.scale, offset: editor.canvas.realCanvasOffset },
         )
 
         if (commands.length === 0) {

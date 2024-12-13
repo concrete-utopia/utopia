@@ -1,6 +1,7 @@
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import type { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
+
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
@@ -108,6 +109,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                   'always',
                   (editorState, commandLifecycle): Array<EditorStatePatch> => {
                     const updatedCanvasState = pickCanvasStateFromEditorState(
+                      editorState.selectedViews,
                       editorState,
                       canvasState.builtInDependencies,
                     )
@@ -132,6 +134,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                   },
                 ),
               ],
+              [newParent.intendedParentPath, ...filteredSelectedElements],
               {
                 duplicatedElementNewUids: placeholderCommands.duplicatedElementNewUids,
               },

@@ -47,7 +47,10 @@ function guessLayoutInfoAlongAxis(
   }
 }
 
-function guessMatchingGridSetup(children: Array<CanvasFrameAndTarget>): {
+function guessMatchingGridSetup(
+  children: Array<CanvasFrameAndTarget>,
+  isFlexContainer: boolean,
+): {
   gap: number
   numberOfColumns: number
   numberOfRows: number
@@ -65,10 +68,12 @@ function guessMatchingGridSetup(children: Array<CanvasFrameAndTarget>): {
     (a, b) => b.frame.y - (a.frame.y + a.frame.height),
   )
 
+  const minRowsOrCols = isFlexContainer ? 1 : 2
+
   return {
     gap: (horizontalData.averageGap + verticalData.averageGap) / 2,
-    numberOfColumns: Math.max(1, horizontalData.nChildren),
-    numberOfRows: Math.max(1, verticalData.nChildren),
+    numberOfColumns: Math.max(minRowsOrCols, horizontalData.nChildren),
+    numberOfRows: Math.max(minRowsOrCols, verticalData.nChildren),
   }
 }
 
@@ -90,9 +95,16 @@ export function convertLayoutToGridCommands(
       frame: MetadataUtils.getFrameOrZeroRectInCanvasCoords(child, metadata),
     }))
 
-    const { gap, numberOfColumns, numberOfRows } = guessMatchingGridSetup(childFrames)
+    const isFlexContainer = MetadataUtils.isFlexLayoutedContainer(
+      MetadataUtils.findElementByElementPath(metadata, elementPath),
+    )
 
-    return [
+    const { gap, numberOfColumns, numberOfRows } = guessMatchingGridSetup(
+      childFrames,
+      isFlexContainer,
+    )
+
+    let commands = [
       ...prunePropsCommands(flexContainerProps, elementPath),
       ...prunePropsCommands(gridContainerProps, elementPath),
       ...childrenPaths.flatMap((child) => [
@@ -114,5 +126,11 @@ export function convertLayoutToGridCommands(
         Array(numberOfRows).fill('1fr').join(' '),
       ),
     ]
+
+    if (!isFlexContainer) {
+      commands.push(setProperty('always', elementPath, PP.create('style', 'gap'), 10))
+    }
+
+    return commands
   })
 }

@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
+import { collectElementsToRerender, EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -156,7 +156,11 @@ import {
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
 import { RadixComponentsPortalId } from '../../uuiui/radix-components'
-import { runDomSampler } from './dom-sampler'
+import {
+  resetDomSamplerExecutionCounts,
+  runDomSamplerGroups,
+  runDomSamplerRegular,
+} from './dom-sampler'
 import {
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -306,6 +310,8 @@ export function optOutFromCheckFileTimestamps() {
   })
 }
 
+let prevDomWalkerMutableState: DomWalkerMutableStateData | null = null
+
 export async function renderTestEditorWithModel(
   rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
@@ -352,6 +358,7 @@ export async function renderTestEditorWithModel(
     waitForDispatchEntireUpdate = false,
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
+    resetDomSamplerExecutionCounts()
     recordedActions.push(...actions)
     const originalEditorState = workingEditorState
     const result = editorDispatchActionRunner(
@@ -421,6 +428,9 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      helperControlsStoreHook.setState(
+        patchedStoreFromFullStore(workingEditorState, 'helper-controls-store'),
+      )
     })
 
     // run dom SAMPLER
@@ -428,8 +438,9 @@ export async function renderTestEditorWithModel(
     {
       resubscribeObservers(domWalkerMutableState)
 
-      const metadataResult = runDomSampler({
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+      const metadataResult = runDomSamplerRegular({
+        elementsToFocusOn: elementsToFocusOn,
         domWalkerAdditionalElementsToFocusOn:
           workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
         scale: workingEditorState.patchedEditor.canvas.scale,
@@ -488,8 +499,6 @@ export async function renderTestEditorWithModel(
 
         // re-render the canvas
         {
-          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
           flushSync(() => {
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })
@@ -500,8 +509,14 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
-          const metadataResult = runDomSampler({
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+          // TODO: The real dispatch updates ElementsToRerenderGLOBAL.current,
+          // while the fake one doesn't. Ideally this behaviour would be the
+          // same, but solving this was out of scope for the PR that introduced
+          // collectElementsToRerender
+          // (https://github.com/concrete-utopia/utopia/pull/6465)
+          const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+          const metadataResult = runDomSamplerGroups({
+            elementsToFocusOn: elementsToFocusOn,
             domWalkerAdditionalElementsToFocusOn:
               workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
             scale: workingEditorState.patchedEditor.canvas.scale,
@@ -557,7 +572,7 @@ export async function renderTestEditorWithModel(
   }
 
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )
@@ -600,7 +615,14 @@ export async function renderTestEditorWithModel(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
+  const helperControlsStoreHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'helper-controls-store'),
+  )
+
+  prevDomWalkerMutableState?.resizeObserver.disconnect()
+  prevDomWalkerMutableState?.mutationObserver.disconnect()
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook, asyncTestDispatch)
+  prevDomWalkerMutableState = domWalkerMutableState
 
   const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
@@ -658,6 +680,7 @@ label {
           dispatch={asyncTestDispatch as EditorDispatch}
           mainStore={storeHook}
           canvasStore={canvasStoreHook}
+          helperControlsStore={helperControlsStoreHook}
           spyCollector={spyCollector}
           lowPriorityStore={lowPriorityStoreHook}
           domWalkerMutableState={domWalkerMutableState}
@@ -1027,7 +1050,7 @@ export function createBuiltinDependenciesWithTestWorkers(
   extraBuiltinDependencies: BuiltInDependencies,
 ): BuiltInDependencies {
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )

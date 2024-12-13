@@ -215,13 +215,18 @@ describe('Re-mounting is avoided when', () => {
 
     await switchToLiveMode(renderResult)
 
+    function checkClicky(expectedContentText: string): void {
+      const clicky = renderResult.renderedDOM.getByTestId('clicky')
+      expect(clicky.innerText).toEqual(expectedContentText)
+    }
+
     // Ensure we can find the original text
-    expect(renderResult.renderedDOM.queryByText('Clicked 0 times')).not.toBeNull()
+    checkClicky('Clicked 0 times')
 
     await clickButton(renderResult)
 
     // Ensure it has been updated
-    expect(renderResult.renderedDOM.queryByText('Clicked 1 times')).not.toBeNull()
+    checkClicky('Clicked 1 times')
 
     // Update the top level arbitrary JS block
     await updateCode(
@@ -231,7 +236,7 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check that it has updated without resetting the state
-    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times')).not.toBeNull()
+    checkClicky('Clicked: 1 times')
 
     // Update the component itself
     await updateCode(
@@ -241,7 +246,7 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check again that it has updated without resetting the state
-    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
+    checkClicky('Clicked: 1 times!')
   })
 
   it('arbitrary JS or a component is edited in a remix project', async () => {

@@ -39,7 +39,6 @@ import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
-import { PreviewColumn } from '../preview/preview-pane'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
@@ -97,6 +96,7 @@ import {
   navigatorTargetsSelector,
   navigatorTargetsSelectorNavigatorTargets,
 } from '../navigator/navigator-utils'
+import { ImportWizard } from './import-wizard/import-wizard'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -377,12 +377,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.id,
     'EditorComponentInner projectId',
   )
-  const previewVisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.preview.visible,
-    'EditorComponentInner previewVisible',
-  )
-
   const yDoc = useEditorState(
     Substores.restOfStore,
     (store) => store.collaborativeEditingSupport.session?.mergeDoc,
@@ -416,11 +410,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       ;(window as any).utopiaProjectID = projectId
     }
   }, [projectName, projectId, forking])
-
-  const onClosePreview = React.useCallback(
-    () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
-    [dispatch],
-  )
 
   const startDragInsertion = React.useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -524,37 +513,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
                 <DesignPanelRoot />
               </SimpleFlexRow>
               {/* insert more columns here */}
-
-              {previewVisible ? (
-                <ResizableFlexColumn
-                  style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
-                  enable={{
-                    left: true,
-                    right: false,
-                  }}
-                  defaultSize={{
-                    width: 350,
-                    height: '100%',
-                  }}
-                >
-                  <SimpleFlexRow
-                    id='PreviewTabRail'
-                    style={{
-                      height: UtopiaTheme.layout.rowHeight.smaller,
-                      borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-                      alignItems: 'stretch',
-                    }}
-                  >
-                    <TabComponent
-                      label='Preview'
-                      selected
-                      icon={<LargerIcons.PreviewPane color='primary' />}
-                      onClose={onClosePreview}
-                    />
-                  </SimpleFlexRow>
-                  <PreviewColumn />
-                </ResizableFlexColumn>
-              ) : null}
             </SimpleFlexRow>
           </SimpleFlexRow>
         </SimpleFlexColumn>
@@ -563,6 +521,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <ProjectForkFlow />
         <LockedOverlay />
         <SharingDialog />
+        <ImportWizard />
       </SimpleFlexRow>
       {portalTarget != null
         ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
@@ -686,6 +645,7 @@ export const ToastRenderer = React.memo(() => {
   return (
     <FlexColumn
       key={'toast-stack'}
+      data-testid={'toast-stack'}
       style={{
         zIndex: 100,
         gap: 10,
@@ -726,6 +686,12 @@ const LockedOverlay = React.memo(() => {
     'LockedOverlay refreshingDependencies',
   )
 
+  const importWizardOpen = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.importWizardOpen,
+    'LockedOverlay importWizardOpen',
+  )
+
   const forking = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.forking,
@@ -742,8 +708,8 @@ const LockedOverlay = React.memo(() => {
   `
 
   const locked = React.useMemo(() => {
-    return editorLocked || refreshingDependencies || forking
-  }, [editorLocked, refreshingDependencies, forking])
+    return (editorLocked || refreshingDependencies || forking) && !importWizardOpen
+  }, [editorLocked, refreshingDependencies, forking, importWizardOpen])
 
   const dialogContent = React.useMemo((): string | null => {
     if (refreshingDependencies) {

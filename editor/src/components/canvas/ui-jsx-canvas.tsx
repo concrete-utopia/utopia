@@ -75,9 +75,12 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
-import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
+import {
+  projectContentsSameForRefreshRequire,
+  getParseSuccessForFilePath,
+  getValidElementPaths,
+} from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
-import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
   atomWithPubSub,
@@ -98,6 +101,7 @@ import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
+import { useTailwindCompilation } from '../../core/tailwind/tailwind-compilation'
 
 applyUIDMonkeyPatch()
 
@@ -360,20 +364,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   useClearSpyMetadataOnRemount(props.invalidatedCanvasData, isRemounted, metadataContext)
 
-  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
-  const shouldRerenderRef = React.useRef(false)
-  shouldRerenderRef.current =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEqualsByValue(
-      ElementsToRerenderGLOBAL.current,
-      elementsToRerenderRef.current,
-      EP.pathsEqual,
-    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
-  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
-
   const maybeOldProjectContents = React.useRef(projectContents)
-  if (shouldRerenderRef.current) {
+
+  const projectContentsSimilarEnough = projectContentsSameForRefreshRequire(
+    maybeOldProjectContents.current,
+    projectContents,
+  )
+  if (!projectContentsSimilarEnough) {
     maybeOldProjectContents.current = projectContents
   }
 
@@ -498,7 +495,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const executionScope = scope
 
-  useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
+  useTailwindCompilation()
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
@@ -833,7 +830,7 @@ function useGetStoryboardRoot(
           getRemixValidPathsGenerationContext,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
-    validPaths[0] ?? EP.emptyElementPath,
+    validPaths.at(0) ?? EP.emptyElementPath,
   )
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)

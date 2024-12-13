@@ -6,6 +6,7 @@ import type {
   JSXElementChild,
   TopLevelElement,
   JSXAttributes,
+  JSExpression,
 } from '../shared/element-template'
 import {
   utopiaJSXComponent,
@@ -34,6 +35,7 @@ import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, getUtopiaID } from '../shared/uid-utils'
 import { hashObject } from '../shared/hash'
+import type { MapLike } from 'typescript'
 
 export const PathForSceneComponent = PP.create('component')
 export const PathForSceneDataUid = PP.create('data-uid')
@@ -114,7 +116,7 @@ export function convertScenesToUtopiaCanvasComponent(
   return utopiaJSXComponent(
     BakedInStoryboardVariableName,
     false,
-    'var',
+    'const',
     'block',
     [],
     null,
@@ -135,6 +137,7 @@ export function createSceneFromComponent(
   filePath: string,
   componentImportedAs: string,
   uid: string,
+  additionalAttributes: MapLike<JSExpression> = {},
 ): JSXElement {
   const sceneProps = jsxAttributesFromMap({
     [UTOPIA_UID_KEY]: jsExpressionValue(uid, emptyComments),
@@ -148,6 +151,7 @@ export function createSceneFromComponent(
       },
       emptyComments,
     ),
+    ...additionalAttributes,
   })
   const hash = hashObject({
     fileName: filePath,

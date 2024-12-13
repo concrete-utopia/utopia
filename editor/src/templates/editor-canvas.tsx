@@ -104,7 +104,9 @@ import { CursorComponent } from '../components/canvas/controls/select-mode/curso
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
-import { ResizeObserver } from '../components/canvas/dom-walker'
+import { isInsideColorPicker } from '../components/inspector/controls/color-picker-utils'
+import { addMouseUpHandler, removeMouseUpHandler } from './global-handlers'
+import { ResizeObserver } from '../components/canvas/observers'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -362,7 +364,6 @@ export function runLocalCanvasAction(
   builtinDependencies: BuiltInDependencies,
   action: CanvasAction,
 ): EditorState {
-  // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
       const newCanvasOffset = Utils.offsetPoint(
@@ -375,6 +376,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           realCanvasOffset: newCanvasOffset,
           roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
+          elementsToRerender: [], // we set this to [] to maximize the scroll performance, but it needs to be reset after the scroll! Ideally this would be in the patchedEditorState, but scrolling the canvas is not a continuous interaciton
         },
       }
     }
@@ -695,6 +697,7 @@ interface EditorCanvasProps {
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  shouldRenderCanvas: boolean
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -855,6 +858,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     // we round the offset here, so all layers, the canvas, and controls use the same rounded value for positioning
     // instead of letting Chrome do it, because that results in funky artifacts (e.g. while scrolling, the layers don't "jump" pixels at the same time)
 
+    if (!this.props.shouldRenderCanvas) {
+      return <CanvasComponentEntry shouldRenderCanvas={false} />
+    }
+
     const nodeConnectorsDiv = createNodeConnectorsDiv(
       this.props.model.canvasOffset,
       this.props.model.scale,
@@ -871,10 +878,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
     const canvasIsLive = isLiveMode(this.props.editor.mode)
 
-    const canvasControls = React.createElement(NewCanvasControls, {
-      windowToCanvasPosition: this.getPosition,
-      cursor,
-    })
+    const canvasControls = (
+      <NewCanvasControls windowToCanvasPosition={this.getPosition} cursor={cursor} />
+    )
 
     const canvasLiveEditingStyle = canvasIsLive
       ? UtopiaStyles.canvas.live
@@ -1070,9 +1076,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
       },
       nodeConnectorsDiv,
-      React.createElement(CanvasComponentEntry, {}),
+      <CanvasComponentEntry shouldRenderCanvas={true} />,
       canvasControls,
-      React.createElement(CursorComponent, {}),
+      <CursorComponent />,
       <EditorCommon mouseDown={this.handleMouseDown} />,
     )
   }
@@ -1159,6 +1165,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   handleMouseMove = (event: MouseEvent) => {
+    if (isInsideColorPicker(event.target)) {
+      return
+    }
     let actions: Array<EditorAction> = []
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
@@ -1364,14 +1373,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     }
   }
 
-  handleWindowMouseUp = (event: any) => {
-    this.props.dispatch(this.handleMouseUp(event))
-  }
-
   setupWindowListeners() {
     window.addEventListener('mousemove', this.handleMouseMove, { capture: true }) // we use this event in the capture phase because size-box.ts calls stopPropagation() on mouseMove
     window.addEventListener('mouseleave', this.handleMouseLeave)
-    window.addEventListener('mouseup', this.handleWindowMouseUp, { capture: true })
+    addMouseUpHandler(this.handleMouseUp)
     window.addEventListener('click', this.handleClick)
     window.addEventListener('dblclick', this.handleDoubleClick)
     ;(window as any).addEventListener('paste', this.handlePaste)
@@ -1380,7 +1385,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   removeEventListeners() {
     window.removeEventListener('mousemove', this.handleMouseMove, { capture: true })
     window.removeEventListener('mouseleave', this.handleMouseLeave)
-    window.removeEventListener('mouseup', this.handleWindowMouseUp, { capture: true })
+    removeMouseUpHandler(this.handleMouseUp)
     window.removeEventListener('click', this.handleClick)
     window.removeEventListener('dblclick', this.handleDoubleClick)
     ;(window as any).removeEventListener('paste', this.handlePaste)

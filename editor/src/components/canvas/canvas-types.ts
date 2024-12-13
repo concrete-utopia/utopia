@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { JSExpression, PartOfJSXAttributeValue } from '../../core/shared/element-template'
 import type { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import type { KeysPressed } from '../../utils/keyboard'
 import type { Modifiers } from '../../utils/modifiers'
-import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -15,19 +14,26 @@ import type {
 import type { EditorPanel } from '../common/actions/index'
 import type { Mode } from '../editor/editor-modes'
 import type { EditorState } from '../editor/store/editor-state'
-import { OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { assertNever, xor } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import type { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import type {
   DragInteractionData,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
+import type { FlexWrap } from 'utopia-api/core'
+import type {
+  CSSBorderRadius,
+  CSSNumber,
+  CSSOverflow,
+  CSSPadding,
+  FlexDirection,
+} from '../inspector/common/css-utils'
+import type { ScreenSize } from './responsive-types'
 
 export const CanvasContainerID = 'canvas-container'
+export const SceneContainerName = 'scene'
 
 // TODO: this should not be an enum but a const object
 export enum CSSCursor {
@@ -533,3 +539,126 @@ export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
 
 export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
+
+export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
+
+interface CSSStylePropertyNotFound {
+  type: 'not-found'
+}
+
+interface CSSStylePropertyNotParsable {
+  type: 'not-parsable'
+  originalValue: JSExpression | PartOfJSXAttributeValue
+}
+
+interface ParsedCSSStyleProperty<T> {
+  type: 'property'
+  tags: PropertyTag[]
+  propertyValue: JSExpression | PartOfJSXAttributeValue
+  value: T
+}
+
+type StyleHoverModifier = { type: 'hover' }
+export type StyleMediaSizeModifier = {
+  type: 'media-size'
+  size: ScreenSize
+}
+export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
+
+export type CSSStyleProperty<T> =
+  | CSSStylePropertyNotFound
+  | CSSStylePropertyNotParsable
+  | ParsedCSSStyleProperty<T>
+
+export function cssStylePropertyNotFound(): CSSStylePropertyNotFound {
+  return { type: 'not-found' }
+}
+
+export function cssStylePropertyNotParsable(
+  originalValue: JSExpression | PartOfJSXAttributeValue,
+): CSSStylePropertyNotParsable {
+  return { type: 'not-parsable', originalValue: originalValue }
+}
+
+export function cssStyleProperty<T>(
+  value: T,
+  propertyValue: JSExpression | PartOfJSXAttributeValue,
+): ParsedCSSStyleProperty<T> {
+  return { type: 'property', tags: [], value: value, propertyValue: propertyValue }
+}
+
+export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
+  if (property.type === 'property') {
+    return property.value
+  }
+  return null
+}
+
+export type FlexGapInfo = CSSStyleProperty<CSSNumber>
+export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
+export type LeftInfo = CSSStyleProperty<CSSNumber>
+export type RightInfo = CSSStyleProperty<CSSNumber>
+export type TopInfo = CSSStyleProperty<CSSNumber>
+export type BottomInfo = CSSStyleProperty<CSSNumber>
+export type WidthInfo = CSSStyleProperty<CSSNumber>
+export type HeightInfo = CSSStyleProperty<CSSNumber>
+export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
+export type PaddingInfo = CSSStyleProperty<CSSPadding>
+export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
+export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
+export type BorderRadiusCornerInfo = CSSStyleProperty<CSSNumber>
+export type ZIndexInfo = CSSStyleProperty<CSSNumber>
+export type FlexWrapInfo = CSSStyleProperty<FlexWrap>
+export type OverflowInfo = CSSStyleProperty<CSSOverflow>
+
+export interface StyleInfo {
+  gap: FlexGapInfo | null
+  flexDirection: FlexDirectionInfo | null
+  left: LeftInfo | null
+  right: RightInfo | null
+  top: TopInfo | null
+  bottom: BottomInfo | null
+  width: WidthInfo | null
+  height: HeightInfo | null
+  flexBasis: FlexBasisInfo | null
+  padding: PaddingInfo | null
+  paddingTop: PaddingSideInfo | null
+  paddingRight: PaddingSideInfo | null
+  paddingBottom: PaddingSideInfo | null
+  paddingLeft: PaddingSideInfo | null
+  borderRadius: BorderRadiusInfo | null
+  borderTopLeftRadius: BorderRadiusCornerInfo | null
+  borderTopRightRadius: BorderRadiusCornerInfo | null
+  borderBottomRightRadius: BorderRadiusCornerInfo | null
+  borderBottomLeftRadius: BorderRadiusCornerInfo | null
+  zIndex: ZIndexInfo | null
+  flexWrap: FlexWrapInfo | null
+  overflow: OverflowInfo | null
+}
+
+const emptyStyleInfo: StyleInfo = {
+  gap: null,
+  flexDirection: null,
+  left: null,
+  right: null,
+  top: null,
+  bottom: null,
+  width: null,
+  height: null,
+  flexBasis: null,
+  padding: null,
+  paddingTop: null,
+  paddingRight: null,
+  paddingBottom: null,
+  paddingLeft: null,
+  borderRadius: null,
+  borderTopLeftRadius: null,
+  borderTopRightRadius: null,
+  borderBottomRightRadius: null,
+  borderBottomLeftRadius: null,
+  zIndex: null,
+  flexWrap: null,
+  overflow: null,
+}
+
+export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

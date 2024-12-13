@@ -154,7 +154,7 @@ export interface ShownInspectorSpec {
   sections: Styling[]
 }
 
-export type TypedInpsectorSpec = { type: 'hidden' } | ShownInspectorSpec
+export type TypedInspectorSpec = { type: 'hidden' } | ShownInspectorSpec
 
 export interface ComponentDescriptor {
   properties: PropertyControls
@@ -163,7 +163,7 @@ export interface ComponentDescriptor {
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
-  inspector: TypedInpsectorSpec
+  inspector: TypedInspectorSpec
   emphasis: Emphasis
   icon: Icon
   label: string | null
@@ -187,7 +187,7 @@ export function componentDescriptor(
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
   source: ComponentDescriptorSource,
   focus: Focus,
-  inspector: TypedInpsectorSpec,
+  inspector: TypedInspectorSpec,
   emphasis: Emphasis,
   icon: Icon,
   label: string | null,

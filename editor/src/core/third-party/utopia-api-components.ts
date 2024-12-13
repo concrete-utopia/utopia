@@ -18,6 +18,43 @@ import {
   jsxElementWithoutUID,
 } from '../shared/element-template'
 
+const IntrinsicComponentDescriptor = (
+  name: string,
+  insertMenuLabel: string,
+  supportsChildren: boolean,
+  styleProp: () => JSExpression,
+): ComponentDescriptor => {
+  return {
+    properties: {
+      style: {
+        control: 'style-controls',
+      },
+    },
+    supportsChildren: supportsChildren,
+    preferredChildComponents: [],
+    variants: [
+      {
+        insertMenuLabel: insertMenuLabel,
+        importsToAdd: {},
+        elementToInsert: () =>
+          jsxElementWithoutUID(
+            name,
+            [
+              jsxAttributesEntry('style', styleProp(), emptyComments),
+              jsxAttributesEntry(
+                'data-label',
+                jsExpressionValue('Rectangle', emptyComments),
+                emptyComments,
+              ),
+            ],
+            [],
+          ),
+      },
+    ],
+    source: defaultComponentDescriptor(),
+    ...ComponentDescriptorDefaults,
+  }
+}
 const BasicUtopiaComponentDescriptor = (
   name: string,
   supportsChildren: boolean,
@@ -106,7 +143,7 @@ const BasicUtopiaSceneDescriptor = (
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
   Ellipse: BasicUtopiaComponentDescriptor('Ellipse', false, defaultElementStyle),
-  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', false, defaultRectangleElementStyle),
+  Rectangle: IntrinsicComponentDescriptor('div', 'Rectangle', false, defaultRectangleElementStyle),
   View: BasicUtopiaComponentDescriptor('View', true, defaultElementStyle),
   FlexRow: BasicUtopiaComponentDescriptor('FlexRow', true, defaultFlexRowOrColStyle),
   FlexCol: BasicUtopiaComponentDescriptor('FlexCol', true, defaultFlexRowOrColStyle),

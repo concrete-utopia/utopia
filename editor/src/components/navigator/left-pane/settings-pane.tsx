@@ -27,7 +27,7 @@ import type { FeatureName } from '../../../utils/feature-switches'
 import {
   toggleFeatureEnabled,
   isFeatureEnabled,
-  AllFeatureNames,
+  getFeaturesToDisplay,
 } from '../../../utils/feature-switches'
 import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
@@ -59,14 +59,23 @@ const themeOptions = [
 const defaultTheme = themeOptions[0]
 
 export const FeatureSwitchesSection = React.memo(() => {
-  if (AllFeatureNames.length > 0) {
+  const [changeCount, setChangeCount] = React.useState(0)
+  // this replaces the 'forceRender' in the original implementation
+  const onFeatureChange = React.useCallback(() => setChangeCount(changeCount + 1), [changeCount])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const featuresToDisplay = React.useMemo(() => getFeaturesToDisplay(), [changeCount])
+  if (featuresToDisplay.length > 0) {
     return (
       <Section>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <H2>Experimental Toggle Features</H2>
         </UIGridRow>
-        {AllFeatureNames.map((name) => (
-          <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
+        {featuresToDisplay.map((name) => (
+          <FeatureSwitchRow
+            key={`feature-switch-${name}`}
+            name={name}
+            onFeatureChange={onFeatureChange}
+          />
         ))}
       </Section>
     )
@@ -75,15 +84,14 @@ export const FeatureSwitchesSection = React.memo(() => {
   }
 })
 
-const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
+const FeatureSwitchRow = React.memo((props: { name: FeatureName; onFeatureChange: () => void }) => {
   const name = props.name
+  const onFeatureChange = props.onFeatureChange
   const id = `toggle-${name}`
-  const [changeCount, setChangeCount] = React.useState(0)
-  const forceRender = React.useCallback(() => setChangeCount(changeCount + 1), [changeCount])
   const onChange = React.useCallback(() => {
     toggleFeatureEnabled(name)
-    forceRender()
-  }, [forceRender, name])
+    onFeatureChange()
+  }, [name, onFeatureChange])
   return (
     <FlexRow style={{ paddingLeft: 16, height: UtopiaTheme.layout.rowHeight.normal }}>
       <CheckboxInput

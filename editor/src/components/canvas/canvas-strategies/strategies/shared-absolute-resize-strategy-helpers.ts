@@ -40,11 +40,6 @@ import {
   EdgePositionBottom,
 } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
-import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
-import {
-  adjustCssLengthProperties,
-  lengthPropertyToAdjust,
-} from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, resizeBoundingBox } from './resize-helpers'
@@ -57,7 +52,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { addOrMergeIntendedBounds } from './shared-keyboard-strategy-helpers'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
@@ -416,7 +411,7 @@ export function resizeInspectorStrategy(
       commands.push(
         pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
       )
-      commands.push(setElementsToRerenderCommand(selectedElements))
+
       return commands
     },
   }
@@ -460,7 +455,7 @@ export function directResizeInspectorStrategy(
           pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
         )
       }
-      commands.push(setElementsToRerenderCommand(selectedElements))
+
       return commands
     },
   }

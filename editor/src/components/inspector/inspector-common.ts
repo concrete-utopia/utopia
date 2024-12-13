@@ -13,7 +13,6 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
-  JSXElement,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -47,7 +46,7 @@ import {
   setPropHugAbsoluteStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import type { Size } from '../../core/shared/math-utils'
+import type { CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   isFiniteRectangle,
   isInfinityRectangle,
@@ -100,7 +99,77 @@ export function getFlexJustifyContent(value: string | null): FlexJustifyContent 
   }
 }
 
+export type AlignContent =
+  | 'normal'
+  | 'start'
+  | 'center'
+  | 'end'
+  | 'flex-start'
+  | 'flex-end'
+  | 'baseline'
+  | 'first baseline'
+  | 'last baseline'
+  | 'space-between'
+  | 'space-around'
+  | 'space-evenly'
+  | 'stretch'
+  | 'safe center'
+  | 'unsafe center'
+  | 'inherit'
+  | 'initial'
+  | 'revert'
+  | 'revert-layer'
+  | 'unset'
+
+export function getAlignContent(value: string | null): AlignContent | null {
+  switch (value) {
+    case 'normal':
+      return 'normal'
+    case 'start':
+      return 'start'
+    case 'center':
+      return 'center'
+    case 'end':
+      return 'end'
+    case 'flex-start':
+      return 'flex-start'
+    case 'flex-end':
+      return 'flex-end'
+    case 'baseline':
+      return 'baseline'
+    case 'first baseline':
+      return 'first baseline'
+    case 'last baseline':
+      return 'last baseline'
+    case 'space-between':
+      return 'space-between'
+    case 'space-around':
+      return 'space-around'
+    case 'space-evenly':
+      return 'space-evenly'
+    case 'stretch':
+      return 'stretch'
+    case 'safe center':
+      return 'safe center'
+    case 'unsafe center':
+      return 'unsafe center'
+    case 'inherit':
+      return 'inherit'
+    case 'initial':
+      return 'initial'
+    case 'revert':
+      return 'revert'
+    case 'revert-layer':
+      return 'revert-layer'
+    case 'unset':
+      return 'unset'
+    default:
+      return null
+  }
+}
+
 export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
+export type SelfAlignment = FlexAlignment | 'end' | 'start'
 
 export function getFlexAlignment(value: string | null): FlexAlignment | null {
   switch (value) {
@@ -116,6 +185,17 @@ export function getFlexAlignment(value: string | null): FlexAlignment | null {
       return 'stretch'
     default:
       return null
+  }
+}
+
+export function getSelfAlignment(value: string | null): SelfAlignment | null {
+  switch (value) {
+    case 'end':
+      return 'end'
+    case 'start':
+      return 'start'
+    default:
+      return getFlexAlignment(value)
   }
 }
 
@@ -612,6 +692,19 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   ]
 }
 
+export const nukeGridCellPositioningPropsCommands = (path: ElementPath): Array<CanvasCommand> => {
+  return [
+    deleteProperties('always', path, [
+      PP.create('style', 'gridColumn'),
+      PP.create('style', 'gridColumnStart'),
+      PP.create('style', 'gridColumnEnd'),
+      PP.create('style', 'gridRow'),
+      PP.create('style', 'gridRowStart'),
+      PP.create('style', 'gridRowEnd'),
+    ]),
+  ]
+}
+
 export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
@@ -622,6 +715,7 @@ export type FixedHugFill =
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
   | { type: 'scaled'; value: CSSNumber }
+  | { type: 'stretch' }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -631,14 +725,52 @@ export function isHuggingFixedHugFill(fixedHugFillMode: FixedHugFillMode | null 
   )
 }
 
+export interface DetectedFillHugFixedState {
+  fixedHugFill: FixedHugFill | null
+  controlStatus: ControlStatus
+}
+
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
+): DetectedFillHugFixedState {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return { fixedHugFill: null, controlStatus: 'off' }
+  }
+
+  const width = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'width')),
+  )
+  const height = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'height')),
+  )
+
+  if (MetadataUtils.isGridItem(metadata, elementPath)) {
+    const isStretchingExplicitly =
+      (element.specialSizeMeasurements.alignSelf === 'stretch' &&
+        axis === 'horizontal' &&
+        width == null) ||
+      (element.specialSizeMeasurements.justifySelf === 'stretch' &&
+        axis === 'vertical' &&
+        height == null)
+
+    const isStretchingImplicitly =
+      width == null &&
+      height == null &&
+      (element.specialSizeMeasurements.alignSelf == null ||
+        element.specialSizeMeasurements.alignSelf === 'auto') &&
+      (element.specialSizeMeasurements.justifySelf == null ||
+        element.specialSizeMeasurements.justifySelf === 'auto')
+
+    if (isStretchingExplicitly || isStretchingImplicitly) {
+      return { fixedHugFill: { type: 'stretch' }, controlStatus: 'detected' }
+    }
   }
 
   const flexGrowLonghand = foldEither(
@@ -781,6 +913,37 @@ export function isFixedHugFillModeApplied(
   return (
     detectFillHugFixedState('horizontal', metadata, element).fixedHugFill?.type === mode &&
     detectFillHugFixedState('vertical', metadata, element).fixedHugFill?.type === mode
+  )
+}
+
+export function isFillOrStretchModeApplied(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+): boolean {
+  return (
+    isFixedHugFillModeApplied(metadata, element, 'fill') ||
+    isFixedHugFillModeApplied(metadata, element, 'stretch')
+  )
+}
+
+export function isFillOrStretchModeAppliedOnAnySide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+): boolean {
+  return (
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'fill') ||
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'stretch')
+  )
+}
+
+export function isFillOrStretchModeAppliedOnSpecificSide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  side: 'horizontal' | 'vertical',
+): boolean {
+  return (
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'fill' ||
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'stretch'
   )
 }
 
@@ -1046,7 +1209,11 @@ export function getFixedFillHugOptionsForElement(
       (!isGroup && basicHugContentsApplicableForContainer(metadata, pathTrees, selectedView))
         ? 'hug'
         : null,
-      fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
+      fillContainerApplicable(metadata, selectedView)
+        ? MetadataUtils.isGridItem(metadata, selectedView)
+          ? 'stretch'
+          : 'fill'
+        : null,
     ]),
   )
 }
@@ -1083,7 +1250,7 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const globalFrame = MetadataUtils.getLocalFrame(parentPath, metadata)
+  const globalFrame = MetadataUtils.getLocalFrame(parentPath, metadata, null)
   if (globalFrame == null || isInfinityRectangle(globalFrame)) {
     return []
   }
@@ -1173,6 +1340,20 @@ export function removeExtraPinsWhenSettingSize(
   )
 }
 
+export function removeAlignJustifySelf(
+  axis: Axis,
+  elementMetadata: ElementInstanceMetadata | null,
+): Array<CanvasCommand> {
+  if (elementMetadata == null) {
+    return []
+  }
+  return [
+    deleteProperties('always', elementMetadata.elementPath, [
+      styleP(axis === 'horizontal' ? 'alignSelf' : 'justifySelf'),
+    ]),
+  ]
+}
+
 export function isFixedHugFillEqual(
   a: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
   b: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
@@ -1205,9 +1386,10 @@ export function isFixedHugFillEqual(
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
         a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
       )
+    case 'stretch':
+      return a.fixedHugFill.type === b.fixedHugFill.type
     default:
-      const _exhaustiveCheck: never = a.fixedHugFill
-      throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
+      assertNever(a.fixedHugFill)
   }
 }
 
@@ -1216,6 +1398,7 @@ export function toggleAbsolutePositioningCommands(
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
+  canvasContext: { scale: number; offset: CanvasVector },
 ): Array<CanvasCommand> {
   const commands = selectedViews.flatMap((elementPath) => {
     const maybeGroupConversionCommands = groupConversionCommands(
@@ -1280,7 +1463,7 @@ export function getConvertIndividualElementToAbsoluteCommandsFromMetadata(
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
-  const localFrame = MetadataUtils.getLocalFrame(target, jsxMetadata)
+  const localFrame = MetadataUtils.getLocalFrame(target, jsxMetadata, null)
   if (localFrame == null || isInfinityRectangle(localFrame)) {
     return []
   }
@@ -1311,6 +1494,7 @@ export function getConvertIndividualElementToAbsoluteCommands(
   // First round the frame so that we don't end up with half pixel values
   const roundedFrame = roundRectangleToNearestWhole(frame)
   return [
+    ...nukeGridCellPositioningPropsCommands(target),
     ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
     ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
   ]
