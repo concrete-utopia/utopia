@@ -573,7 +573,7 @@ export type StyleModifierOrigin = InlineModifierOrigin | TailwindModifierOrigin
 export type ParsedVariant<T extends keyof StyleInfo> = {
   parsedValue: NonNullable<ParsedCSSProperties[T]>
   originalValue: string | number | undefined
-  modifiers?: StyleModifier[]
+  modifiers: StyleModifier[]
 }
 
 export type CSSStyleProperty<T> =
@@ -596,7 +596,7 @@ export type CSSVariant<T> = {
   modifiers?: StyleModifier[]
 }
 
-export function cssVariant<T>(value: T, modifiers?: StyleModifier[]): CSSVariant<T> {
+export function cssVariant<T>(value: T, modifiers: StyleModifier[]): CSSVariant<T> {
   return { value: value, modifiers: modifiers }
 }
 
