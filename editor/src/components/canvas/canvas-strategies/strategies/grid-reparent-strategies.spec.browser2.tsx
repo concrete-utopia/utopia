@@ -4,7 +4,7 @@ import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { Point } from '../../event-helpers.test-utils'
@@ -947,25 +947,6 @@ import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb' data-testid='sb'>
-    <Grid
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 100,
-        top: 100,
-        width: 300,
-        height: 300,      
-        padding: 10,
-      }}
-      data-uid='grid'
-      data-testid='grid'
-    ${insideGrid == null ? '/>' : `>${insideGrid}</Grid>`}
-    ${extraCode ?? ''}
-  </Storyboard>
-)
-
-export function Grid(props) {
-  return (
     <div
       style={{
         display: 'grid',
@@ -974,12 +955,13 @@ export function Grid(props) {
         gridGap: 10,
         ...props.style,
       }}
-      data-uid='59069a6cd70fcd33ce17f5ff0be43a07'
+      data-uid='grid'
+      data-testid='grid'
     >
-      {props.children}
-    </div>
-  )
-}
+    ${insideGrid == null ? '/>' : `>${insideGrid}</Grid>`}
+    ${extraCode ?? ''}
+  </Storyboard>
+)
 `
 }
 

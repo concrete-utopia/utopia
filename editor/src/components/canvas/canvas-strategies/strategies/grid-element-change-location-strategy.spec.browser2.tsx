@@ -1230,11 +1230,13 @@ export var storyboard = (
       data-label='Playground'
       data-uid='scene'
     >
-      <Grid
+      <div
         style={{
-          position: 'absolute',
-          left: 31,
-          top: 0,
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
         }}
         data-uid='grid'
       >
@@ -1277,37 +1279,10 @@ export var storyboard = (
           }}
           data-uid='ddd'
         />
-      </Grid>
+      </div>
     </Scene>
   </Storyboard>
 )
-
-export function Grid(props) {
-  return (
-    <div
-      style={{
-        ...props.style,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: '75px 75px 75px 75px',
-          gridTemplateColumns:
-            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-          gridGap: 16,
-        }}
-      >
-        {props.children}
-      </div>
-      <div
-        style={{ height: 100 }}
-      />
-    </div>
-  )
-}
 `
 
 const ProjectCodeReorderwithMultiCellChildShorthand = `import * as React from 'react'

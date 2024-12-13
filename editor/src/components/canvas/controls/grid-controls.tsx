@@ -2716,7 +2716,10 @@ const SnapLines = React.memo(
       targetMarker == null ||
       targetMarker.position == null ||
       targetFrozenMarker == null ||
-      targetFrozenMarker.position == null
+      targetFrozenMarker.position == null ||
+      props.gridTemplate.gridTemplateColumns?.type !== 'DIMENSIONS' ||
+      props.gridTemplate.gridTemplateRows?.type !== 'DIMENSIONS' ||
+      gridData == null
     ) {
       return null
     }
@@ -2734,14 +2737,6 @@ const SnapLines = React.memo(
     const left = !isColumn
       ? props.container.x
       : props.target.x + (props.edge === 'column-end' ? props.target.width : 0)
-
-    if (
-      props.gridTemplate.gridTemplateColumns?.type !== 'DIMENSIONS' ||
-      props.gridTemplate.gridTemplateRows?.type !== 'DIMENSIONS' ||
-      gridData == null
-    ) {
-      return null
-    }
 
     const columns = props.gridTemplate.gridTemplateColumns.dimensions
     const rows = props.gridTemplate.gridTemplateRows.dimensions
