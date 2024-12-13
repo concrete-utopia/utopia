@@ -109,7 +109,7 @@ export const removeClasses =
       if (!shouldUpdateClass(cls, propertiesToRemove)) {
         return cls
       }
-      return propertiesToRemove[cls.ast.property] != null
+      return propertiesToRemove[cls.ast.property] == null
     })
     return classListWithRemovedClasses
   }
@@ -138,11 +138,8 @@ function shouldUpdateClass(
     return false
   }
   const sizeVariantToUpdate = getTailwindSizeVariant(propertyToUpdate.modifiers)
-  if (
-    sizeVariantToUpdate == null &&
-    cls.ast.variants.filter((v) => v.type === 'media').length > 0
-  ) {
-    // we need to update the default property value but this class has size variants
+  if (sizeVariantToUpdate == null && cls.ast.variants.length > 0) {
+    // we need to update the default property value but this class has variants
     return false
   }
   if (
