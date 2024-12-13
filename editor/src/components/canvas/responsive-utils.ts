@@ -154,7 +154,7 @@ function getMediaModifier(
   )[0]
 }
 
-export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] }>(
+export function selectValueByBreakpoint<T extends { modifiers: StyleModifier[] }>(
   parsedVariants: T[],
   sceneWidthInPx?: number,
 ): T | null {

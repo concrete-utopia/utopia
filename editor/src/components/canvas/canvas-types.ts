@@ -29,6 +29,7 @@ import type {
   CSSOverflow,
   CSSPadding,
   FlexDirection,
+  ParsedCSSProperties,
 } from '../inspector/common/css-utils'
 import type { ScreenSize } from './responsive-types'
 
@@ -553,17 +554,27 @@ interface CSSStylePropertyNotParsable {
 
 interface ParsedCSSStyleProperty<T> {
   type: 'property'
-  tags: PropertyTag[]
   propertyValue: JSExpression | PartOfJSXAttributeValue
-  value: T
+  currentVariant: CSSVariant<T>
+  variants?: CSSVariant<T>[]
 }
 
-type StyleHoverModifier = { type: 'hover' }
-export type StyleMediaSizeModifier = {
+type StyleModifierMetadata = { type: string; modifierOrigin?: StyleModifierOrigin }
+type StyleHoverModifier = StyleModifierMetadata & { type: 'hover' }
+export type StyleMediaSizeModifier = StyleModifierMetadata & {
   type: 'media-size'
   size: ScreenSize
 }
 export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
+type InlineModifierOrigin = { type: 'inline' }
+type TailwindModifierOrigin = { type: 'tailwind'; variant: string }
+export type StyleModifierOrigin = InlineModifierOrigin | TailwindModifierOrigin
+
+export type ParsedVariant<T extends keyof StyleInfo> = {
+  parsedValue: NonNullable<ParsedCSSProperties[T]>
+  originalValue: string | number | undefined
+  modifiers: StyleModifier[]
+}
 
 export type CSSStyleProperty<T> =
   | CSSStylePropertyNotFound
@@ -580,16 +591,35 @@ export function cssStylePropertyNotParsable(
   return { type: 'not-parsable', originalValue: originalValue }
 }
 
+export type CSSVariant<T> = {
+  value: T
+  modifiers: StyleModifier[]
+}
+
+export function cssVariant<T>(value: T, modifiers: StyleModifier[]): CSSVariant<T> {
+  return { value: value, modifiers: modifiers }
+}
+
 export function cssStyleProperty<T>(
-  value: T,
   propertyValue: JSExpression | PartOfJSXAttributeValue,
+  currentVariant: CSSVariant<T>,
+  variants: CSSVariant<T>[],
 ): ParsedCSSStyleProperty<T> {
-  return { type: 'property', tags: [], value: value, propertyValue: propertyValue }
+  return {
+    type: 'property',
+    propertyValue: propertyValue,
+    currentVariant: currentVariant,
+    variants: variants,
+  }
+}
+
+export function screenSizeModifier(size: ScreenSize): StyleMediaSizeModifier {
+  return { type: 'media-size', size: size }
 }
 
 export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
   if (property.type === 'property') {
-    return property.value
+    return property.currentVariant.value
   }
   return null
 }

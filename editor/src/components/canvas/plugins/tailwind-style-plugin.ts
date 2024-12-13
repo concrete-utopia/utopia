@@ -1,4 +1,5 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
+import type { Right } from '../../../core/shared/either'
 import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
@@ -7,8 +8,8 @@ import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin, StylePluginContext } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
-import type { StyleInfo } from '../canvas-types'
-import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
+import type { ParsedVariant, StyleInfo } from '../canvas-types'
+import { cssStyleProperty, cssVariant, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import {
@@ -18,22 +19,49 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
-import { getContainingSceneSize } from '../responsive-utils'
+import { getContainingSceneSize, selectValueByBreakpoint } from '../responsive-utils'
+import { getModifiers } from './tailwind-style-plugin-utils/tailwind-responsive-utils'
 
-const parseTailwindPropertyFactory =
+type StyleValueVariants = {
+  value: string | number | undefined
+  modifiers?: TailwindModifier[]
+}[]
+
+export const parseTailwindPropertyFactory =
   (config: Config | null, context: StylePluginContext) =>
   <T extends keyof StyleInfo>(
-    value: string | number | undefined,
+    styleDefinition: StyleValueVariants | undefined,
     prop: T,
   ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
-    const parsed = cssParsers[prop](value, null)
-    if (isLeft(parsed) || parsed.value == null) {
+    if (styleDefinition == null) {
       return null
     }
-    return cssStyleProperty(parsed.value, jsExpressionValue(value, emptyComments))
+    const possibleVariants: ParsedVariant<T>[] = styleDefinition
+      .map((v) => ({
+        parsedValue: cssParsers[prop](v.value, null),
+        originalValue: v.value,
+        modifiers: getModifiers(v.modifiers ?? [], config),
+      }))
+      .filter((v) => v.parsedValue != null && !isLeft(v.parsedValue))
+      .map((v) => ({
+        ...v,
+        parsedValue: (v.parsedValue as Right<ParsedCSSProperties[T]>).value as NonNullable<
+          ParsedCSSProperties[T]
+        >,
+      }))
+    const sceneSize = context.sceneSize.type === 'scene' ? context.sceneSize.width : undefined
+    const selectedVariant = selectValueByBreakpoint(possibleVariants, sceneSize)
+    if (selectedVariant == null) {
+      return null
+    }
+    return cssStyleProperty(
+      jsExpressionValue(selectedVariant.originalValue, emptyComments),
+      cssVariant(selectedVariant.parsedValue, selectedVariant.modifiers),
+      possibleVariants.map((variant) => cssVariant(variant.parsedValue, variant.modifiers)),
+    )
   }
 
-const TailwindPropertyMapping: Record<string, string> = {
+export const TailwindPropertyMapping: Record<string, string> = {
   left: 'positionLeft',
   right: 'positionRight',
   top: 'positionTop',
@@ -84,19 +112,51 @@ function stringifyPropertyValue(value: string | number): string {
   }
 }
 
-function getTailwindClassMapping(classes: string[], config: Config | null): Record<string, string> {
-  const mapping: Record<string, string> = {}
+type TailwindParsedStyle = {
+  kind: string
+  property: string
+  value: string
+  variants?: { type: string; value: string }[]
+}
+
+export function getTailwindClassMapping(
+  classes: string[],
+  config: Config | null,
+): Record<string, StyleValueVariants> {
+  const mapping: Record<string, StyleValueVariants> = {}
   classes.forEach((className) => {
-    const parsed = TailwindClassParser.parse(className, config ?? undefined)
-    if (parsed.kind === 'error' || !isSupportedTailwindProperty(parsed.property)) {
+    const parsed: TailwindParsedStyle | undefined = TailwindClassParser.parse(
+      className,
+      config ?? undefined,
+    )
+    if (
+      parsed == null ||
+      parsed.kind === 'error' ||
+      !isSupportedTailwindProperty(parsed.property)
+    ) {
       return
     }
-    mapping[parsed.property] = parsed.value
+    mapping[parsed.property] = mapping[parsed.property] ?? []
+    const modifiers = (parsed.variants ?? []).filter(isTailwindModifier)
+    mapping[parsed.property].push({
+      value: parsed.value,
+      modifiers: modifiers,
+    })
   })
   return mapping
 }
 
-const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
+const underscoresToSpaces = (
+  styleDef: StyleValueVariants | undefined,
+): StyleValueVariants | undefined => {
+  if (styleDef == null) {
+    return undefined
+  }
+  return styleDef.map((style) => ({
+    ...style,
+    value: typeof style.value === 'string' ? style.value.replace(/[-_]/g, ' ') : style.value,
+  }))
+}
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
@@ -222,3 +282,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
     )
   },
 })
+
+type TailwindModifier = { type: 'media'; value: string } | { type: 'hover'; value: string }
+function isTailwindModifier(modifier: {
+  type: string
+  value: string
+}): modifier is TailwindModifier {
+  return modifier.type === 'media' || modifier.type === 'hover'
+}
