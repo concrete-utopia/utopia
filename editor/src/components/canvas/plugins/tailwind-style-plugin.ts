@@ -279,6 +279,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       elementPath,
       [...propsToDelete, ...propsToSet],
       config,
+      { sceneSize: getContainingSceneSize(elementPath, editorState.jsxMetadata) },
     )
   },
 })
