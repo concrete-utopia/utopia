@@ -48,6 +48,40 @@ describe('getModifiers', () => {
     ])
   })
 
+  it('handles custom screen sizes from config with mixed units', () => {
+    const variants = [
+      { type: 'media', value: 'custom' },
+      { type: 'media', value: 'custom2' },
+    ]
+    const config = {
+      theme: {
+        screens: {
+          custom: { min: '10px', max: '20em' },
+          custom2: '30vh',
+        },
+      },
+    } as unknown as Config
+
+    const result = getModifiers(variants, config)
+    expect(result).toEqual([
+      {
+        type: 'media-size',
+        size: {
+          min: { value: 10, unit: 'px' },
+          max: { value: 20, unit: 'em' },
+        },
+        modifierOrigin: { type: 'tailwind', variant: 'custom' },
+      },
+      {
+        type: 'media-size',
+        size: {
+          min: { value: 30, unit: 'vh' },
+        },
+        modifierOrigin: { type: 'tailwind', variant: 'custom2' },
+      },
+    ])
+  })
+
   it('handles min-max range screen sizes', () => {
     const variants = [{ type: 'media', value: 'tablet' }]
     const config = {
