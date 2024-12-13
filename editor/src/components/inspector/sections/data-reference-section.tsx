@@ -13,7 +13,6 @@ import {
   getTextContentOfElement,
 } from './component-section/data-reference-cartouche'
 import { useDataPickerButton } from './component-section/component-section'
-import { useAtom } from 'jotai'
 import * as EP from '../../../core/shared/element-path'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { replaceElementInScope } from '../../editor/actions/action-creators'
@@ -21,11 +20,11 @@ import { NO_OP } from '../../../core/shared/utils'
 import { dataPathSuccess, traceDataFromElement } from '../../../core/data-tracing/data-tracing'
 import {
   getCartoucheDataTypeForExpression,
+  matchForChildrenProp,
   useVariablesInScopeForSelectedElement,
 } from './component-section/variables-in-scope-utils'
 import { jsxElementChildToValuePath } from './component-section/data-picker-utils'
 import { CartoucheInspectorWrapper } from './component-section/cartouche-control'
-import * as PP from '../../../core/shared/property-path'
 
 export const DataReferenceSectionId = 'code-element-section-test-id'
 
@@ -82,7 +81,7 @@ export const DataReferenceSection = React.memo(({ paths }: { paths: ElementPath[
 
   const varsInScope = useVariablesInScopeForSelectedElement(
     elementPathForDataPicker,
-    PP.create('children'),
+    matchForChildrenProp,
   )
 
   const pathToCurrenlySelectedValue = React.useMemo(() => {

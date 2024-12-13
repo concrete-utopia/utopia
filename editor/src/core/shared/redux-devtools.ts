@@ -17,6 +17,7 @@ interface Connection {
 
 function connectDevToolsExtension(): Connection | null {
   if (
+    typeof window !== 'undefined' &&
     window != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__ != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null
@@ -130,9 +131,6 @@ export function reduxDevtoolsSendActions(
     const filteredActions = mapDropNulls((action) => {
       switch (action.action) {
         //Actions to be completely omitted from logging to redux devtools, to avoid noise
-        case 'UPDATE_PREVIEW_CONNECTED': {
-          return null
-        }
         // These actions will be logged with all of their payload. Be careful: large payloads choke the Redux Devtool logging
         case 'SELECT_COMPONENTS':
         case 'CREATE_INTERACTION_SESSION':

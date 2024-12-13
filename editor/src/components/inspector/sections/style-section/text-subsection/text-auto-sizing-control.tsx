@@ -209,7 +209,6 @@ export const TextAutoSizingControl = React.memo(() => {
               icon: {
                 category: 'typography',
                 type: 'auto-width',
-                color: 'secondary',
                 width: 18,
                 height: 18,
               },
@@ -220,7 +219,6 @@ export const TextAutoSizingControl = React.memo(() => {
               icon: {
                 category: 'typography',
                 type: 'auto-height',
-                color: 'secondary',
                 width: 18,
                 height: 18,
               },
@@ -231,7 +229,6 @@ export const TextAutoSizingControl = React.memo(() => {
               icon: {
                 category: 'typography',
                 type: 'fixed-size',
-                color: 'secondary',
                 width: 18,
                 height: 18,
               },

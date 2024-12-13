@@ -40,6 +40,8 @@ export const ServerEnvironment = {
   AWS_REGION: mustEnvOrLocalFallback('AWS_REGION', ''),
   // Local assets
   LOCAL_ASSETS_FOLDER: mustEnvOrLocalFallback('LOCAL_ASSETS_FOLDER', '../server/utopia-local'),
+  // Discord webhooks
+  DISCORD_WEBHOOK_SITE_IMPORT: mustEnvOrLocalFallback('DISCORD_WEBHOOK_SITE_IMPORT', ''),
 }
 
 export type BrowserEnvironmentType = {
@@ -49,7 +51,7 @@ export type BrowserEnvironmentType = {
 
 export const BrowserEnvironment: BrowserEnvironmentType = {
   EDITOR_URL: mustEnvOrLocalFallback('EDITOR_URL', 'http://localhost:8000'),
-  UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://localhost:8000'),
+  UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://cdn.localhost:8000'),
 }
 
 /**

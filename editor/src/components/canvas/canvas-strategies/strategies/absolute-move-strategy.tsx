@@ -1,3 +1,4 @@
+import { assertNever } from '../../../../core/shared/utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -21,6 +22,8 @@ import {
   getAdjustMoveCommands,
   flattenSelection,
 } from './shared-move-strategies-helpers'
+import { metadataHasPositionAbsoluteOrNull } from '../../../../core/shared/element-template'
+import * as EP from '../../../../core/shared/element-path'
 
 export type ShouldRunApplicabilityCheck =
   | 'run-applicability-check'
@@ -38,6 +41,15 @@ export function absoluteMoveStrategy(
   const { pathsWereReplaced, paths: retargetedTargets } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
+  if (
+    pathsWereReplaced &&
+    originalTargets.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   const isApplicable =
     retargetedTargets.length > 0 &&
     flattenSelection(retargetedTargets).every((element) => {
@@ -45,10 +57,18 @@ export function absoluteMoveStrategy(
         canvasState.startingMetadata,
         element,
       )
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsPosition(canvasState, element)
-      )
+      const honoursPosition = honoursPropsPosition(canvasState, element)
+
+      switch (honoursPosition) {
+        case 'does-not-honour':
+          return false
+        case 'absolute-position-and-honours-numeric-props':
+          return metadataHasPositionAbsoluteOrNull(elementMetadata)
+        case 'honours-numeric-props-only':
+          return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        default:
+          assertNever(honoursPosition)
+      }
     })
 
   if (runApplicabilityCheck === 'run-applicability-check' && !isApplicable) {

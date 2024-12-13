@@ -40,7 +40,7 @@ describe('draw-to-insert text', () => {
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
-      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+      const newElementUID = Object.keys(editor.getEditorState().editor.jsxMetadata)
         .find((k) => k.startsWith('sb/') && k !== 'sb/39e')
         ?.replace('sb/', '')
 
@@ -103,7 +103,7 @@ describe('draw-to-insert text', () => {
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
-      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+      const newElementUID = Object.keys(editor.getEditorState().editor.jsxMetadata)
         .find((k) => k.startsWith('sb/') && k !== 'sb/39e')
         ?.replace('sb/', '')
 
@@ -169,7 +169,7 @@ describe('draw-to-insert text', () => {
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
-      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+      const newElementUID = Object.keys(editor.getEditorState().editor.jsxMetadata)
         .find((k) => k.startsWith('sb/') && k !== 'sb/39e')
         ?.replace('sb/39e/', '')
 
@@ -308,7 +308,7 @@ describe('draw-to-insert text', () => {
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
-      const newElementUID = Object.keys(editor.getEditorState().editor.domMetadata)
+      const newElementUID = Object.keys(editor.getEditorState().editor.jsxMetadata)
         .find((k) => k.startsWith('sb/'))
         ?.replace('sb/', '')
 

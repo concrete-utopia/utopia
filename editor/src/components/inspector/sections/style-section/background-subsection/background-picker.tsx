@@ -10,8 +10,9 @@ import {
   NumberInput,
   PopupList,
   UtopiaStyles,
-  UIRow,
   Icons,
+  UtopiaTheme,
+  SquareButton,
 } from '../../../../../uuiui'
 import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
@@ -75,6 +76,7 @@ import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
 import { useIsMyProject } from '../../../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../../../uuiui/utilities/disable-subtree'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -154,7 +156,7 @@ const LinearGradientControls: React.FunctionComponent<
       ),
     )
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr-->'>
       <NumberInput
         id='background-layer-gradient-angle'
         testId='background-layer-gradient-angle'
@@ -162,19 +164,12 @@ const LinearGradientControls: React.FunctionComponent<
         onSubmitValue={gradientAngleSubmitValue}
         onTransientSubmitValue={gradientAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelInner={{
-          category: 'layout/systems',
-          type: 'transform-rotate',
-          color: 'secondary',
-          width: 10,
-          height: 10,
-        }}
-        DEPRECATED_labelBelow='angle'
+        innerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
       />
-    </div>
+    </UIGridRow>
   )
 }
 
@@ -242,68 +237,56 @@ const RadialGradientControls: React.FunctionComponent<
   const radialBackgroundLayerHeight = props.value.gradientSize.height.value
 
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr--><--1fr--><--1fr-->'>
       <NumberInput
-        style={{
-          gridColumn: '1 / span 1',
-        }}
         id='background-gradient-center-x'
         testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='center x'
+        innerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
       <NumberInput
-        style={{
-          gridColumn: '3 / span 1',
-        }}
         id='background-gradient-center-y'
         testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='center y'
+        innerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
       <NumberInput
-        style={{
-          gridColumn: '5 / span 1',
-        }}
         id='background-gradient-width'
         testId='background-gradient-width'
         value={radialBackgroundLayerWidth}
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='width'
+        innerLabel='W'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
       <NumberInput
-        style={{
-          gridColumn: '7 / span 1',
-        }}
         id='background-gradient-height'
         testId='background-gradient-height'
         value={radialBackgroundLayerHeight}
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='height'
+        innerLabel='H'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
-    </div>
+    </UIGridRow>
   )
 }
 
@@ -347,47 +330,44 @@ const ConicGradientControls: React.FunctionComponent<
     )
 
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr--><--1fr-->'>
       <NumberInput
-        style={{ gridColumn: '1 / span 1' }}
         id='background-gradient-center-x'
         testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='x'
+        innerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
       <NumberInput
-        style={{ gridColumn: '3 / span 1' }}
         id='background-gradient-center-y'
         testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='y'
+        innerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
       />
       <NumberInput
-        style={{ gridColumn: '5 / span 1' }}
         id='background-gradient-from-angle'
         testId='background-gradient-from-angle'
         value={props.value.fromAngle.value}
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='angle'
+        innerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
       />
-    </div>
+    </UIGridRow>
   )
 }
 
@@ -574,45 +554,33 @@ export const BackgroundPicker: React.FunctionComponent<
         }}
         onMouseDown={stopPropagation}
       >
-        <UIRow
+        <UIGridRow
           padded={true}
-          style={{
-            borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-          }}
+          variant='<-auto-><----------1fr--------->'
+          style={{ paddingBottom: 4 }}
         >
-          <div
-            style={{
-              flexGrow: 1,
-            }}
-          >
-            <PopupList
-              id='colorPicker-background-layer-type-selector'
-              value={backgroundLayerOptionsByValue[props.value.type]}
-              options={backgroundLayerTypeSelectOptions}
-              onSubmitValue={onSubmitBackgroundLayerType}
-              containerMode='noBorder'
-            />
-          </div>
-          {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}
-          <FlexRow>
-            <Icn
-              type='pipette'
-              color='secondary'
-              width={18}
-              height={18}
-              onClick={dispatchEyeDropper}
-              style={{ marginLeft: 8 }}
-            />
-            <Icn
-              type='cross-large'
-              color='secondary'
-              width={16}
-              height={16}
-              onClick={props.closePopup}
-              style={{ marginLeft: 8 }}
-            />
+          <PopupList
+            id='colorPicker-background-layer-type-selector'
+            value={backgroundLayerOptionsByValue[props.value.type]}
+            options={backgroundLayerTypeSelectOptions}
+            onSubmitValue={onSubmitBackgroundLayerType}
+            containerMode='noBorder'
+            style={{ borderRadius: UtopiaTheme.inputBorderRadius, marginLeft: -4, width: 80 }}
+          />
+          <FlexRow style={{ justifyContent: 'flex-end', gap: 2 }}>
+            {isCSSBackgroundImageLayer(props.value) ? (
+              <SquareButton highlight spotlight={showSettings === true} onClick={toggleSettings}>
+                <Icons.Gear />
+              </SquareButton>
+            ) : null}
+            <SquareButton highlight onClick={dispatchEyeDropper}>
+              <Icons.SmallPipette />
+            </SquareButton>
+            <SquareButton highlight onClick={props.closePopup}>
+              <Icons.SmallCross />
+            </SquareButton>
           </FlexRow>
-        </UIRow>
+        </UIGridRow>
         {isCSSImageURLBackgroundLayer(props.value) ? (
           <PickerImagePreview value={props.value} />
         ) : (

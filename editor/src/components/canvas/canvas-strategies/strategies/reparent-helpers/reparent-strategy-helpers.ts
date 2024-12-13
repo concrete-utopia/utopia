@@ -16,12 +16,12 @@ import type { AllElementProps } from '../../../../editor/store/editor-state'
 import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import { assertNever } from '../../../../../core/shared/utils'
-import { PropertyControlsInfo } from '../../../../custom-code/code-file'
 import * as EP from '../../../../../core/shared/element-path'
 
 export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
 export type ReparentAsStatic = 'REPARENT_AS_STATIC'
-export type ReparentStrategy = ReparentAsAbsolute | ReparentAsStatic
+export type ReparentIntoGrid = 'REPARENT_INTO_GRID'
+export type ReparentStrategy = ReparentAsAbsolute | ReparentAsStatic | ReparentIntoGrid
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy

@@ -3,7 +3,10 @@ import {
   insertJSXElementChildren,
   renameJsxElementChild,
 } from '../../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  getFilePathMappings,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { type ElementPath } from '../../../core/shared/project-file-types'
@@ -50,8 +53,12 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
     editor,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-
-      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+      const updatedImports = mergeImports(
+        underlyingFilePath,
+        getFilePathMappings(editor.projectContents),
+        success.imports,
+        subject.importsToAdd,
+      )
 
       subjectElement = renameJsxElementChild(subject.element, updatedImports.duplicateNameMapping)
 

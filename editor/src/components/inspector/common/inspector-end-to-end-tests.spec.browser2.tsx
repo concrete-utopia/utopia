@@ -70,6 +70,8 @@ import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strate
 import selectEvent from 'react-select-event'
 import { MixedPlaceholder } from '../../../uuiui/inputs/base-input'
 import { cmdModifier } from '../../../utils/modifiers'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 
 async function getControl(
   controlTestId: string,
@@ -163,7 +165,25 @@ async function pressKeyTimes(
   })
 }
 
+function configureSinonSetupTeardown(): { clock: { current: SinonFakeTimers } } {
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
+  beforeEach(function () {
+    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
+    clock.current = sinon.useFakeTimers({
+      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
+      // WARNING: the Sinon fake timers will advance in 20ms increments
+      shouldAdvanceTime: true,
+    })
+  })
+  afterEach(function () {
+    clock.current?.restore()
+  })
+  return { clock: clock }
+}
+
 describe('inspector tests with real metadata', () => {
+  const { clock } = configureSinonSetupTeardown()
+
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -675,7 +695,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
@@ -707,7 +727,7 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"50%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -770,7 +790,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
@@ -812,7 +832,7 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"100%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -1316,7 +1336,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"100"`)
@@ -1366,7 +1386,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.5"`)
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"50%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"controlled"`,
@@ -1419,7 +1439,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const earlyOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
@@ -1451,7 +1471,7 @@ describe('inspector tests with real metadata', () => {
       `"detected-fromcss"`,
     )
 
-    matchInlineSnapshotBrowser(earlyOpacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(earlyOpacityControl.value, `"50%"`)
     matchInlineSnapshotBrowser(
       earlyOpacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
@@ -1459,12 +1479,12 @@ describe('inspector tests with real metadata', () => {
 
     await act(async () => {
       await screen.findByTestId('section-header-Advanced')
-      fireEvent.click(screen.getByTestId('section-header-Advanced'))
+      fireEvent.mouseDown(screen.getByTestId('section-header-Advanced'))
     })
 
     await act(async () => {
       await screen.findByTestId('target-selector-style')
-      fireEvent.click(screen.getByTestId('target-selector'))
+      fireEvent.mouseDown(screen.getByTestId('target-selector'))
     })
     await act(async () => {
       await screen.findByTestId('target-list-item-css')
@@ -1490,7 +1510,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const laterOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
@@ -1522,7 +1542,7 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(laterOpacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(laterOpacityControl.value, `"50%"`)
     matchInlineSnapshotBrowser(
       laterOpacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -1566,12 +1586,12 @@ describe('inspector tests with real metadata', () => {
 
     await act(async () => {
       await screen.findByTestId('section-header-Advanced')
-      fireEvent.click(screen.getByTestId('section-header-Advanced'))
+      fireEvent.mouseDown(screen.getByTestId('section-header-Advanced'))
     })
 
     await act(async () => {
       await screen.findByTestId('target-selector-style')
-      fireEvent.click(screen.getByTestId('target-selector'))
+      fireEvent.mouseDown(screen.getByTestId('target-selector'))
     })
     await act(async () => {
       await screen.findByTestId('target-list-item-css')
@@ -1594,7 +1614,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
@@ -1624,7 +1644,7 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"100%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -1731,6 +1751,7 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toBe('0')
 
     await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
+    clock.current.tick(700)
     expect(widthControl.value).toBe('1')
 
     await setControlValue('frame-width-number-input', '100', renderResult.renderedDOM)
@@ -1873,7 +1894,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
@@ -1908,7 +1929,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.3"`)
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.3"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"30%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
@@ -1998,7 +2019,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     // matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -2016,7 +2037,7 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -2030,7 +2051,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
-    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"100%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
@@ -2108,7 +2129,7 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
 
     // matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -2126,21 +2147,21 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
-    matchInlineSnapshotBrowser(radiusControl.value, `""`)
+    matchInlineSnapshotBrowser(radiusControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
-    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"100%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected"`,
@@ -4312,14 +4333,14 @@ describe('Undo behavior in inspector', () => {
     })
 
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"50%"`)
 
     // change the opacity of the selected element
-    await setControlValue('opacity-number-input', '0.6', renderResult.renderedDOM)
+    await setControlValue('opacity', '60', renderResult.renderedDOM)
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.6"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"60%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -4332,7 +4353,7 @@ describe('Undo behavior in inspector', () => {
 
     // type a new value '0.8' to opacityControl
     await act(async () => {
-      fireEvent.change(opacityControl, { target: { value: '0.8' } })
+      fireEvent.change(opacityControl, { target: { value: '80' } })
     })
 
     // press Cmd + Z on the opacityControl
@@ -4343,9 +4364,8 @@ describe('Undo behavior in inspector', () => {
 
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
-      ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)
-        .value,
-      `"0.5"`,
+      ((await renderResult.renderedDOM.findByTestId('opacity')) as HTMLInputElement).value,
+      `"50%"`,
     )
 
     // await for the code to be updated

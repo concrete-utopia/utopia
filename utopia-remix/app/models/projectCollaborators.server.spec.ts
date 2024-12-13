@@ -5,6 +5,7 @@ import {
   createTestUser,
   truncateTables,
 } from '../test-util'
+import { emptyCollaborators } from '../types'
 import {
   getCollaborators,
   addToProjectCollaborators,
@@ -42,30 +43,33 @@ describe('projectCollaborators model', () => {
       await createTestProjectCollaborator(prisma, { projectId: 'five', userId: 'wendy' })
     })
     it('returns an empty object if no ids are passed', async () => {
-      const got = await getCollaborators({ ids: [], userId: 'bob' })
-      expect(got).toEqual({})
+      const got = await getCollaborators({ projectIds: [], userId: 'bob' })
+      expect(got).toEqual(emptyCollaborators())
     })
     it("returns an empty object if ids don't match the given user id", async () => {
-      let got = await getCollaborators({ ids: ['one', 'two'], userId: 'alice' })
-      expect(got).toEqual({})
-      got = await getCollaborators({ ids: ['one', 'two'], userId: 'NOBODY' })
-      expect(got).toEqual({})
+      let got = await getCollaborators({ projectIds: ['one', 'two'], userId: 'alice' })
+      expect(got).toEqual(emptyCollaborators())
+      got = await getCollaborators({ projectIds: ['one', 'two'], userId: 'NOBODY' })
+      expect(got).toEqual(emptyCollaborators())
     })
     it('returns the collaborator details by project id', async () => {
       const ids = ['one', 'two', 'four', 'five']
-      const got = await getCollaborators({ ids: ids, userId: 'bob' })
-      expect(Object.keys(got).length).toEqual(4)
-      expect(got['one'].map((c) => c.id)).toEqual(['bob'])
-      expect(got['two'].map((c) => c.id)).toEqual(['bob', 'wendy'])
-      expect(got['four'].map((c) => c.id)).toEqual([])
-      expect(got['five'].map((c) => c.id)).toEqual(['alice', 'wendy'])
+      const got = await getCollaborators({ projectIds: ids, userId: 'bob' })
+      expect(Object.keys(got.byProjectId).length).toEqual(4)
+      expect(got.byProjectId['one']).toEqual(['bob'])
+      expect(got.byProjectId['two']).toEqual(['bob', 'wendy'])
+      expect(got.byProjectId['four']).toEqual([])
+      expect(got.byProjectId['five']).toEqual(['alice', 'wendy'])
+      expect(got.byUserId['alice'].id).toEqual('alice')
+      expect(got.byUserId['bob'].id).toEqual('bob')
+      expect(got.byUserId['wendy'].id).toEqual('wendy')
     })
     it('ignores mismatching projects', async () => {
       const ids = ['one', 'two', 'three']
-      const got = await getCollaborators({ ids: ids, userId: 'bob' })
+      const got = await getCollaborators({ projectIds: ids, userId: 'bob' })
       expect(Object.keys(got).length).toEqual(2)
-      expect(got['one'].map((c) => c.id)).toEqual(['bob'])
-      expect(got['two'].map((c) => c.id)).toEqual(['bob', 'wendy'])
+      expect(got.byProjectId['one']).toEqual(['bob'])
+      expect(got.byProjectId['two']).toEqual(['bob', 'wendy'])
     })
   })
 

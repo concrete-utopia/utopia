@@ -92,7 +92,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
@@ -144,7 +143,6 @@ import type {
   UpdateKeysPressed,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   CloseDesignerFile,
   SetFocusedElement,
@@ -237,6 +235,12 @@ import type {
   ElementReplacementPath,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  UpdateMetadataInEditorState,
+  SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
+  UpdateProjectRequirements,
+  UpdateImportStatus,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -256,6 +260,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  ErrorBoundaryHandling,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -265,6 +270,14 @@ import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/str
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
+import type { Bounds } from 'utopia-vscode-common'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+  ImportStatus,
+} from '../../../core/shared/import/import-operation-types'
+import type { ProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function clearSelection(): EditorAction {
   return {
@@ -372,7 +385,7 @@ export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCa
 
 export function transientActions(
   actions: Array<EditorAction>,
-  elementsToRerender: Array<ElementPath> | null = null,
+  elementsToRerender: Array<ElementPath>,
 ): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
@@ -969,13 +982,6 @@ export function setProjectDescription(projectDescription: string): SetProjectDes
   }
 }
 
-export function updatePreviewConnected(connected: boolean): UpdatePreviewConnected {
-  return {
-    action: 'UPDATE_PREVIEW_CONNECTED',
-    connected: connected,
-  }
-}
-
 export function alignSelectedViews(alignment: Alignment): AlignSelectedViews {
   return {
     action: 'ALIGN_SELECTED_VIEWS',
@@ -998,12 +1004,6 @@ export function showContextMenu(
     action: 'SHOW_CONTEXT_MENU',
     menuName: menuName,
     event: event,
-  }
-}
-
-export function sendPreviewModel(): SendPreviewModel {
-  return {
-    action: 'SEND_PREVIEW_MODEL',
   }
 }
 
@@ -1055,11 +1055,13 @@ export function addFolder(parentPath: string, fileName: string): AddFolder {
 export function openCodeEditorFile(
   filename: string,
   forceShowCodeEditor: boolean,
+  bounds: Bounds | null = null,
 ): OpenCodeEditorFile {
   return {
     action: 'OPEN_CODE_EDITOR_FILE',
     filename: filename,
     forceShowCodeEditor: forceShowCodeEditor,
+    bounds: bounds,
   }
 }
 
@@ -1243,9 +1245,21 @@ export function saveDOMReport(
   }
 }
 
-export function runDOMWalker(): RunDOMWalker {
+export function updateMetadataInEditorState(
+  newFinalMetadata: ElementInstanceMetadataMap,
+  tree: ElementPathTrees,
+): UpdateMetadataInEditorState {
+  return {
+    action: 'UPDATE_METADATA_IN_EDITOR_STATE',
+    newFinalMetadata: newFinalMetadata,
+    tree: tree,
+  }
+}
+
+export function runDOMWalker(restrictToElements: Array<ElementPath> | null): RunDOMWalker {
   return {
     action: 'RUN_DOM_WALKER',
+    restrictToElements: restrictToElements,
   }
 }
 
@@ -1587,6 +1601,40 @@ export function resetCanvas(): ResetCanvas {
   }
 }
 
+export function updateImportOperations(
+  operations: ImportOperation[],
+  type: ImportOperationAction,
+): UpdateImportOperations {
+  return {
+    action: 'UPDATE_IMPORT_OPERATIONS',
+    operations: operations,
+    type: type,
+  }
+}
+
+export function updateImportStatus(importStatus: ImportStatus): UpdateImportStatus {
+  return {
+    action: 'UPDATE_IMPORT_STATUS',
+    importStatus: importStatus,
+  }
+}
+
+export function updateProjectRequirements(
+  requirements: Partial<ProjectRequirements>,
+): UpdateProjectRequirements {
+  return {
+    action: 'UPDATE_PROJECT_REQUIREMENTS',
+    requirements: requirements,
+  }
+}
+
+export function setImportWizardOpen(open: boolean): SetImportWizardOpen {
+  return {
+    action: 'SET_IMPORT_WIZARD_OPEN',
+    open: open,
+  }
+}
+
 export function setFilebrowserDropTarget(target: string | null): SetFilebrowserDropTarget {
   return {
     action: 'SET_FILEBROWSER_DROPTARGET',
@@ -1881,5 +1929,14 @@ export function resetOnlineState(): ResetOnlineState {
 export function increaseOnlineStateFailureCount(): IncreaseOnlineStateFailureCount {
   return {
     action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT',
+  }
+}
+
+export function setErrorBoundaryHandling(
+  errorBoundaryHandling: ErrorBoundaryHandling,
+): SetErrorBoundaryHandling {
+  return {
+    action: 'SET_ERROR_BOUNDARY_HANDLING',
+    errorBoundaryHandling: errorBoundaryHandling,
   }
 }

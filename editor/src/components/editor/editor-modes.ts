@@ -165,7 +165,7 @@ export interface CommentMode {
   isDragging: IsDragging
 }
 
-export type SelectModeToolbarMode = 'none' | 'pseudo-insert'
+export type SelectModeToolbarMode = 'none' | 'pseudo-insert' | 'panels'
 
 export interface SelectMode {
   type: 'select'
@@ -207,6 +207,7 @@ export type Mode =
   | TextEditMode
   | CommentMode
   | FollowMode
+
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {

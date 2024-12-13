@@ -424,7 +424,7 @@ export const TestComponent = (props) => {
 })
 
 describe('componentHonoursPropsPosition', () => {
-  it('returns true for a component that uses top and left directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and left directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -434,9 +434,21 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that uses top and right directly', () => {
+  it('returns honours-numeric-props-only for a component that uses top and left directly without position: absolute', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{left: props.style.left, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual('honours-numeric-props-only')
+  })
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and right directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -446,9 +458,21 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns false for a component that uses left and right only', () => {
+  it('returns honours-numeric-props-only for a component that uses top and right directly without position: absolute', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{right: props.style.right, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual('honours-numeric-props-only')
+  })
+  it('returns does-not-honour for a component that uses left and right only', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -458,9 +482,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that uses top only', () => {
+  it('returns does-not-honour for a component that uses top only', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -470,9 +494,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that uses nothing from props', () => {
+  it('returns does-not-honour for a component that uses nothing from props', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -482,9 +506,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that has no props parameter', () => {
+  it('returns does-not-honour for a component that has no props parameter', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -494,9 +518,9 @@ export const TestComponent = () => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns true for a component that uses top and left directly with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and left directly with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -506,9 +530,9 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that uses bottom and right directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses bottom and right directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -518,9 +542,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that spreads style into the props', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that spreads style into the props', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -530,9 +554,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that assigns props.style to style directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that assigns props.style to style directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -542,9 +566,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that spreads style into the props with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -554,9 +578,9 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that assigns to style directly with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that assigns to style directly with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -566,7 +590,7 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
 })
 

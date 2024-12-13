@@ -60,7 +60,7 @@ label {
     background-color: transparent;
     font-family: 'utopian-inter', 'sans-serif';
     font-size: 11px !important;
-    font-feature-settings: 'cv01', 'tnum', 'zero';
+    font-feature-settings: 'cv01', 'tnum', 'salt', 'zero';
     letter-spacing: 0.2px;
     line-height: 17px;
     overflow: hidden;

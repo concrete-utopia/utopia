@@ -64,77 +64,69 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<-auto-><----------1fr--------->'
-          >
-            <CheckboxInput
-              onChange={onEnabledChange}
-              checked={props.value.enabled}
-              controlStatus={props.controlStatus}
-              onMouseDown={stopPropagation}
-            />
-            <BackgroundSolidOrGradientThumbnailControl
-              id={`background-layer-gradient-${props.index}`}
-              key={`background-layer-gradient-${props.index}`}
-              testId={`background-layer-gradient-${props.index}`}
+        <UIGridRow
+          tall
+          alignItems='start'
+          padded={true}
+          variant='<-auto-><-auto->|70px|<----1fr---->|'
+        >
+          <CheckboxInput
+            onChange={onEnabledChange}
+            checked={props.value.enabled}
+            controlStatus={props.controlStatus}
+            onMouseDown={stopPropagation}
+          />
+          <BackgroundSolidOrGradientThumbnailControl
+            id={`background-layer-gradient-${props.index}`}
+            key={`background-layer-gradient-${props.index}`}
+            testId={`background-layer-gradient-${props.index}`}
+            controlStyles={props.controlStyles}
+            controlStatus={props.controlStatus}
+            modalOffset={{ x: -45, y: 0 }}
+            value={props.value}
+            backgroundIndex={props.index}
+            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+            popupOpen={props.popupOpen}
+            setOpenPopup={props.setOpenPopup}
+          />
+          <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
+            <PopupList
+              value={{
+                value: conicGradientSelectOption.value,
+                label: conicGradientSelectOption.label,
+              }}
+              options={backgroundLayerTypeSelectOptions}
+              onSubmitValue={backgroundLayerType}
               controlStyles={props.controlStyles}
-              controlStatus={props.controlStatus}
-              modalOffset={{ x: -45, y: 0 }}
-              value={props.value}
-              backgroundIndex={props.index}
-              useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-              popupOpen={props.popupOpen}
-              setOpenPopup={props.setOpenPopup}
+              containerMode='default'
+              style={{ background: 'transparent' }}
             />
-          </UIGridRow>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<-------1fr------>|----80px----|'
-          >
-            <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
-              <PopupList
-                value={{
-                  value: conicGradientSelectOption.value,
-                  label: conicGradientSelectOption.label,
-                }}
-                options={backgroundLayerTypeSelectOptions}
-                onSubmitValue={backgroundLayerType}
-                controlStyles={props.controlStyles}
-                containerMode='default'
-              />
-            </FlexRow>
-            <ChainedNumberInput
-              idPrefix='background-layer-gradient-center'
-              propsArray={[
-                {
-                  value: props.value.center.x.value,
-                  DEPRECATED_labelBelow: 'x',
-                  onSubmitValue: gradientCenterXSubmitValue,
-                  onTransientSubmitValue: gradientCenterXTransientSubmitValue,
-                  controlStatus: props.controlStatus,
-                  numberType: 'LengthPercent' as const,
-                  testId: 'background-layer-gradient-center-x',
-                  defaultUnitToHide: null,
-                },
-                {
-                  value: props.value.center.y.value,
-                  DEPRECATED_labelBelow: 'y',
-                  onSubmitValue: gradientCenterYSubmitValue,
-                  onTransientSubmitValue: gradientCenterYTransientSubmitValue,
-                  controlStatus: props.controlStatus,
-                  numberType: 'LengthPercent' as const,
-                  testId: 'background-layer-gradient-center-y',
-                  defaultUnitToHide: null,
-                },
-              ]}
-            />
-          </UIGridRow>
+          </FlexRow>
+          <ChainedNumberInput
+            idPrefix='background-layer-gradient-center'
+            propsArray={[
+              {
+                value: props.value.center.x.value,
+                innerLabel: 'X',
+                onSubmitValue: gradientCenterXSubmitValue,
+                onTransientSubmitValue: gradientCenterXTransientSubmitValue,
+                controlStatus: props.controlStatus,
+                numberType: 'LengthPercent' as const,
+                testId: 'background-layer-gradient-center-x',
+                defaultUnitToHide: null,
+              },
+              {
+                value: props.value.center.y.value,
+                innerLabel: 'Y',
+                onSubmitValue: gradientCenterYSubmitValue,
+                onTransientSubmitValue: gradientCenterYTransientSubmitValue,
+                controlStatus: props.controlStatus,
+                numberType: 'LengthPercent' as const,
+                testId: 'background-layer-gradient-center-y',
+                defaultUnitToHide: null,
+              },
+            ]}
+          />
         </UIGridRow>
       </InspectorContextMenuWrapper>
     )

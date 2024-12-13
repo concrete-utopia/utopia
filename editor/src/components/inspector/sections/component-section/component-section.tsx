@@ -8,6 +8,7 @@ import type {
   ArrayControlDescription,
   BaseControlDescription,
   ControlDescription,
+  NoneControlDescription,
   ObjectControlDescription,
   RegularControlDescription,
   TupleControlDescription,
@@ -44,11 +45,12 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
+  useGetComponentDataForElementPath,
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import type { InspectorInfo } from '../../common/property-path-hooks'
+import { type InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -75,11 +77,13 @@ import { ExpandableIndicator } from '../../../navigator/navigator-item/expandabl
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
-import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import {
+  componentDescriptor,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
@@ -95,16 +99,17 @@ import {
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { DataPickerCallback, DataPickerOption, ObjectPath } from './data-picker-utils'
 import { jsxElementChildToValuePath } from './data-picker-utils'
-import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { stopPropagation } from '../../common/inspector-utils'
 import { IdentifierExpressionCartoucheControl } from './cartouche-control'
 import { getRegisteredComponent } from '../../../../core/property-controls/property-controls-utils'
 import type { EditorAction } from '../../../editor/action-types'
 import {
   getCartoucheDataTypeForExpression,
+  matchForPropertyValue,
+  usePropertyControlDescriptions,
+  usePropertyValue,
   useVariablesInScopeForSelectedElement,
 } from './variables-in-scope-utils'
-import { useAtom } from 'jotai'
 import { DataSelectorModal } from './data-selector-modal'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { isRight } from '../../../../core/shared/either'
@@ -114,6 +119,8 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../../../editor/element-children'
 import { getTextContentOfElement } from './data-reference-cartouche'
+import { ContextMenuWrapper } from '../../../../uuiui-deps'
+import type { Bounds } from 'utopia-vscode-common'
 
 export interface PropertyLabelAndPlusButtonProps {
   title: string
@@ -491,9 +498,18 @@ function useDataPickerButtonInComponentSection(
 ) {
   const dispatch = useDispatch()
 
+  const elementPath = selectedViews.at(0) ?? EP.emptyElementPath
+
+  const controlDescriptions = usePropertyControlDescriptions(propertyPath)
+  const currentPropertyValue = usePropertyValue(elementPath, propertyPath)
+
   const variableNamesInScope = useVariablesInScopeForSelectedElement(
     selectedViews.at(0) ?? EP.emptyElementPath,
-    propertyPath,
+    matchForPropertyValue(
+      controlDescriptions,
+      currentPropertyValue,
+      PP.lastPart(propertyPath).toString(),
+    ),
   )
 
   const metadata = useEditorState(
@@ -564,14 +580,73 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
+  const dispatch = useDispatch()
+
   const propMetadata = useComponentPropsInspectorInfo(
     selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
   )
+
+  const componentData = useGetComponentDataForElementPath(selectedViews[0] ?? null)
+
+  const descriptorFile = componentData?.descriptorFile
+
+  const goToAnnotationItems = React.useMemo(() => {
+    // if there are no annotations, or they don't come from a descriptor file skip the menu item
+    if (descriptorFile?.sourceDescriptorFile == null) {
+      return []
+    }
+    // if there are no bounds available for the component annotation, just open the file
+    if (descriptorFile.bounds == null) {
+      return [
+        {
+          name: `Open annotation file`,
+          enabled: true,
+          action: () => {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true)])
+          },
+        },
+      ]
+    }
+    // if there are no bounds available for the specific property, just go to the annotation of the component
+    if (descriptorFile?.bounds?.properties[propName] == null) {
+      return [
+        {
+          name: `Open component annotation`,
+          enabled: true,
+          action: () => {
+            if (descriptorFile.bounds != null) {
+              dispatch([
+                openCodeEditorFile(
+                  descriptorFile.sourceDescriptorFile,
+                  true,
+                  descriptorFile.bounds.bounds,
+                ),
+              ])
+            }
+          },
+        },
+      ]
+    }
+    return [
+      {
+        name: `Open property annotation`,
+        enabled: descriptorFile != null,
+        action: () => {
+          const bounds = descriptorFile?.bounds?.properties[propName]
+          if (bounds != null) {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true, bounds)])
+          }
+        },
+      },
+    ]
+  }, [descriptorFile, dispatch, propName])
+
   const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([propName], propMetadata.onUnsetValues),
+    addOnUnsetValues(['property'], propMetadata.onUnsetValues),
+    ...goToAnnotationItems,
   ])
 
   const labelControlStyle = React.useMemo(
@@ -623,7 +698,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         style={{
           textTransform: 'capitalize',
           paddingLeft: indentation,
-          alignSelf: 'flex-start',
+          alignSelf: 'center',
         }}
       >
         <PropertyLabelAndPlusButton
@@ -925,6 +1000,11 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
   const contextMenuId = `context-menu-for-${PP.toString(propPathWithIndex)}`
+
+  if (controlDescription.propertyControl.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={contextMenuId}
@@ -1073,6 +1153,12 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
+  const indexedPropertyControls = controlDescription.propertyControls[index]
+
+  if (indexedPropertyControls.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
@@ -1081,7 +1167,7 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
       key={index}
     >
       <RowForControl
-        controlDescription={controlDescription.propertyControls[index]}
+        controlDescription={indexedPropertyControls}
         isScene={isScene}
         propPath={PP.appendPropertyPathElems(propPath, [index])}
         setGlobalCursor={props.setGlobalCursor}
@@ -1103,7 +1189,7 @@ interface ObjectIndicatorProps {
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
   return (
     <div
-      onClick={props.toggle}
+      onMouseDown={props.toggle}
       style={{
         border: `1px solid ${colorTheme.bg3.value}`,
         paddingLeft: 2,
@@ -1235,6 +1321,9 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
         open,
         mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          if (innerControl.control === 'none') {
+            return null
+          }
           return (
             <RowForControl
               key={`object-control-row-${PP.toString(innerPropPath)}`}
@@ -1334,7 +1423,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
 RowForUnionControl.displayName = 'RowForUnionControl'
 
 interface RowForControlProps extends AbstractRowForControlProps {
-  controlDescription: RegularControlDescription
+  controlDescription: Exclude<RegularControlDescription, NoneControlDescription>
   disableToggling?: boolean
 }
 
@@ -1402,88 +1491,42 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     'ComponentInfoBox selectedViews',
   )
 
-  const target = safeIndex(selectedViews, 0) ?? null
+  const target = selectedViews.at(0) ?? EP.emptyElementPath
 
   const locationOfComponentInstance = useEditorState(
-    Substores.fullStore,
+    Substores.projectContents,
     (state) => {
-      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
-      const importResult = getFilePathForImportedComponent(element)
-      if (importResult == null) {
-        const underlyingTarget = normalisePathToUnderlyingTarget(
-          state.editor.projectContents,
-          target,
-        )
-
-        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
-      } else {
-        return importResult
-      }
+      const underlyingTarget = normalisePathToUnderlyingTarget(state.editor.projectContents, target)
+      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
     },
     'ComponentSectionInner locationOfComponentInstance',
   )
   ComponentSectionInner.displayName = 'ComponentSectionInner'
 
-  const OpenFile = React.useCallback(() => {
+  const openInstanceFile = React.useCallback(() => {
     if (locationOfComponentInstance != null) {
       dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
     }
   }, [dispatch, locationOfComponentInstance])
 
-  const propertyControlsInfo = useEditorState(
-    Substores.propertyControlsInfo,
-    (store) => store.editor.propertyControlsInfo,
-    'ComponentsectionInner propertyControlsInfo',
-  )
+  const elementPath =
+    propertyControlsAndTargets.length === 0 || propertyControlsAndTargets[0].targets.length !== 1
+      ? null
+      : propertyControlsAndTargets[0].targets[0]
 
-  const componentData = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (
-        propertyControlsAndTargets.length === 0 ||
-        propertyControlsAndTargets[0].targets.length !== 1
-      ) {
-        return null
-      }
+  const componentData = useGetComponentDataForElementPath(elementPath)
 
-      const element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        propertyControlsAndTargets[0].targets[0],
-      )
-
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
-      const elementImportInfo = element?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return null
-      }
-
-      const elementName = getJSXElementNameAsString(targetJSXElement.name)
-
-      const exportedName = isImportedOrigin(elementImportInfo)
-        ? elementImportInfo.exportedName ?? elementName
-        : elementName
-
-      const registeredComponent = getRegisteredComponent(
-        exportedName,
-        elementImportInfo.filePath,
-        propertyControlsInfo,
-      )
-
-      if (registeredComponent?.label == null) {
-        return {
-          displayName: elementName,
-          isRegisteredComponent: registeredComponent != null,
-        }
-      }
-
-      return {
-        displayName: registeredComponent.label,
-        isRegisteredComponent: registeredComponent != null,
-        secondaryName: elementName,
-      }
-    },
-    'ComponentSectionInner componentName',
-  )
+  const openDescriptorFile = React.useCallback(() => {
+    if (componentData?.descriptorFile != null) {
+      dispatch([
+        openCodeEditorFile(
+          componentData.descriptorFile.sourceDescriptorFile,
+          true,
+          componentData.descriptorFile.bounds?.bounds,
+        ),
+      ])
+    }
+  }, [dispatch, componentData?.descriptorFile])
 
   return (
     <React.Fragment>
@@ -1491,7 +1534,6 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         padded={false}
         variant='<----------1fr---------><-auto->'
         style={{
-          borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           alignItems: 'center',
           gap: 8,
@@ -1500,12 +1542,10 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         }}
       >
         <FlexRow
-          onClick={OpenFile}
           style={{
             flexGrow: 1,
             height: UtopiaTheme.layout.rowHeight.large,
             fontWeight: 600,
-            cursor: 'pointer',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -1514,19 +1554,32 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         >
           {componentData != null ? (
             <React.Fragment>
-              <span style={{ textTransform: 'uppercase' }}>{componentData.displayName}</span>
-              {when(componentData.isRegisteredComponent, <span style={{ fontSize: 6 }}>◇</span>)}
+              <span
+                onClick={openInstanceFile}
+                style={{ cursor: 'pointer', textTransform: 'uppercase' }}
+              >
+                {componentData.displayName}
+              </span>
+              {when(
+                componentData.isRegisteredComponent,
+                <span onClick={openDescriptorFile} style={{ cursor: 'pointer', fontSize: 6 }}>
+                  ◇
+                </span>,
+              )}
               {componentData.secondaryName == null ? null : (
-                <span style={{ opacity: 0.5, fontWeight: 'initial' }}>
+                <span
+                  onClick={openDescriptorFile}
+                  style={{ cursor: 'pointer', opacity: 0.5, fontWeight: 'initial' }}
+                >
                   {componentData.secondaryName}
                 </span>
               )}
             </React.Fragment>
           ) : (
-            <span>Component</span>
+            <span onClick={openInstanceFile}>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
+        <SquareButton highlight onMouseDown={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible

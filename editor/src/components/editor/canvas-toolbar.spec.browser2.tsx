@@ -35,11 +35,13 @@ import {
   CanvasToolbarEditButtonID,
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
+  InsertOrEditTextButtonTestId,
   PlayModeButtonTestId,
   WrapInDivButtonTestId,
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
 import { cmdModifier } from '../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -80,6 +82,39 @@ describe('canvas toolbar', () => {
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
   })
 
+  it('selecting the edit button clears the text mode and the interaction session that was started', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+
+    const insertOrEditTextButton = editor.renderedDOM.getByTestId(InsertOrEditTextButtonTestId)
+    const insertOrEditTextButtonCenter = getDomRectCenter(
+      insertOrEditTextButton.getBoundingClientRect(),
+    )
+    await mouseClickAtPoint(insertOrEditTextButton, insertOrEditTextButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('insert')
+    expect(editor.getEditorState().editor.canvas.interactionSession).not.toBeNull()
+
+    const editButton = editor.renderedDOM.getByTestId(CanvasToolbarEditButtonID)
+    const editButtonCenter = getDomRectCenter(editButton.getBoundingClientRect())
+    await mouseClickAtPoint(editButton, editButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    expect(editor.getEditorState().editor.canvas.interactionSession).toBeNull()
+  })
   it('can insert conditionals via the canvas toolbar', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -418,7 +453,11 @@ describe('canvas toolbar', () => {
 
     await insertViaAddElementPopup(editor, 'div')
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-utopia-storyboard-uid/scene-aaa',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',

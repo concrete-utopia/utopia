@@ -66,6 +66,7 @@ import {
   TopDropTargetLineTestId,
 } from './navigator-item/navigator-item-dnd-container'
 import { getEntriesForRow } from './navigator-row'
+import { getNavigatorTargetsFromEditorState } from './navigator-utils'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -520,12 +521,16 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
-function navigatorStructure(editorState: EditorState, deriveState: DerivedState): string {
-  const lines = deriveState.visibleNavigatorTargets.map((target) => {
+function navigatorStructure(
+  editorState: EditorState,
+  deriveState: DerivedState, // TODO delete me
+): string {
+  const navigatorTargets = getNavigatorTargetsFromEditorState(editorState)
+  const lines = navigatorTargets.visibleNavigatorTargets.map((target) => {
     const targetAsText = navigatorEntryToKey(target)
     let prefix: string = ''
     const depth =
-      deriveState.navigatorRows.find((row) =>
+      navigatorTargets.navigatorRows.find((row) =>
         EP.pathsEqual(getEntriesForRow(row)[0].elementPath, target.elementPath),
       )?.indentation ?? 0
     for (let index = 0; index < depth; index++) {

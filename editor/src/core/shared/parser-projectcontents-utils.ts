@@ -17,6 +17,7 @@ import {
   walkContentsTree,
 } from '../../components/assets'
 import {
+  getFilePathMappings,
   getHighlightBoundsFromParseResult,
   updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
@@ -34,6 +35,8 @@ import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { isSteganographyEnabled } from './stegano-text'
+import { getParserChunkCount } from '../workers/common/concurrency-utils'
+import { getParseCacheOptions } from './parse-cache-utils'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
@@ -199,8 +202,11 @@ export async function updateProjectContentsWithParseResults(
   const parseResult = await getParseResult(
     workers,
     filesToUpdate,
+    getFilePathMappings(projectContents),
     existingUIDs,
     isSteganographyEnabled(),
+    getParserChunkCount(),
+    getParseCacheOptions(),
   )
 
   // Convert those results into updates.

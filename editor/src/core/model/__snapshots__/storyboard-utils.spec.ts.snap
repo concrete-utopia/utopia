@@ -11,7 +11,7 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
-    "declarationSyntax": "var",
+    "declarationSyntax": "const",
     "functionWrapping": Array [],
     "isFunction": false,
     "name": "storyboard",

@@ -19,7 +19,7 @@ export function InspectorSectionHeader({
         padding: 8,
         cursor: 'pointer',
       }}
-      onClick={toggle}
+      onMouseDown={toggle}
       data-testid={`section-header-${title}`}
     >
       <div
@@ -35,7 +35,7 @@ export function InspectorSectionHeader({
         {title}
       </div>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight style={{ width: 12 }}>
+        <SquareButton highlight>
           <ExpandableIndicator visible collapsed={!open} selected={false} />
         </SquareButton>
       </SectionActionSheet>

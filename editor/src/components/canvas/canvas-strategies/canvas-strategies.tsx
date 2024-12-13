@@ -1,13 +1,13 @@
 import React from 'react'
-import { createSelector } from 'reselect'
-import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, pushUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
+  EditorStatePatch,
   EditorStorePatched,
+  GridIdentifier,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
@@ -19,6 +19,7 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  WhenToShowControl,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -46,7 +47,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import {
+  DoNothingStrategyID,
+  doNothingStrategy,
+  dragToMoveMetaStrategy,
+} from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
@@ -56,13 +61,36 @@ import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
-import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
+import { drawToInsertTextMetaStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
+import { resizeGridStrategy } from './strategies/resize-grid-strategy'
+import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
+import { gridResizeElementRulerStrategy } from './strategies/grid-resize-element-ruler-strategy'
+import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
+import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
+import type { CanvasCommand } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
+import { updateFunctionCommand } from '../commands/update-function-command'
+import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
+import type { ElementPath } from 'utopia-shared/src/types'
+import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
+import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
+import createCachedSelector from 're-reselect'
+import { getActivePlugin, patchRemovedProperties } from '../plugins/style-plugins'
+import {
+  controlsForGridPlaceholders,
+  GridControls,
+  isGridControlsProps,
+} from '../controls/grid-controls-for-strategies'
+import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
+import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -90,6 +118,11 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
+      gridChangeElementLocationStrategy,
+      gridChangeElementLocationDuplicateStrategy,
+      gridReorderStrategy,
+      gridChangeElementLocationResizeKeyboardStrategy,
+      gridMoveAbsoluteStrategy,
     ],
   )
 }
@@ -100,13 +133,16 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
       flexResizeStrategy,
       basicResizeStrategy,
+      resizeGridStrategy,
+      gridResizeElementStrategy,
+      gridResizeElementRulerStrategy,
     ],
   )
 }
@@ -118,7 +154,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+    [setPaddingStrategy, setFlexGapStrategy, setGridGapStrategy, setBorderRadiusStrategy],
   )
 }
 
@@ -169,16 +205,18 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
-  drawToInsertTextStrategy,
+  drawToInsertTextMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
+  localSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
   return {
     builtInDependencies: builtInDependencies,
-    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
@@ -188,18 +226,25 @@ export function pickCanvasStateFromEditorState(
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      jsxMetadata: editorState.jsxMetadata,
+    }),
   }
 }
 
 export function pickCanvasStateFromEditorStateWithMetadata(
+  localSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
+
   return {
     builtInDependencies: builtInDependencies,
-    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
@@ -209,10 +254,17 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      jsxMetadata: editorState.jsxMetadata,
+    }),
   }
 }
 
-function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
+function getInteractionTargetFromEditorState(
+  editor: EditorState,
+  localSelectedViews: Array<ElementPath>,
+): InteractionTarget {
   switch (editor.mode.type) {
     case 'insert':
       return insertionSubjects(editor.mode.subjects)
@@ -221,7 +273,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
     case 'textEdit':
     case 'comment':
     case 'follow':
-      return targetPaths(editor.selectedViews)
+      return targetPaths(localSelectedViews)
     default:
       assertNever(editor.mode)
   }
@@ -264,17 +316,21 @@ export function getApplicableStrategies(
   return strategies.flatMap((s) => s(canvasState, interactionSession, customStrategyState))
 }
 
-const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) =>
+const getApplicableStrategiesSelector = createCachedSelector(
+  (store: EditorStorePatched, _) =>
     optionalMap(
       (sas) => sas.map((s) => s.strategy),
       store.strategyState.sortedApplicableStrategies,
     ),
-  (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
+  (store: EditorStorePatched, localSelectedViews: Array<ElementPath>): InteractionCanvasState => {
+    return pickCanvasStateFromEditorState(
+      localSelectedViews,
+      store.editor,
+      store.builtInDependencies,
+    )
   },
-  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.strategyState.customStrategyState,
+  (store: EditorStorePatched, _) => store.editor.canvas.interactionSession,
+  (store: EditorStorePatched, _) => store.strategyState.customStrategyState,
   (
     applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
@@ -292,12 +348,12 @@ const getApplicableStrategiesSelector = createSelector(
       )
     }
   },
-)
+)((_, localSelectedViews: Array<ElementPath>) => localSelectedViews.map(EP.toString).join(','))
 
-function useGetApplicableStrategies(): Array<CanvasStrategy> {
+function useGetApplicableStrategies(localSelectedViews: Array<ElementPath>): Array<CanvasStrategy> {
   return useEditorState(
     Substores.fullStore,
-    getApplicableStrategiesSelector,
+    (store) => getApplicableStrategiesSelector(store, localSelectedViews),
     'useGetApplicableStrategies',
     arrayEqualsByReference,
   )
@@ -338,12 +394,32 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  // Special case for the DO NOTHING strategy - it should never be a fallback strategy
-  const filteredSortedStrategies = sortedStrategies.filter(
+  return fixDoNothingStrategies(sortedStrategies, canvasState)
+}
+
+// Special cases for the DO NOTHING strategy - it should never be a fallback strategy,
+// and when there is no other applicable strategy then do nothing should always appear as a single one
+function fixDoNothingStrategies(
+  sortedStrategies: Array<StrategyWithFitness>,
+  canvasState: InteractionCanvasState,
+): Array<StrategyWithFitness> {
+  const positiveFitnessStrategyExists = sortedStrategies.find(({ fitness }) => fitness > 0) != null
+
+  const doNothing = doNothingStrategy(canvasState)
+
+  if (!positiveFitnessStrategyExists) {
+    return [
+      {
+        strategy: doNothing,
+        fitness: doNothing.fitness,
+      },
+      ...sortedStrategies,
+    ]
+  }
+
+  return sortedStrategies.filter(
     ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
   )
-
-  return filteredSortedStrategies
 }
 
 function pickDefaultCanvasStrategy(
@@ -419,6 +495,29 @@ export function applyCanvasStrategy(
   strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
   return strategy.apply(strategyLifecycle)
+}
+
+export function applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return applyElementsToRerenderFromStrategyResult(
+    patchRemovedProperties(editorState),
+    strategyResult,
+  )
+}
+
+export function applyElementsToRerenderFromStrategyResult(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return {
+    ...editorState,
+    canvas: {
+      ...editorState.canvas,
+      elementsToRerender: strategyResult.elementsToRerender,
+    },
+  }
 }
 
 export function useDelayedEditorState<T>(
@@ -512,6 +611,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
     case 'BASIC_RESIZE':
+    case 'GRID-CELL-RESIZE-STRATEGY':
       return true
     default:
       return false
@@ -555,8 +655,63 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
-  const applicableStrategies = useGetApplicableStrategies()
+function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): number {
+  switch (prio) {
+    case 'bottom':
+      return 0
+    case undefined:
+      return 1
+    case 'top':
+      return 2
+  }
+}
+
+export function combineApplicableControls(
+  strategyControls: Array<ControlWithProps<unknown>>,
+): Array<ControlWithProps<unknown>> {
+  // Separate out the instances of `GridControls`.
+  let result: Array<ControlWithProps<unknown>> = []
+  let gridControlsInstances: Array<ControlWithProps<unknown>> = []
+  for (const control of strategyControls) {
+    if (control.control === GridControls) {
+      gridControlsInstances.push(control)
+    } else {
+      result.push(control)
+    }
+  }
+
+  // Sift the instances of `GridControls`, storing their targets by when they should be shown.
+  let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
+  for (const control of gridControlsInstances) {
+    if (isGridControlsProps(control.props)) {
+      let possibleTargets = gridControlsTargets.get(control.show)
+      if (possibleTargets == null) {
+        gridControlsTargets.set(control.show, control.props.targets)
+      } else {
+        possibleTargets.push(...control.props.targets)
+      }
+    }
+  }
+
+  // Create new instances of `GridControls` with the combined targets.
+  for (const [show, targets] of gridControlsTargets) {
+    result.push(controlsForGridPlaceholders(targets, show, `-${show}`))
+  }
+
+  // Return the newly created controls with the combined entries.
+  return result
+}
+
+const controlEquals = (l: ControlWithProps<any>, r: ControlWithProps<any>) => {
+  return l.control === r.control && l.key === r.key
+}
+
+export function useGetApplicableStrategyControls(localSelectedViews: Array<ElementPath>): {
+  bottomStrategyControls: Array<ControlWithProps<unknown>>
+  middleStrategyControls: Array<ControlWithProps<unknown>>
+  topStrategyControls: Array<ControlWithProps<unknown>>
+} {
+  const applicableStrategies = useGetApplicableStrategies(localSelectedViews)
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
     Substores.canvas,
@@ -566,25 +721,47 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     'useGetApplicableStrategyControls currentlyInProgress',
   )
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithProps<unknown>> = []
+    let strategyControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
-      const strategyControls = getApplicableControls(currentStrategy, strategy)
-      applicableControls = addAllUniquelyBy(
-        applicableControls,
-        strategyControls,
-        (l, r) => l.control === r.control,
-      )
+      strategyControls.push(...getApplicableControls(currentStrategy, strategy))
     }
+    const combinedControls = combineApplicableControls(strategyControls)
+    const bottomStrategyControls: Array<ControlWithProps<unknown>> = []
+    const middleStrategyControls: Array<ControlWithProps<unknown>> = []
+    const topStrategyControls: Array<ControlWithProps<unknown>> = []
+
+    // uniquely add the strategyControls to the bottom, middle, and top arrays
+    for (const control of combinedControls) {
+      switch (control.priority) {
+        case 'bottom':
+          pushUniquelyBy(bottomStrategyControls, control, controlEquals)
+          break
+        case undefined:
+          pushUniquelyBy(middleStrategyControls, control, controlEquals)
+          break
+        case 'top':
+          pushUniquelyBy(topStrategyControls, control, controlEquals)
+          break
+        default:
+          assertNever(control.priority)
+      }
+    }
+
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
+      middleStrategyControls.push(notResizableControls)
     }
-    return applicableControls
+
+    return {
+      bottomStrategyControls: bottomStrategyControls,
+      middleStrategyControls: middleStrategyControls,
+      topStrategyControls: topStrategyControls,
+    }
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 
@@ -620,11 +797,16 @@ export function onlyFitWhenDraggingThisControl(
   }
 }
 
+export interface WrapperWithUid {
+  wrapper: InsertionSubjectWrapper
+  uid: string
+}
+
 export function getWrapperWithGeneratedUid(
   customStrategyState: CustomStrategyState,
   canvasState: InteractionCanvasState,
   subjects: Array<InsertionSubject>,
-): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+): WrapperWithUid | null {
   const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
   if (insertionSubjectWrapper == null) {
     return null
@@ -637,6 +819,62 @@ export function getWrapperWithGeneratedUid(
   return { wrapper: insertionSubjectWrapper, uid: uid }
 }
 
+export function getWrappingCommands(
+  wrappedElementPath: ElementPath,
+  wrapperWithUid: WrapperWithUid,
+): CanvasCommand[] {
+  return [
+    updateFunctionCommand(
+      'always',
+      (editorState, lifecycle): Array<EditorStatePatch> =>
+        foldAndApplyCommandsInner(
+          editorState,
+          [],
+          [
+            wrapInContainerCommand(
+              'always',
+              wrappedElementPath,
+              wrapperWithUid.uid,
+              wrapperWithUid.wrapper,
+            ),
+          ],
+          lifecycle,
+        ).statePatches,
+    ),
+  ]
+}
+
+export function findElementPathUnderInteractionPoint(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): ElementPath | null {
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
+    return null
+  }
+
+  const { interactionData } = interactionSession
+
+  const pointOnCanvas =
+    interactionData.type === 'DRAG' ? interactionData.originalDragStart : interactionData.point
+
+  const targetParent = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    true, // cmd is necessary to allow reparenting,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
+    'allow-smaller-parent',
+    ['supportsChildren'],
+    canvasState.propertyControlsInfo,
+  )?.newParent.intendedParentPath
+
+  return targetParent ?? null
+}
+
 export function getDescriptiveStrategyLabelWithRetargetedPaths(
   originalLabel: string,
   pathsWereReplaced: boolean,
@@ -645,4 +883,23 @@ export function getDescriptiveStrategyLabelWithRetargetedPaths(
     return `${originalLabel} (Children)`
   }
   return originalLabel
+}
+
+function isOnlyDoNothingStrategy(strategies: Array<ApplicableStrategy>): boolean {
+  // This is an optimization, we should check all strategies, but we know we can not have do_nothing strategy in non-zero position
+  if (strategies.length > 1) {
+    return false
+  }
+  if (strategies.length === 0) {
+    return true
+  }
+  return strategies[0].strategy.id === 'DO_NOTHING'
+}
+
+export function useIsOnlyDoNothingStrategy(): boolean {
+  return useEditorState(
+    Substores.restOfStore,
+    (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
+    'useIsOnlyDoNothingStrategy',
+  )
 }

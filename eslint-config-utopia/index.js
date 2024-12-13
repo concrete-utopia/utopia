@@ -8,7 +8,7 @@ module.exports = {
     },
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks', 'jest'],
+  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks', 'jest', 'react-refresh'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -168,6 +168,13 @@ module.exports = {
     'jest/no-conditional-expect': 'off',
     'jest/no-done-callback': 'off',
     'jest/no-test-prefixes': 'off',
+    'react-refresh/only-export-components': [
+      'warn',
+      {
+        allowConstantExport: true,
+        allowExportNames: ['meta', 'links', 'headers', 'loader', 'action'], // For Remix compatibility
+      },
+    ],
   },
   overrides: [
     {

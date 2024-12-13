@@ -253,7 +253,7 @@ export function RemovePropertyButton({
   }
 
   return (
-    <SquareButton highlight onMouseDown={onUnsetValues} data-testid={testId} style={{ width: 12 }}>
+    <SquareButton highlight onMouseDown={onUnsetValues} data-testid={testId}>
       <Icn category='semantic' type='cross' width={12} height={12} />
     </SquareButton>
   )

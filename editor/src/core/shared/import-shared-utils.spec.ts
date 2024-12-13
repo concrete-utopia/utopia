@@ -69,7 +69,7 @@ describe('renameDuplicateImports', () => {
 
   tests.forEach((test) => {
     it(`${test.name}`, () => {
-      const result = renameDuplicateImports(test.existingImports, test.toAdd, './src/app.js')
+      const result = renameDuplicateImports(test.existingImports, test.toAdd, './src/app.js', [])
       expect(result.imports).toEqual(test.expected)
       expect(result.duplicateNameMapping).toEqual(test.expectedMap)
     })

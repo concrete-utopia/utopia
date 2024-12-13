@@ -1,5 +1,10 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { reverse, stripNulls } from '../../core/shared/array-utils'
+import {
+  createArrayWithLength,
+  matrixGetter,
+  reverse,
+  stripNulls,
+} from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { defaultEither, isLeft, mapEither, right } from '../../core/shared/either'
 import type {
@@ -7,22 +12,27 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { isJSXElement } from '../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSCursor } from './canvas-types'
+import type { StyleInfo } from './canvas-types'
+import { CSSCursor, maybePropertyValue } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
-import { cssNumber } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
-import { getSubTree, type ElementPathTrees } from '../../core/shared/element-path-tree'
+import {
+  getElementPathTreeChildren,
+  getSubTree,
+  type ElementPathTrees,
+} from '../../core/shared/element-path-tree'
 import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -54,6 +64,17 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
       return CSSCursor.GapEW
     default:
       assertNever(direction)
+  }
+}
+
+export function cursorFromAxis(axis: Axis): CSSCursor {
+  switch (axis) {
+    case 'column':
+      return CSSCursor.GapEW
+    case 'row':
+      return CSSCursor.GapNS
+    default:
+      assertNever(axis)
   }
 }
 
@@ -154,21 +175,59 @@ export function gapControlBoundsFromMetadata(
   )
 }
 
+export interface GridGapData {
+  row: CSSNumberWithRenderedValue
+  column: CSSNumberWithRenderedValue
+}
+
+export function maybeGridGapData(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): GridGapData | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'grid' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value)
+  ) {
+    return null
+  }
+
+  const rowGap = element.specialSizeMeasurements.rowGap ?? element.specialSizeMeasurements.gap ?? 0
+  const rowGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('rowGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  const columnGap =
+    element.specialSizeMeasurements.columnGap ?? element.specialSizeMeasurements.gap ?? 0
+  const columnGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('columnGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  return {
+    row: { renderedValuePx: rowGap, value: rowGapFromProps ?? null },
+    column: { renderedValuePx: columnGap, value: columnGapFromProps ?? null },
+  }
+}
+
 export interface FlexGapData {
   value: CSSNumberWithRenderedValue
   direction: FlexDirection
 }
 
 export function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
+  info: StyleInfo | null,
+  element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (
     element == null ||
     element.specialSizeMeasurements.display !== 'flex' ||
     isLeft(element.element) ||
-    !isJSXElement(element.element.value)
+    !isJSXElement(element.element.value) ||
+    info == null
   ) {
     return null
   }
@@ -178,16 +237,15 @@ export function maybeFlexGapData(
   }
 
   const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
+  const gapFromReader = optionalMap(maybePropertyValue, info.gap)
 
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
+    value: {
+      renderedValuePx: gap,
+      value: gapFromReader,
+    },
     direction: flexDirection,
   }
 }
@@ -203,7 +261,7 @@ export function recurseIntoChildrenOfMapOrFragment(
     return []
   }
 
-  return subTree.children.flatMap((element) => {
+  return getElementPathTreeChildren(subTree).flatMap((element) => {
     const elementPath = element.path
     if (EP.isRootElementOfInstance(elementPath)) {
       return []
@@ -229,3 +287,5 @@ export function recurseIntoChildrenOfMapOrFragment(
     return [instance]
   })
 }
+
+export type Axis = 'row' | 'column'

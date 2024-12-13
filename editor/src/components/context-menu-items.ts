@@ -33,11 +33,12 @@ import {
   toggleDataCanCondense,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
-  type AllElementProps,
-  type InternalClipboard,
-  type NavigatorEntry,
-  type PasteHerePostActionMenuData,
+import type {
+  LockedElements,
+  AllElementProps,
+  InternalClipboard,
+  NavigatorEntry,
+  PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
@@ -87,6 +88,7 @@ export interface CanvasData {
   navigatorTargets: Array<NavigatorEntry>
   propertyControlsInfo: PropertyControlsInfo
   showComponentPicker: ShowComponentPickerContextMenuCallback
+  lockedElements: LockedElements
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {

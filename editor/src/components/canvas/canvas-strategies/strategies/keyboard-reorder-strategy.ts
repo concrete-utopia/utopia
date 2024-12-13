@@ -5,7 +5,7 @@ import { shallowEqual } from '../../../../core/shared/equality-utils'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import type {
   CanvasStrategy,
@@ -86,9 +86,12 @@ export function keyboardReorderStrategy(
         const result = unpatchedIndex + keyboardResult
         const newIndex = Math.min(Math.max(0, result), siblings.length - 1)
 
+        const siblingsAndParent = siblings.concat(EP.parentPath(target))
+
         if (newIndex === unpatchedIndex) {
           return strategyApplicationResult(
-            [updateHighlightedViews('mid-interaction', []), setElementsToRerenderCommand(siblings)],
+            [updateHighlightedViews('mid-interaction', [])],
+            siblingsAndParent,
             {
               lastReorderIdx: newIndex,
             },
@@ -97,9 +100,9 @@ export function keyboardReorderStrategy(
           return strategyApplicationResult(
             [
               reorderElement('always', target, absolute(newIndex)),
-              setElementsToRerenderCommand(siblings),
               updateHighlightedViews('mid-interaction', []),
             ],
+            siblingsAndParent,
             {
               lastReorderIdx: newIndex,
             },

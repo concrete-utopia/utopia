@@ -1,21 +1,25 @@
+import type { ParseSuccess } from 'utopia-shared/src/types'
 import type { EditorState, EditorStorePatched } from '../../components/editor/store/editor-state'
 import {
+  forUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
-  withUnderlyingTargetFromEditorState,
 } from '../../components/editor/store/editor-state'
 import type { JSXElementChild } from '../shared/element-template'
 import { fromField } from '../shared/optics/optic-creators'
-import type { Optic } from '../shared/optics/optics'
-import { traversal } from '../shared/optics/optics'
+import { makeOptic, type Optic } from '../shared/optics/optics'
 import type { ElementPath } from '../shared/project-file-types'
 
 export function editorStateToElementChildOptic(
   target: ElementPath,
 ): Optic<EditorState, JSXElementChild> {
-  function from(editorState: EditorState): Array<JSXElementChild> {
-    return withUnderlyingTargetFromEditorState(target, editorState, [], (_, element) => {
-      return [element]
-    })
+  function from(editorState: EditorState, callback: (child: JSXElementChild) => void): void {
+    forUnderlyingTargetFromEditorState(
+      target,
+      editorState,
+      (_: ParseSuccess, element: JSXElementChild) => {
+        callback(element)
+      },
+    )
   }
   function update(
     editorState: EditorState,
@@ -23,7 +27,7 @@ export function editorStateToElementChildOptic(
   ): EditorState {
     return modifyUnderlyingForOpenFile(target, editorState, modify)
   }
-  return traversal(from, update)
+  return makeOptic(from, update)
 }
 
 export function forElementChildOptic(

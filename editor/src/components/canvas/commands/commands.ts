@@ -6,8 +6,6 @@ import type { EditorState, EditorStatePatch } from '../../editor/store/editor-st
 import type { CommandDescription } from '../canvas-strategies/interaction-state'
 import type { AdjustCssLengthProperties } from './adjust-css-length-command'
 import { runAdjustCssLengthProperties } from './adjust-css-length-command'
-import type { AdjustNumberProperty } from './adjust-number-command'
-import { runAdjustNumberProperty } from './adjust-number-command'
 import type { ConvertToAbsolute } from './convert-to-absolute-command'
 import { runConvertToAbsolute } from './convert-to-absolute-command'
 import type { ReorderElement } from './reorder-element-command'
@@ -31,14 +29,6 @@ import type { ShowOutlineHighlight } from './show-outline-highlight-command'
 import { runShowOutlineHighlight } from './show-outline-highlight-command'
 import type { SetCursorCommand } from './set-cursor-command'
 import { runSetCursor } from './set-cursor-command'
-import type {
-  AppendElementsToRerenderCommand,
-  SetElementsToRerenderCommand,
-} from './set-elements-to-rerender-command'
-import {
-  runAppendElementsToRerender,
-  runSetElementsToRerender,
-} from './set-elements-to-rerender-command'
 import type { DuplicateElement } from './duplicate-element-command'
 import { runDuplicateElement } from './duplicate-element-command'
 import type { UpdateFunctionCommand } from './update-function-command'
@@ -47,16 +37,14 @@ import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
 import { runAddImportsToFile } from './add-imports-to-file-command'
-import type { SetProperty } from './set-property-command'
-import { runSetProperty } from './set-property-command'
+import type { UpdateBulkProperties, SetProperty } from './set-property-command'
+import { runBulkUpdateProperties, runSetProperty } from './set-property-command'
 import type { AddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import { runAddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import type { InsertElementInsertionSubject } from './insert-element-insertion-subject'
 import { runInsertElementInsertionSubject } from './insert-element-insertion-subject'
 import type { AddElement } from './add-element-command'
 import { runAddElement } from './add-element-command'
-import type { UpdatePropIfExists } from './update-prop-if-exists-command'
-import { runUpdatePropIfExists } from './update-prop-if-exists-command'
 import type { HighlightElementsCommand } from './highlight-element-command'
 import { runHighlightElementsCommand } from './highlight-element-command'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
@@ -86,6 +74,10 @@ import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and
 import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runSetActiveFrames, type SetActiveFrames } from './set-active-frames-command'
+import {
+  runShowGridControlsCommand,
+  type ShowGridControlsCommand,
+} from './show-grid-controls-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -104,7 +96,6 @@ export type CanvasCommand =
   | WildcardPatch
   | UpdateFunctionCommand
   | StrategySwitched
-  | AdjustNumberProperty
   | AdjustCssLengthProperties
   | ReparentElement
   | DuplicateElement
@@ -117,13 +108,10 @@ export type CanvasCommand =
   | ShowOutlineHighlight
   | ShowReorderIndicator
   | SetCursorCommand
-  | SetElementsToRerenderCommand
-  | AppendElementsToRerenderCommand
   | PushIntendedBoundsAndUpdateGroups
   | PushIntendedBoundsAndUpdateHuggingElements
   | DeleteProperties
   | SetProperty
-  | UpdatePropIfExists
   | AddImportsToFile
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
@@ -139,6 +127,8 @@ export type CanvasCommand =
   | WrapInContainerCommand
   | QueueTrueUpElement
   | SetActiveFrames
+  | UpdateBulkProperties
+  | ShowGridControlsCommand
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -152,10 +142,8 @@ export function runCanvasCommand(
       return runUpdateFunctionCommand(editorState, command, commandLifecycle)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
-    case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperties(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command, commandLifecycle)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -169,7 +157,7 @@ export function runCanvasCommand(
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, command, commandLifecycle)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
@@ -178,31 +166,26 @@ export function runCanvasCommand(
       return runShowReorderIndicator(editorState, command)
     case 'SET_CURSOR_COMMAND':
       return runSetCursor(editorState, command)
-    case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
-      return runSetElementsToRerender(editorState, command)
-    case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
-      return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
       return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
       return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
-
     case 'DELETE_PROPERTIES':
-      return runDeleteProperties(editorState, command)
+      return runDeleteProperties(editorState, command, commandLifecycle)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, command)
-    case 'UPDATE_PROP_IF_EXISTS':
-      return runUpdatePropIfExists(editorState, command)
+      return runSetProperty(editorState, command, commandLifecycle)
+    case 'UPDATE_BULK_PROPERTIES':
+      return runBulkUpdateProperties(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
-      return runAddToReparentedToPaths(editorState, command)
+      return runAddToReparentedToPaths(command, commandLifecycle)
     case 'INSERT_ELEMENT_INSERTION_SUBJECT':
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
     case 'ADD_ELEMENTS':
-      return runAddElements(editorState, command)
+      return runAddElements(editorState, command, commandLifecycle)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':
@@ -223,6 +206,8 @@ export function runCanvasCommand(
       return runQueueTrueUpElement(editorState, command)
     case 'SET_ACTIVE_FRAMES':
       return runSetActiveFrames(editorState, command)
+    case 'SHOW_GRID_CONTROLS':
+      return runShowGridControlsCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

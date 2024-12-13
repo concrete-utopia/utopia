@@ -18,13 +18,18 @@ import { StringControl } from './string-control'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import {
   colorTheme,
+  FlexRow,
   Icn,
+  Icons,
   SimpleNumberInput,
   SimplePercentInput,
+  SquareButton,
   UtopiaStyles,
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
 import { ColorPickerSwatches } from './color-picker-swatches'
+import { didWeHandleMouseMoveForThisFrame, mouseMoveHandled } from '../../../components/mouse-move'
+import { clearColorPickerElement, setColorPickerElement } from './color-picker-utils'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -75,14 +80,16 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
           ...UtopiaStyles.popup,
         }}
       >
-        <Icn
-          type='pipette'
-          color='secondary'
-          width={18}
-          height={18}
-          onClick={onClickEyeDropper}
-          style={{ marginLeft: 8 }}
-        />
+        <FlexRow
+          style={{ justifyContent: 'flex-end', gap: 2, height: 32, padding: '8px 8px 14px 8px' }}
+        >
+          <SquareButton highlight onClick={onClickEyeDropper}>
+            <Icons.SmallPipette />
+          </SquareButton>
+          <SquareButton highlight onClick={closePopup}>
+            <Icons.SmallCross />
+          </SquareButton>
+        </FlexRow>
         <ColorPickerInner {...props} />
       </div>
     </InspectorModal>
@@ -191,17 +198,18 @@ export class ColorPickerInner extends React.Component<
   ColorPickerInnerProps,
   ColorPickerInnerState
 > {
-  private RefFirstControl = React.createRef<HTMLInputElement>()
-
   private fullWidth = colorPickerWidth
   private fullHeight = MetadataEditorModalPreviewHeight
   private paddedWidth = this.fullWidth - inspectorEdgePadding * 2
 
   private SVControlRef = React.createRef<HTMLDivElement>()
+  private SVControlIndicatorRef = React.createRef<HTMLDivElement>()
   private SVOrigin: WindowPoint = { x: 0, y: 0 } as WindowPoint
   private HueControlRef = React.createRef<HTMLDivElement>()
+  private HueControlIndicatorRef = React.createRef<HTMLDivElement>()
   private HueOriginLeft: number = 0
   private AlphaControlRef = React.createRef<HTMLDivElement>()
+  private AlphaControlIndicatorRef = React.createRef<HTMLDivElement>()
   private AlphaOriginLeft: number = 0
 
   constructor(props: ColorPickerInnerProps) {
@@ -227,13 +235,12 @@ export class ColorPickerInner extends React.Component<
   componentDidMount() {
     setTimeout(() => {
       // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-      if (this.RefFirstControl.current != null) {
-        this.RefFirstControl.current.focus()
-      }
+      this.setIndicators()
     }, 0)
   }
 
   componentWillUnmount() {
+    clearColorPickerElement()
     document.removeEventListener('mousemove', this.onSVMouseMove)
     document.removeEventListener('mouseup', this.onSVMouseUp)
     document.removeEventListener('mousemove', this.onHueSliderMouseMove)
@@ -250,10 +257,12 @@ export class ColorPickerInner extends React.Component<
     return Chroma(h * 360, s, v, 'hsv')
       .alpha(a)
       .hex('auto')
-      .toUpperCase()
   }
 
-  static getDerivedStateFromProps(props: ColorPickerInnerProps, state: ColorPickerInnerState) {
+  static getDerivedStateFromProps(
+    props: ColorPickerInnerProps,
+    state: ColorPickerInnerState,
+  ): Partial<ColorPickerInnerState> | null {
     const chroma = cssColorToChromaColorOrDefault(props.value)
     if (state.dirty) {
       return {
@@ -262,19 +271,24 @@ export class ColorPickerInner extends React.Component<
       }
     } else {
       const controlStateHexa = ColorPickerInner.getHexaColorFromControlPositionState(state)
-      const newPropsHexa = chroma.hex('auto').toUpperCase()
+      const newPropsHexa = chroma.hex('auto')
       if (controlStateHexa === newPropsHexa) {
         return null
       } else {
         const newCalculatedState = deriveStateFromNewColor(chroma, state.normalisedHuePosition)
-        return { ...newCalculatedState, _propsHexa: chroma.hex('auto').toUpperCase() }
+        return newCalculatedState
       }
     }
   }
 
-  componentDidUpdate(prevProps: ColorPickerInnerProps) {
-    if (this.RefFirstControl.current != null && prevProps.id !== this.props.id) {
-      this.RefFirstControl.current.focus()
+  componentDidUpdate(prevProps: ColorPickerInnerProps, prevState: ColorPickerInnerState) {
+    if (
+      this.state.normalisedSaturationPosition !== prevState.normalisedSaturationPosition ||
+      this.state.normalisedValuePosition !== prevState.normalisedValuePosition ||
+      this.state.normalisedHuePosition !== prevState.normalisedHuePosition ||
+      this.state.normalisedAlphaPosition !== prevState.normalisedAlphaPosition
+    ) {
+      this.setIndicators()
     }
   }
 
@@ -361,7 +375,10 @@ export class ColorPickerInner extends React.Component<
 
   onSVMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setSVFromClientPosition(e.clientX, e.clientY, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setSVFromClientPosition(e.clientX, e.clientY, true)
+    }
   }
 
   hexFromHue = (h: number, s: number, v: number, a: number): string => {
@@ -422,7 +439,10 @@ export class ColorPickerInner extends React.Component<
 
   onHueSliderMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setHueFromClientX(e.clientX, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setHueFromClientX(e.clientX, true)
+    }
   }
 
   onHueSliderMouseUp = (e: MouseEvent) => {
@@ -463,7 +483,10 @@ export class ColorPickerInner extends React.Component<
 
   onAlphaSliderMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setAlphaFromClientX(e.clientX, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setAlphaFromClientX(e.clientX, true)
+    }
   }
 
   onAlphaSliderMouseUp = (e: MouseEvent) => {
@@ -527,6 +550,25 @@ export class ColorPickerInner extends React.Component<
     this.setNewHex(newValue)
   }
 
+  setIndicators = () => {
+    if (this.SVControlIndicatorRef.current != null) {
+      this.SVControlIndicatorRef.current.style.left = `${
+        this.state.normalisedSaturationPosition * 100
+      }%`
+      this.SVControlIndicatorRef.current.style.top = `${
+        (1 - this.state.normalisedValuePosition) * 100
+      }%`
+    }
+    if (this.HueControlIndicatorRef.current != null) {
+      this.HueControlIndicatorRef.current.style.left = `${this.state.normalisedHuePosition * 100}%`
+    }
+    if (this.AlphaControlIndicatorRef.current != null) {
+      this.AlphaControlIndicatorRef.current.style.left = `${
+        this.state.normalisedAlphaPosition * 100
+      }%`
+    }
+  }
+
   render() {
     const h = this.state.normalisedHuePosition
     const s = this.state.normalisedSaturationPosition
@@ -548,7 +590,12 @@ export class ColorPickerInner extends React.Component<
       )`
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'relative' }}
+        ref={(node) => {
+          setColorPickerElement(node)
+        }}
+      >
         <div>
           <div
             className='colorPicker-saturation-and-value'
@@ -569,6 +616,7 @@ export class ColorPickerInner extends React.Component<
           >
             <div
               className='colorPicker-saturation-and-value-indicator'
+              ref={this.SVControlIndicatorRef}
               style={{
                 width: 8,
                 height: 8,
@@ -578,8 +626,6 @@ export class ColorPickerInner extends React.Component<
                   'inset 0 0 1px rgba(0, 0, 0, 0.24), 0 0 0 2px white, 0 0 2px 2px rgba(0, 0, 0, 0.24)',
                 position: 'absolute',
                 margin: -4,
-                left: `${this.state.normalisedSaturationPosition * 100}%`,
-                top: `${(1 - this.state.normalisedValuePosition) * 100}%`,
                 pointerEvents: 'none',
               }}
             />
@@ -605,6 +651,7 @@ export class ColorPickerInner extends React.Component<
               <div style={{ position: 'relative' }}>
                 <div
                   className='colorPicker-hue-indicator'
+                  ref={this.HueControlIndicatorRef}
                   style={{
                     width: 8,
                     height: 20,
@@ -613,7 +660,6 @@ export class ColorPickerInner extends React.Component<
                     boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
                     position: 'absolute',
                     margin: '0 -4px',
-                    left: `${this.state.normalisedHuePosition * 100}%`,
                     top: 0,
                     pointerEvents: 'none',
                   }}
@@ -642,6 +688,7 @@ export class ColorPickerInner extends React.Component<
               <div style={{ position: 'relative' }}>
                 <div
                   className='colorPicker-alpha-indicator'
+                  ref={this.AlphaControlIndicatorRef}
                   style={{
                     width: 8,
                     height: 20,
@@ -655,7 +702,6 @@ export class ColorPickerInner extends React.Component<
                     boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
                     position: 'absolute',
                     margin: '0 -4px',
-                    left: `${this.state.normalisedAlphaPosition * 100}%`,
                     top: 0,
                     pointerEvents: 'none',
                   }}
@@ -673,7 +719,6 @@ export class ColorPickerInner extends React.Component<
             }}
           >
             <StringControl
-              ref={this.RefFirstControl}
               key={this.props.id}
               value={chroma.hex('auto').toUpperCase()}
               onSubmitValue={this.onSubmitValueHex}
@@ -695,14 +740,7 @@ export class ColorPickerInner extends React.Component<
               onForcedSubmitValue={this.onSubmitValueHue}
               minimum={0}
               maximum={360}
-              DEPRECATED_labelBelow='H'
-              labelInner={{
-                category: 'layout/systems',
-                type: 'transform-rotate',
-                color: 'secondary',
-                width: 10,
-                height: 10,
-              }}
+              innerLabel='H'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -716,7 +754,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='S'
+              innerLabel='S'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -730,7 +768,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='V'
+              innerLabel='V'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -744,7 +782,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='A'
+              innerLabel='A'
               defaultUnitToHide={null}
             />
           </div>

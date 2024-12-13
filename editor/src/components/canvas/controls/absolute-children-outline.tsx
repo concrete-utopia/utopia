@@ -18,7 +18,6 @@ export const AbsoluteChildrenOutline = React.memo(() => {
           if (!treatElementAsGroupLike(store.editor.jsxMetadata, selectedView)) {
             // Taking the children of those selected views...
             const selectedViewChildren = MetadataUtils.getChildrenPathsOrdered(
-              store.editor.jsxMetadata,
               store.editor.elementPathTree,
               selectedView,
             )

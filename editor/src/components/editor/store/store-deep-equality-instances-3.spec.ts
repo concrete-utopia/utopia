@@ -233,6 +233,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
+    layoutSystemForChildrenInherited: false,
     providesBoundsForAbsoluteChildren: true,
     display: 'flex',
     position: 'absolute',
@@ -265,6 +266,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     gap: 11,
     flexDirection: 'column',
     justifyContent: 'center',
+    alignContent: null,
     alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
@@ -293,6 +295,59 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: null,
       height: null,
     },
+    containerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    elementGridProperties: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    elementGridPropertiesFromProps: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    rowGap: null,
+    columnGap: null,
+    gridCellGlobalFrames: null,
+    parentGridCellGlobalFrames: null,
+    justifySelf: null,
+    alignSelf: null,
+    borderWidths: {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    },
+    parentGridFrame: null,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -323,6 +378,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     usesParentBounds: false,
     parentLayoutSystem: 'flex',
     layoutSystemForChildren: 'flex',
+    layoutSystemForChildrenInherited: false,
     providesBoundsForAbsoluteChildren: true,
     display: 'flex',
     position: 'absolute',
@@ -355,6 +411,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     gap: 11,
     flexDirection: 'column',
     justifyContent: 'center',
+    alignContent: null,
     alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
@@ -383,6 +440,59 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: null,
       height: null,
     },
+    containerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    elementGridProperties: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    elementGridPropertiesFromProps: {
+      gridColumnStart: null,
+      gridColumnEnd: null,
+      gridRowStart: null,
+      gridRowEnd: null,
+    },
+    rowGap: null,
+    columnGap: null,
+    gridCellGlobalFrames: null,
+    parentGridCellGlobalFrames: null,
+    justifySelf: null,
+    alignSelf: null,
+    borderWidths: {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    },
+    parentGridFrame: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -432,12 +542,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    localFrame: localRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
     nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -474,6 +578,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
+      layoutSystemForChildrenInherited: false,
       providesBoundsForAbsoluteChildren: true,
       display: 'flex',
       position: 'absolute',
@@ -506,6 +611,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       gap: 11,
       flexDirection: 'column',
       justifyContent: 'center',
+      alignContent: null,
       alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
@@ -534,12 +640,65 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: null,
         height: null,
       },
+      containerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      elementGridProperties: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      elementGridPropertiesFromProps: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      rowGap: null,
+      columnGap: null,
+      gridCellGlobalFrames: null,
+      parentGridCellGlobalFrames: null,
+      justifySelf: null,
+      alignSelf: null,
+      borderWidths: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      },
+      parentGridFrame: null,
     },
     computedStyle: {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -560,12 +719,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    localFrame: localRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
     nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -602,6 +755,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       usesParentBounds: false,
       parentLayoutSystem: 'flex',
       layoutSystemForChildren: 'flex',
+      layoutSystemForChildrenInherited: false,
       providesBoundsForAbsoluteChildren: true,
       display: 'flex',
       position: 'absolute',
@@ -634,6 +788,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       gap: 11,
       flexDirection: 'column',
       justifyContent: 'center',
+      alignContent: null,
       alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
@@ -662,12 +817,65 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: null,
         height: null,
       },
+      containerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      elementGridProperties: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      elementGridPropertiesFromProps: {
+        gridColumnStart: null,
+        gridColumnEnd: null,
+        gridRowStart: null,
+        gridRowEnd: null,
+      },
+      rowGap: null,
+      columnGap: null,
+      gridCellGlobalFrames: null,
+      parentGridCellGlobalFrames: null,
+      justifySelf: null,
+      alignSelf: null,
+      borderWidths: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      },
+      parentGridFrame: null,
     },
     computedStyle: {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -690,12 +898,11 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     expect(result.value.elementPath).toBe(oldValue.elementPath)
     expect(result.value.element).toBe(oldValue.element)
     expect(result.value.globalFrame).toBe(oldValue.globalFrame)
-    expect(result.value.localFrame).toBe(oldValue.localFrame)
     expect(result.value.componentInstance).toBe(oldValue.componentInstance)
     expect(result.value.isEmotionOrStyledComponent).toBe(oldValue.isEmotionOrStyledComponent)
     expect(result.value.specialSizeMeasurements).toBe(oldValue.specialSizeMeasurements)
     expect(result.value.computedStyle).toBe(oldValue.computedStyle)
-    expect(result.value.attributeMetadatada).toBe(oldValue.attributeMetadatada)
+    expect(result.value.attributeMetadata).toBe(oldValue.attributeMetadata)
     expect(result.value.label).toBe(newDifferentValue.label)
     expect(result.value.importInfo).toBe(oldValue.importInfo)
     expect(result.value).toEqual(newDifferentValue)
@@ -709,12 +916,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       element: left('div'),
       globalFrame: canvasRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
-      localFrame: localRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -756,6 +957,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
+        layoutSystemForChildrenInherited: false,
         providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
@@ -788,6 +990,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
+        alignContent: null,
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
@@ -816,12 +1019,65 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: null,
           height: null,
         },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        rowGap: null,
+        columnGap: null,
+        gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
+        parentGridFrame: null,
       },
       computedStyle: {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -844,12 +1100,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      localFrame: localRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
       nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -887,6 +1137,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentLayoutSystem: 'flex',
         parentFlexGap: 0,
         layoutSystemForChildren: 'flex',
+        layoutSystemForChildrenInherited: false,
         providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
@@ -918,6 +1169,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
+        alignContent: null,
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
@@ -946,12 +1198,65 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: null,
           height: null,
         },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        rowGap: null,
+        columnGap: null,
+        gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
+        parentGridFrame: null,
       },
       computedStyle: {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -974,12 +1279,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      localFrame: localRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
       nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -1016,6 +1315,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         usesParentBounds: false,
         parentLayoutSystem: 'flex',
         layoutSystemForChildren: 'flex',
+        layoutSystemForChildrenInherited: false,
         providesBoundsForAbsoluteChildren: true,
         display: 'flex',
         position: 'absolute',
@@ -1048,6 +1348,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
+        alignContent: null,
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
@@ -1076,12 +1377,65 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: null,
           height: null,
         },
+        containerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridProperties: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        elementGridPropertiesFromProps: {
+          gridColumnStart: null,
+          gridColumnEnd: null,
+          gridRowStart: null,
+          gridRowEnd: null,
+        },
+        rowGap: null,
+        columnGap: null,
+        gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
+        parentGridFrame: null,
       },
       computedStyle: {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1110,14 +1464,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     expect(result.value.elem.elementPath).toBe(oldValue.elem.elementPath)
     expect(result.value.elem.element).toBe(oldValue.elem.element)
     expect(result.value.elem.globalFrame).toBe(oldValue.elem.globalFrame)
-    expect(result.value.elem.localFrame).toBe(oldValue.elem.localFrame)
     expect(result.value.elem.componentInstance).toBe(oldValue.elem.componentInstance)
     expect(result.value.elem.isEmotionOrStyledComponent).toBe(
       oldValue.elem.isEmotionOrStyledComponent,
     )
     expect(result.value.elem.specialSizeMeasurements).toBe(oldValue.elem.specialSizeMeasurements)
     expect(result.value.elem.computedStyle).toBe(oldValue.elem.computedStyle)
-    expect(result.value.elem.attributeMetadatada).toBe(oldValue.elem.attributeMetadatada)
+    expect(result.value.elem.attributeMetadata).toBe(oldValue.elem.attributeMetadata)
     expect(result.value.elem.label).toBe(newDifferentValue.elem.label)
     expect(result.value.elem.importInfo).toBe(oldValue.elem.importInfo)
     expect(result.value).toEqual(newDifferentValue)

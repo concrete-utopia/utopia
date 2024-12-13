@@ -19,6 +19,7 @@ import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-help
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -397,13 +398,15 @@ describe('Flex Reparent To Flex Strategy', () => {
         y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
       })
 
-      await mouseDragFromPointWithDelta(canvasControlsLayer, flexChildToReparentCenter, dragDelta)
+      await mouseDragFromPointWithDelta(canvasControlsLayer, flexChildToReparentCenter, dragDelta, {
+        modifiers: cmdModifier,
+      })
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      const navigatorTargets = renderResult
-        .getEditorState()
-        .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
+      const navigatorTargets = getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey)
       expect(navigatorTargets).toEqual([
         'regular-utopia-storyboard-uid/parent2',
         'regular-utopia-storyboard-uid/parent2/0b5',

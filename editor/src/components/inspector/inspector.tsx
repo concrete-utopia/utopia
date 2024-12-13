@@ -14,15 +14,9 @@ import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
-import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
+import type { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  alignSelectedViews,
-  distributeSelectedViews,
-  setProp_UNSAFE,
-  transientActions,
-  unsetProperty,
-} from '../editor/actions/action-creators'
+import { setProp_UNSAFE, transientActions, unsetProperty } from '../editor/actions/action-creators'
 
 import type { ElementsToRerender } from '../editor/store/editor-state'
 import {
@@ -51,11 +45,9 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
-import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
   isKeyboardAbsoluteStrategy,
   isKeyboardReorderStrategy,
@@ -87,12 +79,16 @@ import {
   getInspectorPreferencesForTargets,
 } from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
-import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
-import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
+import {
+  elementSupportsChildrenFromPropertyControls,
+  replaceFirstChildAndDeleteSiblings,
+} from '../editor/element-children'
 import { InspectorSectionHeader } from './section-header'
+import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
+import { isTailwindEnabled } from '../../core/tailwind/tailwind-compilation'
 
 export interface ElementPathElement {
   name?: string
@@ -107,128 +103,6 @@ export interface InspectorProps extends TargetSelectorSectionProps {
   setSelectedTarget: React.Dispatch<React.SetStateAction<string[]>>
   selectedViews: Array<ElementPath>
 }
-
-interface AlignDistributeButtonProps {
-  onMouseUp: () => void
-  toolTip: string
-  iconType: string
-  disabled: boolean
-}
-
-const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
-  (props: AlignDistributeButtonProps) => {
-    return (
-      <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
-        <Icn
-          tooltipText={props.toolTip}
-          category='layout/commands'
-          type={props.iconType}
-          width={16}
-          height={16}
-        />
-      </Button>
-    )
-  },
-)
-AlignDistributeButton.displayName = 'AlignDistributeButton'
-
-const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const colorTheme = useColorTheme()
-  const dispatch = useDispatch()
-  const alignSelected = React.useCallback(
-    (alignment: Alignment) => {
-      dispatch([alignSelectedViews(alignment)], 'everyone')
-    },
-    [dispatch],
-  )
-
-  const distributeSelected = React.useCallback(
-    (distribution: Distribution) => {
-      dispatch([distributeSelectedViews(distribution)], 'everyone')
-    },
-    [dispatch],
-  )
-  const disableAlign = props.numberOfTargets === 0
-  const disableDistribute = props.numberOfTargets < 3
-  const multipleTargets = props.numberOfTargets > 1
-
-  const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
-  const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
-  const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
-  const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
-  const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
-  const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
-  const distributeHorizontal = React.useCallback(
-    () => distributeSelected('horizontal'),
-    [distributeSelected],
-  )
-  const distributeVertical = React.useCallback(
-    () => distributeSelected('vertical'),
-    [distributeSelected],
-  )
-
-  return (
-    <FlexRow
-      style={{
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        height: UtopiaTheme.layout.rowHeight.normal,
-        background: colorTheme.inspectorBackground.value,
-        padding: '8px 0',
-      }}
-    >
-      <AlignDistributeButton
-        onMouseUp={alignLeft}
-        toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignLeft'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={alignHCenter}
-        toolTip={`Align to horizontal center of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignHorizontalCenter'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={alignRight}
-        toolTip={`Align to right of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignRight'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={alignTop}
-        toolTip={`Align to top of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignTop'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={alignVCenter}
-        toolTip={`Align to vertical center of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignVerticalCenter'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={alignBottom}
-        toolTip={`Align to bottom of ${multipleTargets ? 'selection' : 'parent'}`}
-        iconType='alignBottom'
-        disabled={disableAlign}
-      />
-      <AlignDistributeButton
-        onMouseUp={distributeHorizontal}
-        toolTip={`Distribute horizontally ↔`}
-        iconType='distributeHorizontal'
-        disabled={disableDistribute}
-      />
-      <AlignDistributeButton
-        onMouseUp={distributeVertical}
-        toolTip={`Distribute vertically ↕️`}
-        iconType='distributeVertical'
-        disabled={disableDistribute}
-      />
-    </FlexRow>
-  )
-})
-AlignmentButtons.displayName = 'AlignmentButtons'
 
 function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<PropertyPath> {
   return [
@@ -337,7 +211,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
       if (focusedPanel !== 'inspector') {
-        dispatch([setFocus('inspector')], 'inspector')
+        queueMicrotask(() => {
+          dispatch([setFocus('inspector')], 'inspector')
+        })
       }
     },
     [dispatch, focusedPanel],
@@ -377,6 +253,20 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((view) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          view,
+        ),
+      )
+    },
+    'Inspector supportChildren',
+  )
+
   const {
     value: styleSectionOpen,
     toggle: toggleStyleSection,
@@ -395,13 +285,18 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
   const shouldShowAdvancedSectionContents = advancedSectionOpen && !shouldHideInspectorSections
 
-  const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
-  const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
+  const shouldShowClassNameSubsection =
+    isTailwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
-    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
+    multiselectedContract === 'frame' &&
+    inspectorPreferences.includes('layout-system') &&
+    supportsChildren
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
+
+  const shouldShowContainerSection =
+    selectedViews.length > 0 && inspectorPreferences.includes('layout')
 
   function renderInspectorContents() {
     return (
@@ -442,9 +337,11 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   paddingBottom: 50,
                 }}
               >
+                {when(rootElementIsSelected, <RootElementIndicator />)}
                 {anyComponents || multiselectedContract === 'fragment' ? (
                   <ComponentSection isScene={false} />
                 ) : null}
+
                 {unless(
                   shouldHideInspectorSections,
                   <InspectorSectionHeader
@@ -457,20 +354,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(
                   shouldShowStyleSectionContents,
                   <>
-                    {rootElementIsSelected ? (
-                      <RootElementIndicator />
-                    ) : (
-                      when(
-                        shouldShowAlignmentButtons,
-                        <AlignmentButtons numberOfTargets={selectedViews.length} />,
-                      )
-                    )}
                     {when(multiselectedContract === 'fragment', <FragmentSection />)}
                     {when(
                       multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
                       // Position and Sizing sections are shown if Frame or Group is selected
                       <>
                         <SimplifiedLayoutSubsection />
+                        {when(shouldShowContainerSection, <ContainerSubsection />)}
                         <ConstraintsSection />
                       </>,
                     )}
@@ -739,7 +629,7 @@ export const InspectorContextProvider = React.memo<{
   Utils.fastForEach(selectedViews, (path) => {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     if (elementMetadata != null) {
-      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
+      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadata == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
          * Because the computedStyle is only used in some cases for some controls,
@@ -760,7 +650,7 @@ export const InspectorContextProvider = React.memo<{
       newEditedMultiSelectedProps.push(jsxAttributes)
       newSpiedProps.push(allElementProps[EP.toString(path)] ?? {})
       newComputedStyles.push(elementMetadata.computedStyle)
-      newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
+      newAttributeMetadatas.push(elementMetadata.attributeMetadata)
     }
   })
 
@@ -943,10 +833,10 @@ function useShouldExpandStyleSection(): boolean {
     Substores.propertyControlsInfo,
     (store) => {
       return store.editor.selectedViews.every((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
         const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
           target,
-          store.editor.propertyControlsInfo,
-          store.editor.projectContents,
         )
 
         if (descriptor == null || descriptor.inspector == null) {
@@ -976,10 +866,10 @@ function useShouldHideInspectorSections(): boolean {
     Substores.propertyControlsInfo,
     (store) =>
       store.editor.selectedViews.some((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
         const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
           target,
-          store.editor.propertyControlsInfo,
-          store.editor.projectContents,
         )
 
         if (descriptor?.inspector == null) {

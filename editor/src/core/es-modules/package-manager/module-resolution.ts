@@ -32,10 +32,8 @@ import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
-import {
-  applyFilePathMappingsToFilePath,
-  getFilePathMappings,
-} from '../../model/project-file-utils'
+import { getFilePathMappings } from '../../model/project-file-utils'
+import { applyFilePathMappingsToFilePath } from '../../../core/workers/common/project-file-utils'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,
@@ -94,12 +92,18 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
+export function isResolveNotPresent<T>(
+  resolveResult: ResolveResult<T>,
+): resolveResult is ResolveNotPresent {
+  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
+}
+
 interface FoundFile {
   path: string
   file: ESCodeFile | ESRemoteDependencyPlaceholder
 }
 
-type FileLookupResult = ResolveResult<FoundFile>
+export type FileLookupResult = ResolveResult<FoundFile>
 
 function fileLookupResult(
   path: string,

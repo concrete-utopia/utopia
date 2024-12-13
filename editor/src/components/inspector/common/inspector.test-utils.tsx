@@ -73,6 +73,7 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
     workers: null as any,
     persistence: null as any,
     saveCountThisSession: 0,
+    elementMetadata: null as any,
     postActionInteractionSession: null,
     builtInDependencies: createBuiltInDependenciesList(null),
     projectServerState: emptyProjectServerState(),

@@ -1,8 +1,8 @@
 import type { HighlightBoundsForUids } from './project-file-types'
 import type { UIDMappings } from './uid-utils'
-import { generateConsistentUID, updateHighlightBounds } from './uid-utils'
+import { generateConsistentUID, nextTestUID, updateHighlightBounds } from './uid-utils'
 
-let someExistingIDs: Set<string> = new Set(['aaa', 'pqr'])
+let someExistingIDs: Set<string> = new Set(['aaa', 'pqr', 'bbb', 'bbc'])
 
 describe('generateConsistentUID', () => {
   it('if the starting value is unused return it', () => {
@@ -84,5 +84,20 @@ describe('updateHighlightBounds', () => {
       },
     }
     expect(actualResult).toEqual(expectedResult)
+  })
+})
+
+describe('nextTestUID', () => {
+  it("increments a string's last character", async () => {
+    expect(nextTestUID('aaa')).toEqual('aab')
+    expect(nextTestUID('aab')).toEqual('aac')
+    expect(nextTestUID('aba')).toEqual('abb')
+    expect(nextTestUID('aaz')).toEqual('aba')
+    expect(nextTestUID('azz')).toEqual('baa')
+    expect(nextTestUID('a9a')).toEqual('aab')
+    expect(nextTestUID('aa9')).toEqual('aab')
+  })
+  it('throws if it cannot generate anymore', async () => {
+    expect(() => nextTestUID('zzz')).toThrow('Unable to generate a UID')
   })
 })

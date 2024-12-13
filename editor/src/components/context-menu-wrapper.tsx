@@ -2,20 +2,16 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  contextMenu,
-  Item,
-  Menu,
-  Submenu as SubmenuComponent,
-  useContextMenu,
-} from 'react-contexify'
-import { colorTheme, Icons, UtopiaStyles } from '../uuiui'
+import { Item, Menu, Submenu as SubmenuComponent, useContextMenu } from 'react-contexify'
+import { colorTheme, Icons, OnClickOutsideHOC, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
 import type { WindowPoint } from '../core/shared/math-utils'
 import { windowPoint } from '../core/shared/math-utils'
 import { addOpenMenuId, removeOpenMenuId } from '../core/shared/menu-state'
+import { createPortal } from 'react-dom'
+import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 
 interface Submenu<T> {
   items: Item<T>[]
@@ -49,16 +45,20 @@ export interface ContextMenuWrapperProps<T> {
   testId?: string
 }
 
+type ContextMenuItems<T> = Array<ContextMenuItem<T>>
 export interface ContextMenuProps<T> {
   dispatch?: EditorDispatch
   getData: () => T
   id: string
-  items: ContextMenuItem<T>[]
+  items: ContextMenuItems<T> | (() => ContextMenuItems<T>)
 }
 
 export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
+  const [menuIsVisible, setMenuIsVisible] = React.useState(false)
+
   const onVisibilityChange = React.useCallback(
     (isVisible: boolean) => {
+      setMenuIsVisible(isVisible)
       if (isVisible) {
         addOpenMenuId(id)
       } else {
@@ -71,30 +71,33 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   const splitItems = React.useMemo(() => {
     const tempItems: MenuItem<T>[] = []
 
-    for (const item of items) {
-      if (item?.submenuName != null) {
-        const alreadyAdded = tempItems.find(
-          (alreadySplit) =>
-            alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
-        )
-        if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
-          alreadyAdded.items.push(item)
+    if (menuIsVisible) {
+      const menuItems = typeof items === 'function' ? items() : items
+      for (const item of menuItems) {
+        if (item?.submenuName != null) {
+          const alreadyAdded = tempItems.find(
+            (alreadySplit) =>
+              alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
+          )
+          if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
+            alreadyAdded.items.push(item)
+          } else {
+            tempItems.push({
+              type: 'submenu',
+              label: item.submenuName,
+              items: [item],
+            })
+          }
         } else {
           tempItems.push({
-            type: 'submenu',
-            label: item.submenuName,
-            items: [item],
+            type: 'simple',
+            item: item,
           })
         }
-      } else {
-        tempItems.push({
-          type: 'simple',
-          item: item,
-        })
       }
     }
     return tempItems
-  }, [items])
+  }, [items, menuIsVisible])
 
   const isHidden = React.useCallback(
     (item: Item<T>): (() => boolean) => {
@@ -152,8 +155,18 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
     [getData, dispatch, isDisabled, isHidden],
   )
 
+  const onMouseDown = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+  }, [])
+
   return (
-    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
+    <Menu
+      key={id}
+      id={id}
+      animation={false}
+      onVisibilityChange={onVisibilityChange}
+      onMouseDown={onMouseDown}
+    >
       {splitItems.map((item, index) => {
         if (item?.type === 'submenu') {
           return (
@@ -176,7 +189,8 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   )
 }
 
-export const ContextMenuWrapper = <T,>({
+/** @deprecated use ContextMenuWrapper instead, which is Portaled */
+export const ContextMenuWrapper_DEPRECATED = <T,>({
   children,
   className = '',
   data,
@@ -290,6 +304,7 @@ export const MenuProvider = ({
 
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
       if (itemsLength <= 0) {
         return
       }
@@ -309,5 +324,43 @@ export const MenuProvider = ({
     <div style={style} onContextMenu={onContextMenu}>
       {children}
     </div>
+  )
+}
+
+export const ContextMenuWrapper = <T,>({
+  children,
+  data,
+  dispatch,
+  id,
+  items,
+  style,
+}: {
+  children?: React.ReactNode
+  data: T
+  dispatch?: EditorDispatch
+  id: string
+  items: ContextMenuItem<T>[]
+  style?: React.CSSProperties
+}) => {
+  const { hideAll } = useContextMenu({ id })
+
+  const getData = React.useCallback(() => data, [data])
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
+  return (
+    <React.Fragment>
+      <MenuProvider id={id} itemsLength={items.length} key={`${id}-provider`} style={style}>
+        {children}
+      </MenuProvider>
+      {portalTarget != null
+        ? createPortal(
+            <OnClickOutsideHOC onClickOutside={hideAll}>
+              <ContextMenu dispatch={dispatch} getData={getData} id={id} items={items} key={id} />
+            </OnClickOutsideHOC>,
+            portalTarget,
+          )
+        : null}
+    </React.Fragment>
   )
 }

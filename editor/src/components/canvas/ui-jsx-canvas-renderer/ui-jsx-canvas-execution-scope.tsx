@@ -54,6 +54,38 @@ export interface ExecutionScope {
   requireResult: MapLike<any>
 }
 
+let lastSeenProjectContents: ProjectContentTreeRoot | null
+let executionScopeCache: { [filename: string]: ExecutionScope } = {}
+
+export function buildBaseExecutionScope(
+  filePath: string,
+  customRequire: (importOrigin: string, toImport: string) => any,
+  requireResult: MapLike<any>,
+): MapLike<any> {
+  const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
+
+  let module = {
+    exports: {},
+  }
+
+  // Mirrors the same thing in evaluateJs.
+  let process = {
+    env: {
+      NODE_ENV: 'production',
+    },
+  }
+
+  const executionScope: MapLike<any> = {
+    React: React,
+    require: userRequireFn,
+    module: module,
+    exports: module.exports,
+    process: process,
+    ...requireResult,
+  }
+  return executionScope
+}
+
 export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
@@ -70,36 +102,24 @@ export function createExecutionScope(
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
-): {
-  scope: MapLike<any>
-  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
-  requireResult: MapLike<any>
-} {
+): ExecutionScope {
+  // Return something from the cache as appropriate.
+  if (lastSeenProjectContents === projectContents) {
+    if (filePath in executionScopeCache) {
+      return executionScopeCache[filePath]
+    }
+  } else {
+    lastSeenProjectContents = projectContents
+    clearExecutionScopeCache()
+  }
+
+  // Build the scope.
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
     getParseSuccessForFilePath(filePath, projectContents)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
-  const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
+  let executionScope = buildBaseExecutionScope(filePath, customRequire, requireResult)
 
-  let module = {
-    exports: {},
-  }
-
-  // Mirrors the same thing in evaluateJs.
-  let process = {
-    env: {
-      NODE_ENV: 'production',
-    },
-  }
-
-  let executionScope: MapLike<any> = {
-    React: React,
-    require: userRequireFn,
-    module: module,
-    exports: module.exports,
-    process: process,
-    ...requireResult,
-  }
   const filePathMappings = getFilePathMappings(projectContents)
   if (!(filePath in topLevelComponentRendererComponents.current)) {
     // we make sure that the ref has an entry for this filepath
@@ -236,11 +256,17 @@ export function createExecutionScope(
     },
   })
 
-  return {
+  const toReturn = {
     scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,
   }
+  executionScopeCache[filePath] = toReturn
+  return toReturn
+}
+
+export function clearExecutionScopeCache() {
+  executionScopeCache = {}
 }
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }

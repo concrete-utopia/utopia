@@ -1,8 +1,8 @@
-import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { isJSXElement } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
@@ -11,12 +11,17 @@ import {
   isInfinityRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
+import * as PP from '../../../../core/shared/property-path'
+import { styleStringInArray } from '../../../../utils/common-constants'
+import { gridItemIdentifier, trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { oppositeEdgePosition } from '../../canvas-types'
 import {
   isEdgePositionACorner,
   isEdgePositionAHorizontalEdge,
+  isEdgePositionAVerticalEdge,
   pickPointOnRect,
 } from '../../canvas-utils'
 import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
@@ -24,12 +29,21 @@ import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
+import type { CanvasCommand } from '../../commands/commands'
+import { deleteProperties } from '../../commands/delete-properties-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
+import {
+  controlsForGridPlaceholders,
+  controlsForGridRulers,
+} from '../../controls/grid-controls-for-strategies'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import type {
   CanvasStrategy,
@@ -44,16 +58,13 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { honoursPropsSize } from './absolute-utils'
+import { treatElementAsGroupLike } from './group-helpers'
 import {
   getLockedAspectRatio,
   isAnySelectedElementAspectRatioLocked,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueTrueUpElement } from '../../commands/queue-true-up-command'
-import { treatElementAsGroupLike } from './group-helpers'
-import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -66,20 +77,20 @@ export function basicResizeStrategy(
   if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
     return null
   }
+
+  const selectedElement = selectedElements[0]
+
   const metadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
-    selectedElements[0],
+    selectedElement,
   )
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
-  const elementDimensions =
-    elementDimensionsProps == null
-      ? null
-      : {
-          width: elementDimensionsProps.width,
-          height: elementDimensionsProps.height,
-        }
+  const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
+  if (isGridCell && isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
+    return null
+  }
 
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
@@ -95,6 +106,14 @@ export function basicResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
@@ -114,6 +133,12 @@ export function basicResizeStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
+      ...(isGridCell
+        ? [
+            controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
+            controlsForGridRulers(gridItemIdentifier(selectedElement)),
+          ]
+        : []),
     ],
     fitness:
       interactionSession != null &&
@@ -128,7 +153,6 @@ export function basicResizeStrategy(
         interactionSession.activeControl.type === 'RESIZE_HANDLE'
       ) {
         // no multiselection support yet
-        const selectedElement = selectedElements[0]
         const edgePosition = interactionSession.activeControl.edgePosition
         if (interactionSession.interactionData.drag != null) {
           const drag = interactionSession.interactionData.drag
@@ -207,11 +231,16 @@ export function basicResizeStrategy(
             elementParentBounds?.height,
           )
 
-          return strategyApplicationResult([
+          const gridsToRerender = selectedElements
+            .filter((element) => MetadataUtils.isGridItem(canvasState.startingMetadata, element))
+            .map(EP.parentPath)
+
+          const elementsToRerender = [...selectedElements, ...gridsToRerender]
+
+          let commands: CanvasCommand[] = [
             adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(selectedElements),
             pushIntendedBoundsAndUpdateGroups(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
@@ -219,12 +248,28 @@ export function basicResizeStrategy(
             ...groupChildren.map((c) =>
               queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
             ),
-          ])
+          ]
+
+          if (isEdgePositionAHorizontalEdge(edgePosition) && !isGridCell) {
+            commands.push(
+              deleteProperties('always', selectedElement, [PP.create('style', 'justifySelf')]),
+            )
+          }
+          if (isEdgePositionAVerticalEdge(edgePosition) && !isGridCell) {
+            commands.push(
+              deleteProperties('always', selectedElement, [PP.create('style', 'alignSelf')]),
+            )
+          }
+
+          return strategyApplicationResult(commands, elementsToRerender)
         } else {
-          return strategyApplicationResult([
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-          ])
+          return strategyApplicationResult(
+            [
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.

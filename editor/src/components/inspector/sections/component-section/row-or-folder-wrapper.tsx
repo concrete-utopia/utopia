@@ -19,6 +19,9 @@ type RowOrFolderWrapperProps = {
 }
 
 export const RowOrFolderWrapper = React.memo((props: RowOrFolderWrapperProps) => {
+  if (props.controlDescription.control === 'none') {
+    return null
+  }
   return (
     <UIGridRow padded={false} tall={false} variant='<-------------1fr------------->'>
       <RowForControl

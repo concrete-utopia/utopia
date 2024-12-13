@@ -49,7 +49,7 @@ function getSnapTargetsForElementPath(
     componentMetadata,
     allElementProps,
     pathTrees,
-    MetadataUtils.getChildrenPathsOrdered(componentMetadata, pathTrees, parent),
+    MetadataUtils.getChildrenPathsOrdered(pathTrees, parent),
   ).filter((path) => !EP.isDescendantOfOrEqualTo(path, elementPath))
 
   const parentIsGroupLike = treatElementAsGroupLike(componentMetadata, EP.parentPath(elementPath))

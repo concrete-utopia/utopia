@@ -1,6 +1,7 @@
 import type { Marks } from 'rc-slider'
 import Slider from 'rc-slider'
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { FlexRow, UtopiaTheme } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
@@ -41,8 +42,10 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
 
   const handleDragging = React.useCallback(
     (newValue: number) => {
+      ReactDOM.flushSync(() => {
+        setSlidingValue(newValue)
+      })
       onTransientSubmitValue!(newValue, true)
-      setSlidingValue(newValue)
       if (onDrag != null) {
         onDrag(newValue)
       }

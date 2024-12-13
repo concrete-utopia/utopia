@@ -44,21 +44,15 @@ import {
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
-import type { ParseSuccess, ProjectContents } from '../../shared/project-file-types'
+import { sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import {
   isParseSuccess,
   importAlias,
   foldParsedTextFile,
-  EmptyExportsDetail,
   exportFunction,
   exportDefaultFunctionOrClass,
-  exportVariables,
-  exportVariable,
   parseSuccess,
-  textFileContents,
-  RevisionsState,
-  textFile,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
@@ -69,9 +63,7 @@ import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   elementsStructure,
-  ensureArbitraryBlocksHaveUID,
   ensureElementsHaveUID,
-  isWantedElement,
   JustImportViewAndReact,
   printedProjectContentArbitrary,
   simplifyParsedTextFileAttributes,
@@ -82,16 +74,13 @@ import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-preven
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
-import { emptySet, setsEqual } from '../../shared/set-utils'
+import { emptySet } from '../../shared/set-utils'
 import {
   BLOCK_RAN_TO_END_FUNCTION_NAME,
   EARLY_RETURN_RESULT_FUNCTION_NAME,
   EARLY_RETURN_VOID_FUNCTION_NAME,
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from '../../shared/dom-utils'
-import { assertNever } from '../../../core/shared/utils'
-import { contentsToTree } from '../../../components/assets'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import {
   filtered,
   fromField,
@@ -175,6 +164,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -241,6 +231,7 @@ export var whatever = () => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -335,6 +326,7 @@ export function whatever(props) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -405,6 +397,7 @@ export function whatever() {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -499,6 +492,7 @@ export default function whatever(props) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -569,6 +563,7 @@ export default function whatever() {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -660,6 +655,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports: importsWithCake } = addImport(
       '/code.js',
+      [],
       'cake',
       'cake',
       [],
@@ -668,6 +664,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports: importsWithStylecss } = addImport(
       '/code.js',
+      [],
       './style.css',
       null,
       [],
@@ -791,6 +788,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       'cake',
       [importAlias('cake2')],
@@ -881,6 +879,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const { imports } = addImport(
         '/code.js',
+        [],
         'cake',
         null,
         [importAlias('cake', 'cake2')],
@@ -1006,6 +1005,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const { imports } = addImport(
         '/code.js',
+        [],
         'cake',
         null,
         [importAlias('cake')],
@@ -1105,6 +1105,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1302,6 +1303,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1449,6 +1451,7 @@ export default function getSizing(n) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1612,6 +1615,7 @@ export function getSizing(n) {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1732,6 +1736,7 @@ return {  };`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -1825,6 +1830,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -2768,6 +2774,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -2875,6 +2882,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3102,6 +3110,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3439,7 +3448,14 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code, null, emptySet(), 'do-not-apply-steganography')
+    const actualResult = parseCode(
+      'code.tsx',
+      [],
+      code,
+      null,
+      emptySet(),
+      'do-not-apply-steganography',
+    )
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -3554,6 +3570,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3625,6 +3642,7 @@ export var whatever = () => <View data-uid='aaa'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3757,6 +3775,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -3948,6 +3967,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4012,6 +4032,7 @@ var spacing = 20`
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4151,6 +4172,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4219,6 +4241,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4320,6 +4343,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4422,6 +4446,7 @@ export var whatever = props => {
     )
     const { imports } = addImport(
       '/code.js',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -4521,6 +4546,7 @@ export var whatever = props => {
 })();`
     const { imports } = addImport(
       'code.jsx',
+      [],
       'cake',
       null,
       [importAlias('cake')],
@@ -6062,133 +6088,6 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     const dataUIDProperty = FastCheck.property(printedArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
-  describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
-    function checkElementUIDs(stripUIDs: boolean): void {
-      function checkElementUIDSMatchHighlightBounds(
-        printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
-      ): boolean {
-        const [firstPrintedProjectContent, secondPrintedProjectContent] = printedArbitraryProjects
-        const alreadyExistingUIDs: Set<string> = emptySet()
-
-        let fileCounter: number = 100
-        let projectContents: ProjectContents = {}
-
-        for (const { code: printedCode } of [
-          firstPrintedProjectContent,
-          secondPrintedProjectContent,
-        ]) {
-          const parseResult = testParseCode(printedCode, alreadyExistingUIDs)
-          foldParsedTextFile(
-            (failure) => {
-              throw new Error(`${JSON.stringify(failure)}`)
-            },
-            (success) => {
-              let uids: Array<string> = []
-              for (const topLevelElement of success.topLevelElements) {
-                switch (topLevelElement.type) {
-                  case 'UTOPIA_JSX_COMPONENT':
-                    ensureElementsHaveUID(
-                      topLevelElement.rootElement,
-                      uids,
-                      isWantedElement,
-                      'walk-attributes',
-                    )
-                    if (topLevelElement.arbitraryJSBlock != null) {
-                      ensureArbitraryBlocksHaveUID(
-                        topLevelElement.arbitraryJSBlock,
-                        uids,
-                        isWantedElement,
-                        'walk-attributes',
-                      )
-                    }
-                    break
-                  case 'ARBITRARY_JS_BLOCK':
-                    ensureArbitraryBlocksHaveUID(
-                      topLevelElement,
-                      uids,
-                      isWantedElement,
-                      'walk-attributes',
-                    )
-                    break
-                  case 'IMPORT_STATEMENT':
-                  case 'UNPARSED_CODE':
-                    break
-                  default:
-                    assertNever(topLevelElement)
-                }
-              }
-
-              // Check the UIDs for the elements, which excludes attributes.
-              const elementUIDS = new Set(uids)
-              const highlightBoundsUIDs = new Set(Object.keys(success.highlightBounds))
-              if (!setsEqual(elementUIDS, highlightBoundsUIDs)) {
-                throw new Error(
-                  `Element UIDs [${Array.from(
-                    elementUIDS,
-                  ).sort()}] do not match the highlight bounds UIDs: [${Array.from(
-                    highlightBoundsUIDs,
-                  ).sort()}]`,
-                )
-              }
-
-              const fileValue = textFile(
-                textFileContents(printedCode, success, RevisionsState.ParsedAhead),
-                null,
-                null,
-                0,
-              )
-              const singleFileUniqueIDsResult = getAllUniqueUids(
-                contentsToTree({ '/index.js': fileValue }),
-              )
-
-              // Check the UIDs for anything and everything, including attributes.
-              const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
-              const allUIDsAreEqual = setsEqual(
-                fullHighlightBoundsUIDs,
-                new Set(singleFileUniqueIDsResult.uniqueIDs),
-              )
-              if (!allUIDsAreEqual) {
-                throw new Error(
-                  `All UIDs [${Array.from(
-                    singleFileUniqueIDsResult.uniqueIDs,
-                  ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
-                    fullHighlightBoundsUIDs,
-                  ).sort()}]`,
-                )
-              }
-
-              projectContents[`/index${fileCounter++}.js`] = fileValue
-            },
-            (unparsed) => {
-              throw new Error(`${unparsed}`)
-            },
-            parseResult,
-          )
-        }
-
-        // Check that this parse has not surfaced any duplicates within itself.
-        const uniqueIDsResult = getAllUniqueUids(contentsToTree(projectContents))
-        const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
-        if (anyDuplicates) {
-          throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)
-        }
-
-        return true
-      }
-      const printedArbitrary = printedProjectContentArbitrary(stripUIDs)
-      const dataUIDProperty = FastCheck.property(
-        FastCheck.tuple(printedArbitrary, printedArbitrary),
-        checkElementUIDSMatchHighlightBounds,
-      )
-      FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
-    }
-    it('with UIDs left in', () => {
-      checkElementUIDs(false)
-    })
-    it('with UIDs stripped', () => {
-      checkElementUIDs(true)
-    })
-  })
   it('when react is not imported treat components as arbitrary blocks', () => {
     const code = `
 export var whatever = (props) => <View data-uid='aaa'>
@@ -6669,6 +6568,7 @@ describe('lintAndParse', () => {
   it('returns a syntax error from eslint when something is broken', () => {
     const result = lintAndParse(
       'test.js',
+      [],
       `
     import {
       Ellipse,

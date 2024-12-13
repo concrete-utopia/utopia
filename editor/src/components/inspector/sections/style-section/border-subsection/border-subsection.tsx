@@ -30,6 +30,7 @@ import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/p
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { LabelBelowNumberTextStyles } from '../../../common/control-styles'
 
 export function updateBorderWidth(
   newWidth: CSSNumber | EmptyInputValue,
@@ -139,7 +140,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           id='border-width'
           testId='border-width'
           value={borderWidth}
-          DEPRECATED_labelBelow='width'
+          innerLabel='W'
           minimum={0}
           onSubmitValue={borderWidthSubmitValue}
           onTransientSubmitValue={borderWidthTransientSubmitValue}
@@ -173,19 +174,14 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <FlexRow style={{ gap: 4 }}>
+            <FlexRow>
               <RemovePropertyButton
                 testId='inspector-border-remove-all'
                 onUnsetValues={onUnsetValues}
                 propertySet={propertyStatus.set}
               />
-              <SquareButton
-                highlight
-                onMouseDown={onInsertMouseDown}
-                disabled={borderSet}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='plus' width={12} height={12} />
+              <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
+                <Icons.SmallPlus />
               </SquareButton>
             </FlexRow>
           ) : null}

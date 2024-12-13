@@ -2,6 +2,7 @@ import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/packag
 import { foldEither } from '../../core/shared/either'
 
 import {
+  applyFilePathMappingsToFilePath,
   emptyImports,
   emptyImportsMergeResolution,
   mergeImports,
@@ -37,10 +38,7 @@ import * as EP from '../../core/shared/element-path'
 import { renameDuplicateImportsInMergeResolution } from '../../core/shared/import-shared-utils'
 import { getParseSuccessForFilePath } from '../canvas/canvas-utils'
 import type { FilePathMappings } from '../../core/model/project-file-utils'
-import {
-  applyFilePathMappingsToFilePath,
-  getFilePathMappings,
-} from '../../core/model/project-file-utils'
+import { getFilePathMappings } from '../../core/model/project-file-utils'
 
 export function getRequiredImportsForElement(
   target: ElementPath,
@@ -80,6 +78,7 @@ export function getRequiredImportsForElement(
                 case 'SAME_FILE_ORIGIN':
                   importsMergeResolution = mergeImportsResolutions(
                     targetFilePath,
+                    filePathMappings,
                     importsMergeResolution,
                     importsResolution(
                       getImportsFor(
@@ -97,6 +96,7 @@ export function getRequiredImportsForElement(
                   if (importedFromResult.exportedName != null) {
                     importsMergeResolution = mergeImportsResolutions(
                       targetFilePath,
+                      filePathMappings,
                       importsMergeResolution,
                       importsResolution(
                         getImportsFor(
@@ -123,6 +123,7 @@ export function getRequiredImportsForElement(
         } else if (isJSXFragment(elem) && elem.longForm) {
           importsMergeResolution = mergeImportsResolutions(
             targetFilePath,
+            filePathMappings,
             importsMergeResolution,
             importsResolution({
               react: {
@@ -141,6 +142,7 @@ export function getRequiredImportsForElement(
         targetFileContents.imports,
         importsMergeResolution,
         targetFilePath,
+        filePathMappings,
       )
 
       return duplicateImportsResolution
@@ -271,11 +273,13 @@ export function getImportsFor(
 
 export function mergeImportsResolutions(
   fileUri: string,
+  filePathMappings: FilePathMappings,
   existing: ImportsMergeResolution,
   newImports: ImportsMergeResolution,
 ): ImportsMergeResolution {
   const { imports, duplicateNameMapping } = mergeImports(
     fileUri,
+    filePathMappings,
     existing.imports,
     newImports.imports,
   )

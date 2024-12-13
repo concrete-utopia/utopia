@@ -1,4 +1,3 @@
-import { stripNulls } from './array-utils'
 import type { Either } from './either'
 import { left, right, mapEither } from './either'
 
@@ -58,6 +57,10 @@ export type UnsafePoint = PointInner
 
 export function canvasVector(vector: PointInner): CanvasVector {
   return vector as CanvasVector
+}
+
+export function windowVector(vector: PointInner): WindowVector {
+  return vector as WindowVector
 }
 
 export type Circle = {
@@ -180,7 +183,7 @@ export function windowRectangle(
 }
 
 export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
-  r: MaybeInfinityRectangle<C> | null,
+  r: MaybeInfinityRectangle<C> | null | undefined,
 ): Rectangle<C> {
   return r == null || isInfinityRectangle(r) ? (zeroRectangle as Rectangle<C>) : r
 }
@@ -319,6 +322,18 @@ export function rectangleContainsRectangle(
   )
 }
 
+export function rectangleContainsRectangleInclusive(
+  outer: CanvasRectangle,
+  inner: CanvasRectangle,
+): boolean {
+  return (
+    outer.x <= inner.x &&
+    inner.x + inner.width <= outer.x + outer.width &&
+    outer.y <= inner.y &&
+    inner.y + inner.height <= outer.y + outer.height
+  )
+}
+
 export function rectangleFromTLBR(
   topLeft: CanvasPoint,
   bottomRight: CanvasPoint,
@@ -402,6 +417,32 @@ export function magnitude<C extends CoordinateMarker>(vector: Vector<C>): number
 
 export function distance<C extends CoordinateMarker>(from: Point<C>, to: Point<C>): number {
   return magnitude({ x: from.x - to.x, y: from.y - to.y } as Vector<C>)
+}
+
+export function distanceFromPointToRectangle<C extends CoordinateMarker>(
+  p: Point<C>,
+  rectangle: Rectangle<C>,
+): number {
+  // Normalize the rectangle to ensure positive width and height
+  const normalizedRect = normalizeRect(rectangle)
+
+  // Calculate the nearest point on the rectangle to the given point
+  const nearestX = Math.max(
+    normalizedRect.x,
+    Math.min(p.x, normalizedRect.x + normalizedRect.width),
+  )
+  const nearestY = Math.max(
+    normalizedRect.y,
+    Math.min(p.y, normalizedRect.y + normalizedRect.height),
+  )
+
+  // If the nearest point is the same as the given point, it's inside or on the edge of the rectangle
+  if (nearestX === p.x && nearestY === p.y) {
+    return 0
+  }
+
+  // Calculate the distance between the nearest point and the given point
+  return distance(p, { x: nearestX, y: nearestY } as Point<C>)
 }
 
 export function product<C extends CoordinateMarker>(a: Point<C>, b: Point<C>): number {
@@ -607,6 +648,17 @@ export function combineRectangles<C extends CoordinateMarker>(
     width: first.width + second.width,
     height: first.height + second.height,
   } as Rectangle<C>
+}
+
+// Copied from array-utils.ts to prevent a cyclic dependency
+function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
+  var workingArray: Array<T> = []
+  for (const value of array) {
+    if (value !== null && value !== undefined) {
+      workingArray.push(value)
+    }
+  }
+  return workingArray
 }
 
 export function boundingRectangleArray<C extends CoordinateMarker>(

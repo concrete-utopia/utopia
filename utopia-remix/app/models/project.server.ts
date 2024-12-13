@@ -1,6 +1,6 @@
 import { prisma } from '../db.server'
 import type {
-  CollaboratorsByProject,
+  Collaborators,
   GithubRepository,
   ProjectListing,
   ProjectMetadataForEditor,
@@ -15,7 +15,9 @@ import {
   type ProjectWithoutContentFromDB,
 } from '../types'
 import { ensure } from '../util/api.server'
+import { buildCollaboratorsFromProjects } from '../util/collaborators.server'
 import { Status } from '../util/statusCodes'
+import { selectUserDetailsForProjectCollaborator } from './projectCollaborators.server'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContentFromDB, true> = {
   id: true,
@@ -189,7 +191,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   userId: string
 }): Promise<{
   projects: ProjectListing[]
-  collaborators: CollaboratorsByProject
+  collaborators: Collaborators
 }> {
   // 1. grab the projects for which the user is a collaborator, are not deleted, are
   // collaborative, and the user is not the owner.
@@ -206,7 +208,9 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
       Project: {
         select: {
           ...selectProjectWithoutContent,
-          ProjectCollaborator: { select: { User: true } },
+          ProjectCollaborator: {
+            select: { User: { select: selectUserDetailsForProjectCollaborator } },
+          },
         },
       },
     },
@@ -220,23 +224,19 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   })
 
   // 3. build the collaborators map
-  let collaboratorsByProject: CollaboratorsByProject = {}
+  let collaborators = buildCollaboratorsFromProjects(projects)
+
   for (const project of projects) {
-    const projectId = project.proj_id
-
-    collaboratorsByProject[projectId] = project.ProjectCollaborator.map(({ User }) =>
-      userToCollaborator(User),
-    )
-
     // the owner of a project should always appear in the list of collaborators, so
     // make sure to append it if it's missing
-    const collaboratorsIncludeOwner = collaboratorsByProject[projectId].some(
-      (collaborator) => collaborator.id === project.owner_id,
+    const collaboratorsIncludeOwner = collaborators.byProjectId[project.proj_id].some(
+      (collaborator) => collaborator === project.owner_id,
     )
     if (!collaboratorsIncludeOwner) {
       const owner = owners.find(({ user_id }) => user_id === project.owner_id)
       if (owner != null) {
-        collaboratorsByProject[projectId].push(userToCollaborator(owner))
+        collaborators.byProjectId[project.proj_id].push(owner.user_id)
+        collaborators.byUserId[owner.user_id] = userToCollaborator(owner)
       }
     }
   }
@@ -244,7 +244,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   // 4. return both projects and collabs
   return {
     projects: projects,
-    collaborators: collaboratorsByProject,
+    collaborators: collaborators,
   }
 }
 

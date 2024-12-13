@@ -5,7 +5,10 @@ import {
 } from '../../editor/store/insertion-path'
 import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
 import { forUnderlyingTargetFromEditorState } from '../../../components/editor/store/editor-state'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  getFilePathMappings,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { Imports } from '../../../core/shared/project-file-types'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -69,8 +72,12 @@ export const runAddElement: CommandFunction<AddElement> = (
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementInserted,
-        mergeImports(underlyingFilePathNewParent, parentSuccess.imports, command.importsToAdd ?? {})
-          .imports,
+        mergeImports(
+          underlyingFilePathNewParent,
+          getFilePathMappings(editorState.projectContents),
+          parentSuccess.imports,
+          command.importsToAdd ?? {},
+        ).imports,
         underlyingFilePathNewParent,
       )
 

@@ -26,6 +26,7 @@ import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { isComponentInstance } from '../../../core/model/element-template-utils'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -73,13 +74,12 @@ export function addFakeSpyEntry(
       element: element,
       elementPath: elementPath,
       globalFrame: null,
-      localFrame: null,
       nonRoundedGlobalFrame: null,
-      componentInstance: false,
+      componentInstance: isComponentInstance(elementOrAttribute),
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadata,
+      attributeMetadata: emptyAttributeMetadata,
       label: null,
       importInfo: foldEither(
         () => {
@@ -141,13 +141,12 @@ export function buildSpyWrappedElement(
       element: right(jsx),
       elementPath: elementPath,
       globalFrame: null,
-      localFrame: null,
       nonRoundedGlobalFrame: null,
-      componentInstance: false,
+      componentInstance: isComponentInstance(jsx),
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadata,
+      attributeMetadata: emptyAttributeMetadata,
       label: null,
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)

@@ -1,3 +1,4 @@
+import { getFilePathMappings } from '../core/model/project-file-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../components/assets'
 import {
   addFileToProjectContents,
@@ -51,6 +52,7 @@ export function parseProjectContents(
       if (file.type === 'TEXT_FILE') {
         const parsed = lintAndParse(
           tree.fullPath,
+          getFilePathMappings(projectContents),
           file.fileContents.code,
           null,
           alreadyExistingUIDs,
@@ -79,6 +81,7 @@ export function getParseSuccessForStoryboardCode(
 ): ParseSuccess {
   const parsedFile = lintAndParse(
     StoryboardFilePath,
+    [],
     appUiJsFile,
     null,
     emptySet(),
@@ -150,6 +153,7 @@ export function createModifiedProject(
       ? unparsed
       : (lintAndParse(
           modifiedFilename,
+          [],
           modifiedFiles[modifiedFilename],
           null,
           emptySet(),

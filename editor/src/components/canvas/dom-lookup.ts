@@ -6,6 +6,7 @@ import type {
   CanvasRectangle,
   CanvasVector,
   WindowPoint,
+  WindowRectangle,
 } from '../../core/shared/math-utils'
 import {
   boundingRectangleArray,
@@ -14,19 +15,22 @@ import {
   negate,
   offsetPoint,
   roundPointToNearestHalf,
+  scaleRect,
   scaleVector,
   windowPoint,
+  windowRectangle,
 } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import type { CanvasPositions } from './canvas-types'
-import type { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps, LockedElements } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { UTOPIA_VALID_PATHS } from '../../core/model/utopia-constants'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -36,7 +40,7 @@ export function findParentSceneValidPaths(
 ): Array<ElementPath> | null {
   const cacheResult = mutableCache.get(target)
   if (cacheResult === undefined) {
-    const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
+    const validPaths = getDOMAttribute(target, UTOPIA_VALID_PATHS)
     if (validPaths != null) {
       const result = validPaths.split(' ').map(EP.fromString)
       mutableCache.set(target, result)
@@ -108,12 +112,37 @@ export function firstAncestorOrItselfWithValidElementPath(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
-): ElementPath | null {
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
+): { path: ElementPath; originalIsUnselectable: boolean } | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
   if (staticAndDynamicTargetElementPaths.length === 0) {
     return null
   }
+
+  const originalIsUnselectable = staticAndDynamicTargetElementPaths.every((p) => {
+    if (EP.containsPath(p.dynamic, lockedElements.simpleLock)) {
+      return true
+    }
+    if (
+      lockedElements.hierarchyLock.some((hierarchyLock) =>
+        EP.isDescendantOfOrEqualTo(p.dynamic, hierarchyLock),
+      )
+    ) {
+      return true
+    }
+
+    // when the containing component is not focused, we should consider the internals locked
+    const containingComponent = EP.getContainingComponent(p.dynamic)
+    if (
+      !EP.isEmptyPath(containingComponent) &&
+      !focusedPaths.some((c) => EP.pathsEqual(c, containingComponent))
+    ) {
+      return true
+    }
+    return false
+  })
 
   const validStaticElementPaths = getValidStaticElementPathsForDomElement(
     target,
@@ -208,7 +237,9 @@ export function firstAncestorOrItselfWithValidElementPath(
     }
   }
 
-  return resultPath
+  return resultPath == null
+    ? null
+    : { path: resultPath, originalIsUnselectable: originalIsUnselectable }
 }
 
 export function getValidTargetAtPoint(
@@ -217,6 +248,8 @@ export function getValidTargetAtPoint(
   canvasScale: number,
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -234,6 +267,8 @@ export function getValidTargetAtPoint(
     parentSceneValidPathsCache,
     metadata,
     pointOnCanvas,
+    lockedElements,
+    focusedPaths,
   )
 }
 
@@ -243,6 +278,8 @@ export function getAllTargetsAtPoint(
   canvasScale: number,
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -261,6 +298,8 @@ export function getAllTargetsAtPoint(
     parentSceneValidPathsCache,
     metadata,
     pointOnCanvas,
+    lockedElements,
+    focusedPaths,
   )
 }
 
@@ -274,6 +313,8 @@ function findFirstValidParentForSingleElementUncached(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
+  lockedElements: LockedElements,
+  autofocusedPaths: Array<ElementPath>,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -281,19 +322,28 @@ function findFirstValidParentForSingleElementUncached(
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
+
+  let foundValidElementPath: ElementPath | null = null
+
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
+    const p = firstAncestorOrItselfWithValidElementPath(
       validPathsSet,
       element,
       parentSceneValidPathsCache,
       metadata,
       point,
+      lockedElements,
+      autofocusedPaths,
     )
-    if (foundValidElementPath != null) {
-      return foundValidElementPath
+    if (p != null) {
+      foundValidElementPath = p.path
+      if (!p.originalIsUnselectable) {
+        break
+      }
     }
   }
-  return null
+
+  return foundValidElementPath
 }
 
 const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllElementsUncached, {
@@ -306,6 +356,8 @@ function findFirstValidParentsForAllElementsUncached(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -321,7 +373,9 @@ function findFirstValidParentsForAllElementsUncached(
         parentSceneValidPathsCache,
         metadata,
         point,
-      )
+        lockedElements,
+        focusedPaths,
+      )?.path
       if (foundValidElementPath != null) {
         return foundValidElementPath
       } else {
@@ -342,6 +396,8 @@ export function getSelectionOrValidTargetAtPoint(
   canvasOffset: CanvasVector,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -356,6 +412,8 @@ export function getSelectionOrValidTargetAtPoint(
     canvasOffset,
     elementPathTree,
     allElementProps,
+    lockedElements,
+    focusedPaths,
   )
   if (target === 'selection') {
     return selectedViews[0] ?? null
@@ -374,6 +432,8 @@ function getSelectionOrFirstTargetAtPoint(
   canvasOffset: CanvasVector,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
+  lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): 'selection' | ElementPath | null {
   if (point == null) {
     return null
@@ -415,10 +475,14 @@ function getSelectionOrFirstTargetAtPoint(
       parentSceneValidPathsCache,
       componentMetadata,
       pointOnCanvas,
+      lockedElements,
+      focusedPaths,
     )
     if (foundValidElementPath != null) {
-      elementFromDOM = foundValidElementPath
-      break
+      elementFromDOM = foundValidElementPath.path
+      if (!foundValidElementPath.originalIsUnselectable) {
+        break
+      }
     }
   }
 
@@ -574,4 +638,19 @@ export function canvasPointToWindowPoint(
   } else {
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
+}
+
+export function canvasRectangleToWindowRectangle(
+  canvasRect: CanvasRectangle,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): WindowRectangle {
+  const location = canvasPointToWindowPoint(canvasRect, canvasScale, canvasOffset)
+  const scaledRect = scaleRect(canvasRect, canvasScale)
+  return windowRectangle({
+    x: location.x,
+    y: location.y,
+    width: scaledRect.width,
+    height: scaledRect.height,
+  })
 }

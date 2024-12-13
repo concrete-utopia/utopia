@@ -20,11 +20,16 @@ import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 import { useDomWalkerInvalidateCallbacks } from './dom-walker'
 import type {
   CanvasReactReportErrorCallback,
+  UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvas, pickUiJsxCanvasProps } from './ui-jsx-canvas'
 
-interface CanvasComponentEntryProps {}
+export const CanvasContainerOuterId = 'canvas-container-outer'
+
+interface CanvasComponentEntryProps {
+  shouldRenderCanvas: boolean
+}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
   const canvasStore = React.useContext(CanvasStateContext)
@@ -84,7 +89,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     <>
       {when(canvasProps == null, <CanvasLoadingScreen />)}
       <div
-        id='canvas-container-outer'
+        id={CanvasContainerOuterId}
         ref={containerRef}
         style={{
           position: 'absolute',
@@ -92,26 +97,75 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
           transform: 'translate3d(0px, 0px, 0px)',
         }}
       >
-        {canvasProps == null ? null : (
-          <CanvasErrorBoundary
-            filePath={canvasProps.uiFilePath}
-            projectContents={canvasProps.projectContents}
-            reportError={onRuntimeError}
-            requireFn={canvasProps.curriedRequireFn}
-            key={`canvas-error-boundary-${canvasProps.mountCount}`}
-          >
-            <RemoteDependencyBoundary
-              projectContents={canvasProps.projectContents}
-              requireFn={canvasProps.curriedRequireFn}
-            >
-              <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
-            </RemoteDependencyBoundary>
-          </CanvasErrorBoundary>
-        )}
+        {props.shouldRenderCanvas && canvasProps != null ? (
+          <CanvasInner
+            canvasProps={canvasProps}
+            onRuntimeError={onRuntimeError}
+            localClearRuntimeErrors={localClearRuntimeErrors}
+          />
+        ) : null}
       </div>
     </>
   )
 })
+CanvasComponentEntryInner.displayName = 'CanvasComponentEntryInner'
+
+function CanvasInner({
+  canvasProps,
+  onRuntimeError,
+  localClearRuntimeErrors,
+}: {
+  canvasProps: UiJsxCanvasProps
+  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
+  localClearRuntimeErrors: () => void
+}) {
+  const invalidatedCanvasData = useInvalidatedCanvasRemount(
+    canvasProps?.mountCount ?? 0,
+    canvasProps?.domWalkerInvalidateCount ?? 0,
+  )
+  return (
+    <CanvasErrorBoundary
+      filePath={canvasProps.uiFilePath}
+      projectContents={canvasProps.projectContents}
+      reportError={onRuntimeError}
+      requireFn={canvasProps.curriedRequireFn}
+      key={`canvas-error-boundary-${canvasProps.mountCount}`}
+    >
+      <RemoteDependencyBoundary
+        projectContents={canvasProps.projectContents}
+        requireFn={canvasProps.curriedRequireFn}
+      >
+        <DomWalkerWrapper
+          {...canvasProps}
+          clearErrors={localClearRuntimeErrors}
+          invalidatedCanvasData={invalidatedCanvasData}
+        />
+      </RemoteDependencyBoundary>
+    </CanvasErrorBoundary>
+  )
+}
+
+export function useInvalidatedCanvasRemount(
+  mountCount: number,
+  domWalkerInvalidateCount: number,
+): {
+  mountCountInvalidated: boolean
+  domWalkerInvalidated: boolean
+} {
+  const previousMountCount = React.useRef<number>(mountCount)
+  const previousDomWalkerInvalidateCount = React.useRef<number>(domWalkerInvalidateCount)
+
+  const mountCountInvalidated = previousMountCount.current !== mountCount
+  const domWalkerInvalidated = previousDomWalkerInvalidateCount.current !== domWalkerInvalidateCount
+
+  previousMountCount.current = mountCount
+  previousDomWalkerInvalidateCount.current = domWalkerInvalidateCount
+
+  return {
+    mountCountInvalidated,
+    domWalkerInvalidated,
+  }
+}
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   let [updateInvalidatedPaths] = useDomWalkerInvalidateCallbacks()

@@ -1,11 +1,12 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import type { EditorDispatch } from '../editor/action-types'
-import { saveDOMReport } from '../editor/actions/action-creators'
+import { updateMetadataInEditorState } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'
 import { editorDispatchActionRunner } from '../editor/store/dispatch'
-import type { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
-import type { DomWalkerMutableStateData } from './dom-walker'
-import { runDomWalker } from './dom-walker'
-import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import type { EditorStoreFull } from '../editor/store/editor-state'
+import { runDomSamplerRegular } from './dom-sampler'
+import { resubscribeObservers } from './dom-walker'
+import { ElementsToRerenderGLOBAL, type UiJsxCanvasContextData } from './ui-jsx-canvas'
 
 export function carryDispatchResultFields(
   firstDispatchResult: DispatchResult,
@@ -23,40 +24,47 @@ export function carryDispatchResultFields(
   }
 }
 
-export function runDomWalkerAndSaveResults(
-  dispatch: EditorDispatch,
-  domWalkerMutableState: DomWalkerMutableStateData,
+export function runDomSamplerAndSaveResults(
+  boundDispatch: EditorDispatch,
   storedState: EditorStoreFull,
+  domWalkerMutableState: {
+    mutationObserver: MutationObserver
+    resizeObserver: ResizeObserver
+    gridControlObserver: MutationObserver
+  },
   spyCollector: UiJsxCanvasContextData,
-  elementsToFocusOn: ElementsToRerender,
-): DispatchResult | null {
-  const domWalkerResult = runDomWalker({
-    domWalkerMutableState: domWalkerMutableState,
-    selectedViews: storedState.patchedEditor.selectedViews,
-    elementsToFocusOn: elementsToFocusOn,
-    scale: storedState.patchedEditor.canvas.scale,
-    additionalElementsToUpdate:
+  restrictToElements:
+    | 'run-full'
+    | {
+        restrictToElements: Array<ElementPath>
+      },
+) {
+  const metadataResult = runDomSamplerRegular({
+    elementsToFocusOn:
+      restrictToElements === 'run-full'
+        ? ElementsToRerenderGLOBAL.current
+        : restrictToElements.restrictToElements,
+    domWalkerAdditionalElementsToFocusOn:
       storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-    rootMetadataInStateRef: {
-      current: storedState.patchedEditor.domMetadata,
-    },
+    scale: storedState.patchedEditor.canvas.scale,
+    selectedViews: storedState.patchedEditor.selectedViews,
+    metadataToUpdate: storedState.elementMetadata,
+    spyCollector: spyCollector,
   })
 
-  if (domWalkerResult == null) {
-    return null
+  const storedStateWithNewMetadata: EditorStoreFull = {
+    ...storedState,
+    elementMetadata: metadataResult.metadata,
   }
 
-  const dispatchResultWithMetadata = editorDispatchActionRunner(
-    dispatch,
-    [
-      saveDOMReport(
-        domWalkerResult.metadata,
-        domWalkerResult.cachedPaths,
-        domWalkerResult.invalidatedPaths,
-      ),
-    ],
-    storedState,
+  const newFullStore = editorDispatchActionRunner(
+    boundDispatch,
+    [updateMetadataInEditorState(metadataResult.metadata, metadataResult.tree)],
+    storedStateWithNewMetadata,
     spyCollector,
   )
-  return dispatchResultWithMetadata
+
+  resubscribeObservers(domWalkerMutableState)
+
+  return newFullStore
 }

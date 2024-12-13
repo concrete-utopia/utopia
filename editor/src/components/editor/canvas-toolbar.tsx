@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles, opacity } from '../../uuiui'
+import { Button, Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -21,12 +21,14 @@ import {
   resetCanvas,
   setRightMenuTab,
   switchEditorMode,
+  togglePanel,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
+  useEnterDrawToInsertForGrid,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
 } from './insert-callbacks'
@@ -61,11 +63,24 @@ import { insertComponentPickerItem } from '../navigator/navigator-item/component
 import { useAtom } from 'jotai'
 import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../core/shared/element-path'
+import { NO_OP } from '../../core/shared/utils'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
+import {
+  TOGGLE_INSPECTOR,
+  TOGGLE_CODE_EDITOR_SHORTCUT,
+  TOGGLE_NAVIGATOR,
+  keyToString,
+  shortcutDetailsWithDefaults,
+} from './shortcut-definitions'
+import { LowPriorityStoreProvider } from './store/store-context-providers'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
+export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
 export const CommentModeButtonTestId = (status: string) => `canvas-toolbar-comment-mode-${status}`
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
+export const InsertGridButtonTestId = 'insert-mode-grid'
 export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
@@ -207,10 +222,12 @@ export const CanvasToolbar = React.memo(() => {
   const insertTextCallback = useEnterTextEditMode()
   const insertButtonCallback = useEnterDrawToInsertForButton()
   const insertConditionalCallback = useEnterDrawToInsertForConditional()
+  const insertGridCallback = useEnterDrawToInsertForGrid()
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
     switchToSelectModeCloseMenus(dispatch)
+    dispatch([CanvasActions.clearInteractionSession(false)])
   }, [dispatch])
 
   const zoomLevel = useEditorState(
@@ -237,23 +254,23 @@ export const CanvasToolbar = React.memo(() => {
   const isLiveMode = editorMode === 'live'
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([switchEditorMode(EditorModes.liveMode())])
     }
-  }, [dispatch, isLiveMode])
+  }, [dispatch, isLiveMode, dispatchSwitchToSelectModeCloseMenus])
 
   const isCommentMode = editorMode === 'comment'
   const toggleCommentMode = React.useCallback(() => {
     if (isCommentMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([
         switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     }
-  }, [dispatch, isCommentMode])
+  }, [dispatch, isCommentMode, dispatchSwitchToSelectModeCloseMenus])
 
   const resetCanvasCallback = React.useCallback(() => {
     dispatch([resetCanvas()])
@@ -267,14 +284,11 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [canvasToolbarMode.primary, dispatch, dispatchSwitchToSelectModeCloseMenus])
 
-  const currentStrategyState = useEditorState(
+  const editButtonIcon: CanvasStrategyIcon = useEditorState(
     Substores.restOfStore,
-    (store) => store.strategyState,
+    (store) => store.strategyState.currentStrategyIcon ?? { category: 'tools', type: 'pointer' },
     'SettingsPanel currentStrategyState',
   )
-  const editButtonIcon: CanvasStrategyIcon = React.useMemo(() => {
-    return currentStrategyState.currentStrategyIcon ?? { category: 'tools', type: 'pointer' }
-  }, [currentStrategyState.currentStrategyIcon])
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
@@ -336,6 +350,61 @@ export const CanvasToolbar = React.memo(() => {
     ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
       canvasToolbarMode.primary === 'play')
 
+  const { codeEditorVisible, navigatorVisible, inspectorVisible } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        codeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+        navigatorVisible: store.editor.leftMenu.visible,
+        inspectorVisible: store.editor.rightMenu.visible,
+      }
+    },
+    'storedLayoutToResolvedPanels panel visibility',
+  )
+
+  const panelPopupItems: DropdownMenuItem[] = React.useMemo(
+    () => [
+      regularDropdownMenuItem({
+        id: 'navigator',
+        label: 'Navigator',
+        checked: navigatorVisible,
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
+        onSelect: () => dispatch([togglePanel('leftmenu')]),
+      }),
+      regularDropdownMenuItem({
+        id: 'rightmenu',
+        label: 'Inspector',
+        checked: inspectorVisible,
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
+        onSelect: () => dispatch([togglePanel('rightmenu')]),
+      }),
+      regularDropdownMenuItem({
+        id: 'code-editor',
+        label: 'Code Editor',
+        checked: codeEditorVisible,
+        shortcut: keyToString(
+          shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
+        ),
+        onSelect: () => dispatch([togglePanel('codeEditor')]),
+      }),
+    ],
+    [codeEditorVisible, dispatch, inspectorVisible, navigatorVisible],
+  )
+
+  const panelSelectorOpenButton = React.useCallback(
+    (open: boolean) => (
+      <ToolbarButton
+        testid={commentButtonTestId}
+        iconType={'panels'}
+        iconCategory='tools'
+        primary={open}
+        onClick={NO_OP}
+        keepActiveInLiveMode
+      />
+    ),
+    [commentButtonTestId],
+  )
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -360,7 +429,7 @@ export const CanvasToolbar = React.memo(() => {
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             iconType={editButtonIcon.type}
             iconCategory={editButtonIcon.category}
             primary={canvasToolbarMode.primary === 'edit'}
@@ -373,7 +442,8 @@ export const CanvasToolbar = React.memo(() => {
           allowedToEdit,
           <>
             <Tooltip title='Insert or Edit Text' placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
+                testid={InsertOrEditTextButtonTestId}
                 iconType='text'
                 iconCategory='tools'
                 primary={canvasToolbarMode.primary === 'text'}
@@ -382,7 +452,7 @@ export const CanvasToolbar = React.memo(() => {
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
                 testid={InsertMenuButtonTestId}
                 iconType='insert'
                 iconCategory='tools'
@@ -394,7 +464,7 @@ export const CanvasToolbar = React.memo(() => {
           </>,
         )}
         <Tooltip title='Live Mode' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             testid={PlayModeButtonTestId}
             iconType={'play'}
             iconCategory='tools'
@@ -407,7 +477,7 @@ export const CanvasToolbar = React.memo(() => {
           canComment,
           <div style={{ display: 'flex', width: 26 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
                 testid={commentButtonTestId}
                 iconType={'comment'}
                 iconCategory='tools'
@@ -440,7 +510,7 @@ export const CanvasToolbar = React.memo(() => {
           </SquareButton>
         </Tooltip>
         <Tooltip title='Reset Canvas' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             iconType='refresh'
             iconCategory='semantic'
             onClick={resetCanvasCallback}
@@ -449,6 +519,10 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {unless(isMyProject, <ViewOnlyBadge />)}
+        <Separator />
+        <Tooltip title='Manage panels'>
+          <DropdownMenu sideOffset={6} items={panelPopupItems} opener={panelSelectorOpenButton} />
+        </Tooltip>
       </div>
       {/* Edit Mode submenus */}
       {when(
@@ -460,10 +534,10 @@ export const CanvasToolbar = React.memo(() => {
       {/* Insert Mode */}
       {canvasToolbarMode.primary === 'insert'
         ? wrapInSubmenu(
-            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
+            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1, gap: 5 }}>
               <FlexRow>
                 <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     iconCategory='semantic'
                     iconType='icon-semantic-back'
                     onClick={dispatchSwitchToSelectModeCloseMenus}
@@ -471,32 +545,49 @@ export const CanvasToolbar = React.memo(() => {
                   />
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
-                  <InsertModeButton
-                    iconType='view'
+                  <ToolbarButton
+                    iconCategory='navigator-element'
+                    iconType='div'
                     secondary={canvasToolbarMode.secondary.divInsertionActive}
                     onClick={insertDivCallback}
+                    size={12}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert grid' placement='bottom'>
+                  <ToolbarButton
+                    testid={InsertGridButtonTestId}
+                    iconCategory='navigator-element'
+                    iconType='grid'
+                    onClick={insertGridCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert image' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
+                    iconCategory='navigator-element'
                     iconType='image'
                     secondary={canvasToolbarMode.secondary.imageInsertionActive}
                     onClick={insertImgCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert button' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
+                    iconCategory='navigator-element'
                     iconType='clickable'
                     secondary={canvasToolbarMode.secondary.buttonInsertionActive}
                     onClick={insertButtonCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert conditional' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     testid={InsertConditionalButtonTestId}
+                    iconCategory='navigator-element'
                     iconType='conditional'
                     secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
                     onClick={insertConditionalCallback}
+                    size={12}
                   />
                 </Tooltip>
               </FlexRow>
@@ -509,12 +600,14 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      <LowPriorityStoreProvider>
+        {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      </LowPriorityStoreProvider>
     </FlexColumn>
   )
 })
 
-interface InsertModeButtonProps {
+interface ToolbarButtonProps {
   iconType: string
   iconCategory?: string
   primary?: boolean
@@ -526,7 +619,7 @@ interface InsertModeButtonProps {
   size?: number
   disabled?: boolean
 }
-const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+const ToolbarButton = React.memo((props: ToolbarButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
@@ -554,7 +647,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   }, [])
 
   return (
-    <SquareButton
+    <Button
       data-testid={props.testid}
       style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
@@ -562,7 +655,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       highlight
       onClick={props.onClick}
       disabled={disabled || (canvasInLiveMode && !keepActiveInLiveMode)}
-      overriddenBackground={secondary ? 'transparent' : undefined}
+      overriddenBackground={props.primary ? undefined : 'transparent'}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
@@ -580,7 +673,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
             : 'main'
         }
       />
-    </SquareButton>
+    </Button>
   )
 })
 

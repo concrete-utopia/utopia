@@ -290,6 +290,14 @@ describe('isDescendantOf', () => {
     )
     chaiExpect(result).to.be.false
   })
+
+  it('returns false if they are siblings but one uid is a prefix of the other', () => {
+    const result = EP.isDescendantOf(
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X1']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+    )
+    chaiExpect(result).to.be.false
+  })
 })
 
 describe('replaceIfAncestor', () => {

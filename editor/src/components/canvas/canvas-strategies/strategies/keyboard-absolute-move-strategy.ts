@@ -19,7 +19,7 @@ import {
   getInteractionMoveCommandsForSelectedElement,
   getMultiselectBounds,
 } from './shared-move-strategies-helpers'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import type { CanvasCommand } from '../../commands/commands'
 import {
@@ -37,6 +37,8 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { assertNever } from '../../../../core/shared/utils'
+import { metadataHasPositionAbsoluteOrNull } from '../../../../core/shared/element-template'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -44,6 +46,16 @@ export function keyboardAbsoluteMoveStrategy(
 ): CanvasStrategy | null {
   const { pathsWereReplaced, paths: selectedElements } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+
+  if (
+    pathsWereReplaced &&
+    selectedElements.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   if (selectedElements.length === 0) {
     return null
   }
@@ -108,8 +120,7 @@ export function keyboardAbsoluteMoveStrategy(
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
-        commands.push(setElementsToRerenderCommand(selectedElements))
-        return strategyApplicationResult(commands)
+        return strategyApplicationResult(commands, selectedElements)
       } else {
         return emptyStrategyApplicationResult
       }
@@ -123,10 +134,17 @@ function isApplicable(canvasState: InteractionCanvasState, selectedElements: Arr
       canvasState.startingMetadata,
       element,
     )
-    return (
-      elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-      honoursPropsPosition(canvasState, element)
-    )
+    const honoursPosition = honoursPropsPosition(canvasState, element)
+    switch (honoursPosition) {
+      case 'does-not-honour':
+        return false
+      case 'absolute-position-and-honours-numeric-props':
+        return metadataHasPositionAbsoluteOrNull(elementMetadata)
+      case 'honours-numeric-props-only':
+        return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+      default:
+        assertNever(honoursPosition)
+    }
   })
 }
 

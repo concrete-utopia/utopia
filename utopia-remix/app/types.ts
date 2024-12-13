@@ -51,9 +51,21 @@ export interface Collaborator {
   avatar: string | null
 }
 
-export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
+export type Collaborators = {
+  byProjectId: { [projectId: string]: string[] }
+  byUserId: { [userId: string]: Collaborator }
+}
 
-export function userToCollaborator(user: UserDetails): Collaborator {
+export function emptyCollaborators(): Collaborators {
+  return {
+    byProjectId: {},
+    byUserId: {},
+  }
+}
+
+export function userToCollaborator(
+  user: Pick<UserDetails, 'user_id' | 'name' | 'picture'>,
+): Collaborator {
   return {
     id: user.user_id,
     name: user.name,

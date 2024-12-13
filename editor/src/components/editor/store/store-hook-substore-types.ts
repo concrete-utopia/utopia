@@ -18,6 +18,7 @@ export type Substates = {
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
+  navigatorTargetsSubstate: NavigatorTargetsSubstate
   derived: { derived: DerivedState }
   restOfEditor: RestOfEditorState
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
@@ -56,6 +57,19 @@ const emptyMetadataSubstate = {
   editor: pick(metadataSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
 export type MetadataSubstate = typeof emptyMetadataSubstate
+
+// NavigatorTargetsSubstate
+export const navigatorTargetsSubstateKeys = [
+  'jsxMetadata',
+  'elementPathTree',
+  'navigator',
+  'propertyControlsInfo',
+  'projectContents',
+] as const
+const emptyNavigatorTargetsSubstate = {
+  editor: pick(navigatorTargetsSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type NavigatorTargetsSubstate = typeof emptyNavigatorTargetsSubstate
 
 // SelectedViewsSubstate
 export const selectedViewsSubstateKeys = ['selectedViews'] as const
@@ -144,6 +158,18 @@ const propertyControlsInfoSubstate = {
 } as const
 export type PropertyControlsInfoSubstate = typeof propertyControlsInfoSubstate
 
+// StyleInfoSubstate
+export const styleInfoSubstateKeys = [
+  ...metadataSubstateKeys,
+  ...projectContentsKeys,
+  'codeResultCache',
+] as const
+const emptyStyleInfoSubstate = {
+  editor: pick(styleInfoSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type StyleInfoSubstate = typeof emptyStyleInfoSubstate
+export type StyleInfoSubEditorState = StyleInfoSubstate['editor']
+
 export type MetadataAndPropertyControlsInfoSubstate = MetadataSubstate &
   PropertyControlsInfoSubstate
 
@@ -160,7 +186,13 @@ export interface ThemeSubstate {
 }
 
 // GithubSubstate
-export const githubSubstateKeys = ['githubSettings', 'githubOperations', 'githubData'] as const
+export const githubSubstateKeys = [
+  'githubSettings',
+  'githubOperations',
+  'githubData',
+  'importState',
+  'projectRequirements',
+] as const
 export const emptyGithubSubstate = {
   editor: pick(githubSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const

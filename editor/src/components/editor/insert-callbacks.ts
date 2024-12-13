@@ -23,6 +23,7 @@ import { enableInsertModeForJSXElement, showToast } from './actions/action-creat
 import {
   defaultButtonElement,
   defaultDivElement,
+  defaultGridElement,
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
@@ -35,7 +36,7 @@ import {
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../core/model/get-uid-mappings'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
 import { notice } from '../common/notice'
@@ -104,6 +105,10 @@ export function useEnterDrawToInsertForImage(): (event: React.MouseEvent<Element
 
 export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Element>) => void {
   return useEnterDrawToInsertForElement(defaultButtonElement)
+}
+
+export function useEnterDrawToInsertForGrid(): (event: React.MouseEvent<Element>) => void {
+  return useEnterDrawToInsertForElement(defaultGridElement)
 }
 
 export function useEnterDrawToInsertForConditional(): (event: React.MouseEvent<Element>) => void {
@@ -184,7 +189,9 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         return
       }
 
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
+      const allElementUids = new Set(
+        getAllUniqueUidsFromMapping(getUidMappings(projectContentsRef.current).filePathToUids),
+      )
 
       const wrappedUid = generateConsistentUID('wrapper', allElementUids)
 

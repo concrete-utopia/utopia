@@ -7,7 +7,10 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
-import { getJSXAttribute } from '../../../../core/shared/element-template'
+import {
+  getJSXAttribute,
+  metadataHasPositionAbsoluteOrNull,
+} from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -33,6 +36,7 @@ import {
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -121,11 +125,22 @@ export function supportsAbsoluteResize(
   canvasState: InteractionCanvasState,
 ): boolean {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
-  return (
-    elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-    honoursPropsPosition(canvasState, element) &&
-    honoursPropsSize(canvasState, element)
-  )
+  const honoursPosition = honoursPropsPosition(canvasState, element)
+  switch (honoursPosition) {
+    case 'does-not-honour':
+      return false
+    case 'absolute-position-and-honours-numeric-props':
+      return (
+        metadataHasPositionAbsoluteOrNull(elementMetadata) && honoursPropsSize(canvasState, element)
+      )
+    case 'honours-numeric-props-only':
+      return (
+        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+        honoursPropsSize(canvasState, element)
+      )
+    default:
+      assertNever(honoursPosition)
+  }
 }
 
 export function getLockedAspectRatio(

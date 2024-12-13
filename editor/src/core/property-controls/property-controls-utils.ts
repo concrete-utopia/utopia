@@ -24,6 +24,10 @@ import type { Styling } from 'utopia-api'
 import { StylingOptions } from 'utopia-api'
 import { intersection } from '../shared/set-utils'
 import { getFilePathMappings } from '../model/project-file-utils'
+import { valueDependentCache } from '../shared/memoize'
+import * as EP from '../shared/element-path'
+import { shallowEqual } from '../shared/equality-utils'
+import { stripExtension } from '../../components/custom-code/custom-code-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -135,10 +139,25 @@ export function getPropertyControlsForTarget(
   )
 }
 
-export function getComponentDescriptorForTarget(
+export const getComponentDescriptorForTarget = valueDependentCache(
+  getComponentDescriptorForTargetInner,
+  EP.toString,
+  {
+    equality: (s1, s2) =>
+      s1.projectContents === s2.projectContents &&
+      s1.propertyControlsInfo === s2.propertyControlsInfo,
+  },
+)
+
+function getComponentDescriptorForTargetInner(
+  {
+    projectContents,
+    propertyControlsInfo,
+  }: {
+    propertyControlsInfo: PropertyControlsInfo
+    projectContents: ProjectContentTreeRoot
+  },
   target: ElementPath,
-  propertyControlsInfo: PropertyControlsInfo,
-  projectContents: ProjectContentTreeRoot,
 ): ComponentDescriptor | null {
   const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
@@ -152,6 +171,10 @@ export function getComponentDescriptorForTarget(
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
+        if (isIntrinsicElement(element.name)) {
+          return null
+        }
+
         const importedFrom = importedFromWhere(
           filePathMappings,
           underlyingFilePath,
@@ -162,11 +185,7 @@ export function getComponentDescriptorForTarget(
 
         let filenameForLookup: string | null = null
         if (importedFrom == null) {
-          if (isIntrinsicElement(element.name)) {
-            return null
-          } else {
-            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
+          filenameForLookup = stripExtension(underlyingFilePath)
         } else {
           filenameForLookup = importedFrom.filePath
         }
@@ -198,7 +217,7 @@ export function getComponentDescriptorForTarget(
           )
 
           const trimmedPath = absolutePath.includes('/')
-            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            ? stripExtension(absolutePath)
             : absolutePath
 
           return propertyControlsInfo[trimmedPath]?.[nameAsString]
@@ -236,7 +255,10 @@ export function getInspectorPreferencesForTargets(
   projectContents: ProjectContentTreeRoot,
 ): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
-    const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
+    const controls = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
+      target,
+    )
     if (controls == null || controls.inspector == null) {
       return { type: 'all' }
     }

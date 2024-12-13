@@ -1,14 +1,11 @@
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import { canMeasurePerformance } from '../../../core/performance/performance-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { EditorAction } from '../action-types'
 import { simpleStringifyActions } from '../actions/action-utils'
 
 export function createPerformanceMeasure() {
   const MeasureSelectorsEnabled = isFeatureEnabled('Debug – Measure Selectors')
-  const PerformanceMarks =
-    (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-      isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const PerformanceMarks = canMeasurePerformance()
 
   let stringifiedActions = ''
 

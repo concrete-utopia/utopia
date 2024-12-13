@@ -3,11 +3,13 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
-import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode, renderTestEditorWithModel } from '../canvas/ui-jsx.test-utils'
+import { TailwindProject } from './sections/flex-section.test-utils'
 import {
   PackedLabelCopy,
   SpacedLabelCopy,
@@ -44,6 +46,35 @@ describe('spaced - packed control', () => {
     await expectSingleUndo2Saves(editor, () => clickButton(editor, SpacedLabelCopy))
     await expectSingleUndo2Saves(editor, () => clickButton(editor, PackedLabelCopy))
     expect(div.style.justifyContent).toEqual('flex-start')
+  })
+
+  describe('Tailwind', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+    it('set element to spaced layout', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex flex-row'),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+      await expectSingleUndo2Saves(editor, () => clickButton(editor, SpacedLabelCopy))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row justify-between',
+      )
+    })
+    it('set element to packed layout', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex flex-row'),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+      await expectSingleUndo2Saves(editor, () => clickButton(editor, SpacedLabelCopy))
+      await expectSingleUndo2Saves(editor, () => clickButton(editor, PackedLabelCopy))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row justify-start',
+      )
+    })
   })
 
   it('when spaced/packed control is hovered, padding hihglights are shown', async () => {

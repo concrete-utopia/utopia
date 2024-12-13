@@ -13,6 +13,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
 } from '../../ui-jsx.test-utils'
 import { shiftModifier } from '../../../../utils/modifiers'
 import { FlexGapTearThreshold } from './set-flex-gap-strategy'
@@ -20,8 +21,14 @@ import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import { checkFlexGapHandlesPositionedCorrectly } from '../../controls/select-mode/flex-gap-control.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
+import { StoryboardFilePath } from '../../../editor/store/editor-state'
+import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
 
 const DivTestId = 'mydiv'
 
@@ -661,7 +668,7 @@ export var storyboard = (
       <div data-uid='my-component'>MyComponent</div>
       {[1, 2, 3].map(({ a, b, c }) => (
         <img
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{ width: 118, height: 150 }}
           data-uid='img'
@@ -669,7 +676,7 @@ export var storyboard = (
       ))}
       <React.Fragment>
         <View
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{
             backgroundColor: '#0074ff',
@@ -679,7 +686,7 @@ export var storyboard = (
           data-uid='view-1'
         />
         <View
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{
             backgroundColor: '#0074ff',
@@ -690,7 +697,7 @@ export var storyboard = (
         />
       </React.Fragment>
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 118, height: 150 }}
         data-uid='img-standalone'
@@ -712,6 +719,66 @@ export var storyboard = (
       await dragGapHandle(editor, canvasPoint({ x: 10, y: 0 }))
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(code(20))
+    })
+  })
+
+  describe('tailwind', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+    const Project = createModifiedProject({
+      [StoryboardFilePath]: `
+  import React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  export var storyboard = (
+    <Storyboard data-uid='sb'>
+      <Scene
+        id='scene'
+        commentId='scene'
+        data-uid='scene'
+        style={{
+          width: 700,
+          height: 759,
+          position: 'absolute',
+          left: 212,
+          top: 128,
+        }}
+      >
+        <div
+          data-uid='div'
+          data-testid='${DivTestId}'
+          className='top-10 left-10 absolute flex flex-row gap-12'
+        >
+          <div className='bg-red-500 w-10 h-10' data-uid='child-1' />
+          <div className='bg-red-500 w-10 h-10' data-uid='child-2' />
+        </div>  
+      </Scene>
+    </Storyboard>
+  )
+  
+  `,
+      [TailwindConfigPath]: `
+      const TailwindConfig = { }
+      export default TailwindConfig
+  `,
+      'app.css': `
+      @tailwind base;
+      @tailwind components;
+      @tailwind utilities;`,
+    })
+
+    it('can set tailwind gap', async () => {
+      const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/div')])
+      await doGapResize(editor, canvasPoint({ x: 10, y: 0 }))
+      const div = editor.renderedDOM.getByTestId(DivTestId)
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row gap-16')
+    })
+
+    it('can remove tailwind gap by dragging past threshold', async () => {
+      const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/div')])
+      await doGapResize(editor, canvasPoint({ x: -100, y: 0 }))
+      const div = editor.renderedDOM.getByTestId(DivTestId)
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row')
     })
   })
 })

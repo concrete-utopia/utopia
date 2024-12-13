@@ -10,7 +10,7 @@ import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
-  PERFORMANCE_MARKS_ALLOWED,
+  IS_TEST_ENVIRONMENT,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -21,20 +21,15 @@ import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
+  RunDOMWalker,
 } from '../components/editor/action-types'
-import { isLoggedIn } from '../components/editor/action-types'
+import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
-  InternalPreviewTimeout,
-  previewIsAlive,
-  startPreviewConnectedMonitoring,
-} from '../components/editor/preview-report-handler'
-import {
   getLoginState,
   getUserConfiguration,
-  getUserPermissions,
   startPollingLoginState,
 } from '../components/editor/server'
 import type { DispatchResult } from '../components/editor/store/dispatch'
@@ -47,6 +42,7 @@ import type {
   PersistentModel,
   ElementsToRerender,
   GithubRepoWithBranch,
+  EditorState,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -62,6 +58,7 @@ import {
   CanvasStateContext,
   createStoresAndState,
   EditorStateContext,
+  HelperControlsStateContext,
   LowPriorityStateContext,
   OriginalMainEditorStateContext,
 } from '../components/editor/store/store-hook'
@@ -83,7 +80,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither } from '../core/shared/either'
 import { getURLImportDetails, reuploadAssets } from '../core/model/project-import'
-import { isSendPreviewModel, load } from '../components/editor/actions/actions'
+import { load } from '../components/editor/actions/actions'
 import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import type { LoginState } from '../common/user'
@@ -105,7 +102,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { uniqBy } from '../core/shared/array-utils'
+import { createArrayWithLength, uniq, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -113,7 +110,7 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
-import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
+import { runDomSamplerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../components/editor/store/project-server-state'
@@ -125,6 +122,23 @@ import {
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
+import { useAnimate } from 'framer-motion'
+import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
+import { anyCodeAhead } from '../components/assets'
+import { toArrayOf } from '../core/shared/optics/optic-utilities'
+import { fromTypeGuard, traverseReadOnlyArray } from '../core/shared/optics/optic-creators'
+import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
+import {
+  resetDomSamplerExecutionCounts,
+  runDomSamplerGroups,
+} from '../components/canvas/dom-sampler'
+import { omitWithPredicate } from '../core/shared/object-utils'
+import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
+import { canMeasurePerformance } from '../core/performance/performance-utils'
+import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { EditorModes } from '../components/editor/editor-modes'
+import { startImportProcess } from '../core/shared/import/import-operation-service'
+import { LoadingEditorComponent } from '../components/editor/loading-screen'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -144,9 +158,7 @@ function collectElementsToRerenderForTransientActions(
   action: EditorAction,
 ): Array<ElementPath> {
   if (action.action === 'TRANSIENT_ACTIONS') {
-    if (action.elementsToRerender != null) {
-      working.push(...action.elementsToRerender)
-    }
+    working.push(...action.elementsToRerender)
     working.push(
       ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
     )
@@ -160,11 +172,27 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  currentElementsToRerender: ElementsToRerender,
+function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
+  let fixedElementsToRerender: ElementsToRerender = elementsToRerender
+  if (
+    elementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...elementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = fixedElementsToRerender
+  return fixedElementsToRerender
+}
+
+export function collectElementsToRerender(
+  editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
 ): ElementsToRerender {
-  // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
     dispatchedActions.reduce(
       collectElementsToRerenderForTransientActions,
@@ -173,22 +201,22 @@ function fixElementsToRerender(
     EP.pathsEqual,
   )
 
-  const currentOrTransientElementsToRerender =
-    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : editorStore.patchedEditor.canvas.elementsToRerender
 
-  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
-  if (
-    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
-    lastElementsToRerender !== 'rerender-all-elements'
-  ) {
-    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
-    fixedElementsToRerender = EP.uniqueElementPaths([
-      ...lastElementsToRerender,
-      ...currentOrTransientElementsToRerender,
-    ])
-  }
-
-  lastElementsToRerender = currentOrTransientElementsToRerender
+  const fixedElementsWithChildGroups =
+    elementsToRerender === 'rerender-all-elements'
+      ? elementsToRerender
+      : [
+          ...elementsToRerender,
+          ...getChildGroupsForNonGroupParents(
+            editorStore.patchedEditor.jsxMetadata,
+            elementsToRerender,
+          ),
+        ]
+  const fixedElementsToRerender = fixElementsToRerender(fixedElementsWithChildGroups)
   return fixedElementsToRerender
 }
 
@@ -196,13 +224,12 @@ export class Editor {
   storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    startPreviewConnectedMonitoring(this.boundDispatch)
-
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(
       emptyEditorState,
@@ -217,8 +244,6 @@ export class Editor {
 
     window.addEventListener('blur', this.resetStateOnBlur)
 
-    window.addEventListener('message', this.onMessage)
-
     const watchdogWorker = new RealWatchdogWorker()
 
     const renderRootEditor = () =>
@@ -226,13 +251,14 @@ export class Editor {
         this.boundDispatch,
         this.utopiaStoreHook,
         this.canvasStore,
+        this.helperControlsStore,
         this.lowPriorityStore,
         this.spyCollector,
         this.domWalkerMutableState,
       )
 
     const workers = new UtopiaTsWorkersImplementation(
-      new RealParserPrinterWorker(),
+      createArrayWithLength(getParserWorkerCount(), () => new RealParserPrinterWorker()),
       new RealLinterWorker(),
       watchdogWorker,
     )
@@ -243,6 +269,10 @@ export class Editor {
       projectName: string,
       project: PersistentModel,
     ) => {
+      startImportProcess(this.boundDispatch, [
+        { type: 'parseFiles' },
+        { type: 'refreshDependencies' },
+      ])
       await load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
       PubSub.publish(LoadActionsDispatched, { projectId: projectId })
     }
@@ -253,6 +283,7 @@ export class Editor {
       unpatchedDerived: derivedState,
       patchedDerived: derivedState,
       strategyState: strategyState,
+      elementMetadata: {},
       postActionInteractionSession: null,
       history: history,
       userState: defaultUserState,
@@ -276,6 +307,10 @@ export class Editor {
       patchedStoreFromFullStore(this.storedState, 'canvas-store'),
     )
 
+    const helperControlsStore = createStoresAndState(
+      patchedStoreFromFullStore(this.storedState, 'helper-controls-store'),
+    )
+
     const lowPriorityStore = createStoresAndState(
       patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
     )
@@ -283,6 +318,8 @@ export class Editor {
     this.utopiaStoreHook = store
 
     this.canvasStore = canvasStore
+
+    this.helperControlsStore = helperControlsStore
 
     this.lowPriorityStore = lowPriorityStore
 
@@ -330,10 +367,7 @@ export class Editor {
       const projectId = getProjectID()
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      void Promise.all([
-        getUserConfiguration(loginState),
-        getUserPermissions(loginState, projectId),
-      ]).then(([shortcutConfiguration, permissions]) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
@@ -390,19 +424,16 @@ export class Editor {
     })
   }
 
-  onMessage = (event: MessageEvent): void => {
-    const eventData = event.data
-    if (isSendPreviewModel(eventData)) {
-      previewIsAlive(InternalPreviewTimeout)
-      this.boundDispatch([eventData], 'noone')
-    }
-  }
-
   resetStateOnBlur = (): void => {
+    const currentMode = this.storedState.patchedEditor.mode
+
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
-        CanvasActions.clearInteractionSession(true),
+        CanvasActions.clearInteractionSession(false),
+        ...(currentMode.type === 'insert'
+          ? [EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none'))]
+          : []),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
         EditorActions.clearPostActionData(),
@@ -411,20 +442,30 @@ export class Editor {
     )
   }
 
+  // This is used to temporarily disable updates to the store, for example when we are in the middle of a fast selection hack
+  temporarilyDisableStoreUpdates = false
+
   boundDispatch = (
     dispatchedActions: readonly EditorAction[],
     priority?: DispatchPriority,
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    if (
+      priority === 'canvas-fast-selection-hack' &&
+      isFeatureEnabled('Canvas Fast Selection Hack')
+    ) {
+      this.temporarilyDisableStoreUpdates = true
+    } else if (priority === 'resume-canvas-fast-selection-hack') {
+      this.temporarilyDisableStoreUpdates = false
+    }
+
+    resetDomSamplerExecutionCounts()
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
 
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    const PerformanceMarks =
-      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-      PERFORMANCE_MARKS_ALLOWED
+    const PerformanceMarks = canMeasurePerformance()
 
     const runDispatch = () => {
       const oldEditorState = this.storedState
@@ -447,119 +488,142 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, dispatchResult)
-      const shouldRerender = !dispatchResult.nothingChanged || runDomWalker
+      const shouldUpdateCanvasStore =
+        !dispatchResult.nothingChanged &&
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents) &&
+        !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
-      if (shouldRerender) {
-        // TODO: not running this if nothing has changed in the result might give another performance benefit
+      if (shouldUpdateCanvasStore) {
+        // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
+          const currentElementsToRender = collectElementsToRerender(
+            this.storedState,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+              this.helperControlsStore.setState(
+                patchedStoreFromFullStore(this.storedState, 'helper-controls-store'),
+              )
             })
           })
         })
+      }
 
-        // run the dom-walker
-        if (runDomWalker) {
-          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+      const runDomWalker = this.temporarilyDisableStoreUpdates
+        ? 'dont-run'
+        : shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+
+      // run the dom-walker
+      if (runDomWalker !== 'dont-run') {
+        const metadataUpdateDispatchResult = runDomSamplerAndSaveResults(
+          this.boundDispatch,
+          this.storedState,
+          this.domWalkerMutableState,
+          this.spyCollector,
+          runDomWalker,
+        )
+
+        this.storedState = metadataUpdateDispatchResult
+        entireUpdateFinished = Promise.all([
+          entireUpdateFinished,
+          metadataUpdateDispatchResult.entireUpdateFinished,
+        ])
+      }
+
+      // true up groups if needed
+      if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
+        // updated editor with trued up groups
+        Measure.taskTime(`Group true up ${updateId}`, () => {
+          const projectContentsBeforeGroupTrueUp = this.storedState.unpatchedEditor.projectContents
+          const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
             this.boundDispatch,
-            this.domWalkerMutableState,
+            [{ action: 'TRUE_UP_ELEMENTS' }],
             this.storedState,
             this.spyCollector,
-            ElementsToRerenderGLOBAL.current,
           )
+          this.storedState = dispatchResultWithTruedUpGroups
 
-          if (domWalkerDispatchResult != null) {
-            this.storedState = domWalkerDispatchResult
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              domWalkerDispatchResult.entireUpdateFinished,
-            ])
+          entireUpdateFinished = Promise.all([
+            entireUpdateFinished,
+            dispatchResultWithTruedUpGroups.entireUpdateFinished,
+          ])
+
+          if (
+            projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
+          ) {
+            // no group-related re-render / re-measure is needed, bail out
+            return
           }
-        }
 
-        // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
-          // updated editor with trued up groups
-          Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp =
-              this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
+          // re-render the canvas
+          Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+            const currentElementsToRender = collectElementsToRerender(
+              this.storedState,
+              dispatchedActions,
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                this.canvasStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                )
+              })
+            })
+          })
+
+          // re-run the dom-sampler
+          Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
+            const metadataResult = runDomSamplerGroups({
+              elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+              domWalkerAdditionalElementsToFocusOn:
+                this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+              scale: this.storedState.patchedEditor.canvas.scale,
+              selectedViews: this.storedState.patchedEditor.selectedViews,
+              metadataToUpdate: this.storedState.elementMetadata,
+              spyCollector: this.spyCollector,
+            })
+
+            this.storedState.elementMetadata = metadataResult.metadata
+
+            const metadataUpdateDispatchResult = editorDispatchActionRunner(
               this.boundDispatch,
-              [{ action: 'TRUE_UP_ELEMENTS' }],
+              [
+                EditorActions.updateMetadataInEditorState(
+                  metadataResult.metadata,
+                  metadataResult.tree,
+                ),
+              ],
               this.storedState,
               this.spyCollector,
             )
-            this.storedState = dispatchResultWithTruedUpGroups
 
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              dispatchResultWithTruedUpGroups.entireUpdateFinished,
-            ])
-
-            if (
-              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
-            ) {
-              // no group-related re-render / re-measure is needed, bail out
-              return
+            if (metadataUpdateDispatchResult != null) {
+              this.storedState = metadataUpdateDispatchResult
+              entireUpdateFinished = Promise.all([
+                entireUpdateFinished,
+                metadataUpdateDispatchResult.entireUpdateFinished,
+              ])
             }
-
-            // re-render the canvas
-            Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-              ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-                this.storedState.patchedEditor.canvas.elementsToRerender,
-                dispatchedActions,
-              ) // Mutation!
-
-              ReactDOM.flushSync(() => {
-                ReactDOM.unstable_batchedUpdates(() => {
-                  this.canvasStore.setState(
-                    patchedStoreFromFullStore(this.storedState, 'canvas-store'),
-                  )
-                })
-              })
-            })
-
-            // re-run the dom-walker
-            Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-              const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-                this.boundDispatch,
-                this.domWalkerMutableState,
-                this.storedState,
-                this.spyCollector,
-                ElementsToRerenderGLOBAL.current,
-              )
-
-              if (domWalkerDispatchResult != null) {
-                this.storedState = domWalkerDispatchResult
-                entireUpdateFinished = Promise.all([
-                  entireUpdateFinished,
-                  domWalkerDispatchResult.entireUpdateFinished,
-                ])
-              }
-            })
           })
-        }
-
-        this.storedState = editorDispatchClosingOut(
-          this.boundDispatch,
-          dispatchedActions,
-          oldEditorState,
-          {
-            ...this.storedState,
-            entireUpdateFinished: entireUpdateFinished,
-            nothingChanged: dispatchResult.nothingChanged,
-          },
-          reactRouterErrorPreviouslyLogged,
-        )
+        })
       }
+
+      this.storedState = editorDispatchClosingOut(
+        this.boundDispatch,
+        dispatchedActions,
+        oldEditorState,
+        {
+          ...this.storedState,
+          entireUpdateFinished: entireUpdateFinished,
+          nothingChanged: dispatchResult.nothingChanged,
+        },
+        reactRouterErrorPreviouslyLogged,
+      )
 
       Measure.taskTime(`Update Editor ${updateId}`, () => {
         ReactDOM.flushSync(() => {
@@ -574,7 +638,8 @@ export class Editor {
               shouldUpdateLowPriorityUI(
                 this.storedState.strategyState,
                 ElementsToRerenderGLOBAL.current,
-              )
+              ) &&
+              !this.temporarilyDisableStoreUpdates
             ) {
               Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
                 this.lowPriorityStore.setState(
@@ -669,7 +734,7 @@ export class Editor {
 let canvasUpdateId: number = 0
 
 const AtomsDevtools = (props: { children: React.ReactNode }) => {
-  if (!PRODUCTION_ENV) {
+  if (!PRODUCTION_ENV && !IS_TEST_ENVIRONMENT) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
   }
@@ -680,6 +745,7 @@ export const EditorRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
   mainStore: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
@@ -687,10 +753,13 @@ export const EditorRoot: React.FunctionComponent<{
   dispatch,
   mainStore,
   canvasStore,
+  helperControlsStore,
   lowPriorityStore,
   spyCollector,
   domWalkerMutableState,
 }) => {
+  const [animationScope, animate] = useAnimate()
+
   return (
     <AtomsDevtools>
       <JotaiProvider>
@@ -699,11 +768,18 @@ export const EditorRoot: React.FunctionComponent<{
             <EditorStateContext.Provider value={mainStore}>
               <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
                 <CanvasStateContext.Provider value={canvasStore}>
-                  <LowPriorityStateContext.Provider value={lowPriorityStore}>
-                    <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <EditorComponent />
-                    </UiJsxCanvasCtxAtom.Provider>
-                  </LowPriorityStateContext.Provider>
+                  <HelperControlsStateContext.Provider value={helperControlsStore}>
+                    <LowPriorityStateContext.Provider value={lowPriorityStore}>
+                      <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                        <AnimationContext.Provider
+                          value={{ animate: animate, scope: animationScope }}
+                        >
+                          <LoadingEditorComponent />
+                          <EditorComponent />
+                        </AnimationContext.Provider>
+                      </UiJsxCanvasCtxAtom.Provider>
+                    </LowPriorityStateContext.Provider>
+                  </HelperControlsStateContext.Provider>
                 </CanvasStateContext.Provider>
               </DomWalkerMutableStateCtx.Provider>
             </EditorStateContext.Provider>
@@ -720,17 +796,27 @@ export const HotRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
   mainStore: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
 }> = hot(
-  ({ dispatch, mainStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+  ({
+    dispatch,
+    mainStore,
+    canvasStore,
+    helperControlsStore,
+    lowPriorityStore,
+    spyCollector,
+    domWalkerMutableState,
+  }) => {
     return (
       <EditorRoot
         dispatch={dispatch}
         spyCollector={spyCollector}
         mainStore={mainStore}
         canvasStore={canvasStore}
+        helperControlsStore={helperControlsStore}
         lowPriorityStore={lowPriorityStore}
         domWalkerMutableState={domWalkerMutableState}
       />
@@ -743,6 +829,7 @@ async function renderRootComponent(
   dispatch: EditorDispatch,
   mainStore: UtopiaStoreAPI,
   canvasStore: UtopiaStoreAPI,
+  helperControlsStore: UtopiaStoreAPI,
   lowPriorityStore: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
@@ -760,6 +847,7 @@ async function renderRootComponent(
             mainStore={mainStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
+            helperControlsStore={helperControlsStore}
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
@@ -771,6 +859,7 @@ async function renderRootComponent(
             spyCollector={spyCollector}
             mainStore={mainStore}
             canvasStore={canvasStore}
+            helperControlsStore={helperControlsStore}
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
@@ -815,17 +904,97 @@ async function renderProjectNotFound(projectId: string): Promise<void> {
   window.location.href = `/project/${projectId}`
 }
 
-function shouldRunDOMWalker(
-  dispatchedActions: readonly EditorAction[],
-  dispatchResult: DispatchResult,
-): boolean {
-  // if the only thing that changed was the scroll position - we don't need to run the DOMWalker
-  // TODO: make it a more robust check on the contents of the result - or even better - add a specific flag for 'domContentsChanged'
-  const canSkipDomWalker = dispatchedActions.every((a) => a.action === 'SCROLL_CANVAS')
-  if (canSkipDomWalker) {
-    return false
+export function shouldRunDOMWalker(
+  dispatchedActions: ReadonlyArray<EditorAction>,
+  storeBefore: EditorStoreFull,
+  storeAfter: EditorStoreFull,
+):
+  | 'dont-run'
+  | 'run-full'
+  | {
+      restrictToElements: Array<ElementPath>
+    } {
+  const patchedEditorBefore = storeBefore.patchedEditor
+  const patchedEditorAfter = storeAfter.patchedEditor
+  const patchedEditorChanged =
+    patchedEditorBefore.projectContents !== patchedEditorAfter.projectContents ||
+    patchedEditorBefore.nodeModules !== patchedEditorAfter.nodeModules ||
+    patchedEditorBefore.selectedViews !== patchedEditorAfter.selectedViews ||
+    patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath ||
+    !keysEqualityExhaustive<EditorState['canvas']>()({
+      include: [
+        'base64Blobs',
+        'canvasContentInvalidateCount',
+        'domWalkerAdditionalElementsToUpdate',
+        'domWalkerInvalidateCount',
+        'elementsToRerender',
+        'mountCount',
+        'scale',
+        'transientProperties',
+      ],
+      exclude: [
+        'controls',
+        'cursor',
+        'duplicationState',
+        'interactionSession',
+        'openFile',
+        'realCanvasOffset',
+        'resizeOptions',
+        'roundedCanvasOffset',
+        'scrollAnimation',
+        'selectionControlsVisible',
+        'snappingThreshold',
+        'textEditor',
+      ],
+    })(patchedEditorBefore.canvas, patchedEditorAfter.canvas)
+
+  const patchedDerivedBefore = storeBefore.patchedDerived
+  const patchedDerivedAfter = storeAfter.patchedDerived
+  const patchedDerivedChanged =
+    patchedDerivedBefore.autoFocusedPaths !== patchedDerivedAfter.autoFocusedPaths ||
+    patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
+
+  const storeChanged = patchedEditorChanged || patchedDerivedChanged
+
+  // if the store changed run the dom walker
+  if (storeChanged) {
+    return 'run-full'
   }
-  return (
-    !dispatchResult.nothingChanged || dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+
+  // if there are runDomWalker actions, run the dom walker, and merge their restrictToElements
+  const runDomWalkerActions = toArrayOf(
+    traverseReadOnlyArray<EditorAction>()
+      .compose(actionActionsOptic)
+      .compose(
+        fromTypeGuard((action): action is RunDOMWalker => action.action === 'RUN_DOM_WALKER'),
+      ),
+    dispatchedActions,
   )
+
+  if (runDomWalkerActions.length === 0) {
+    return 'dont-run'
+  }
+
+  const restrictToElements = runDomWalkerActions.reduce<Array<ElementPath> | null>(
+    (acc, action) => {
+      if (action.restrictToElements != null) {
+        if (acc == null) {
+          return action.restrictToElements
+        }
+        return [...acc, ...action.restrictToElements]
+      }
+      return acc
+    },
+    null,
+  )
+
+  if (restrictToElements == null) {
+    return 'run-full'
+  }
+
+  const uniqRestrictToElements = uniq(restrictToElements.map(EP.toString)).map(EP.fromString)
+
+  return {
+    restrictToElements: uniqRestrictToElements,
+  }
 }

@@ -8,7 +8,7 @@ import {
   useExternalResources,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
-import { Tooltip, PopupList } from '../../../../../uuiui'
+import { Tooltip, PopupList, UtopiaTheme } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import type { WebFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-utils'
 import {
@@ -140,7 +140,6 @@ export const FontVariantSelect = React.memo(() => {
       id='fontWeightAndStyle-context-menu'
       items={fontWeightAndStyleContextMenuItems}
       data={null}
-      style={{ gridColumn: '1' }}
     >
       <Tooltip title='Font Weight and Style' placement='top'>
         <PopupList

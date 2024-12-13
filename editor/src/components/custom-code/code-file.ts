@@ -23,7 +23,7 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
 import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getFilePathForUid } from '../../core/model/get-uid-mappings'
 import type { Either } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type {
@@ -53,6 +53,8 @@ import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
 import { StylingOptions } from 'utopia-api'
 import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
+import type { ComponentDescriptorBounds } from '../../core/property-controls/component-descriptor-parser'
+import { valueDependentCache } from '../../core/shared/memoize'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -152,7 +154,7 @@ export interface ShownInspectorSpec {
   sections: Styling[]
 }
 
-export type TypedInpsectorSpec = { type: 'hidden' } | ShownInspectorSpec
+export type TypedInspectorSpec = { type: 'hidden' } | ShownInspectorSpec
 
 export interface ComponentDescriptor {
   properties: PropertyControls
@@ -161,7 +163,7 @@ export interface ComponentDescriptor {
   variants: ComponentInfo[]
   source: ComponentDescriptorSource
   focus: Focus
-  inspector: TypedInpsectorSpec
+  inspector: TypedInspectorSpec
   emphasis: Emphasis
   icon: Icon
   label: string | null
@@ -185,7 +187,7 @@ export function componentDescriptor(
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
   source: ComponentDescriptorSource,
   focus: Focus,
-  inspector: TypedInpsectorSpec,
+  inspector: TypedInspectorSpec,
   emphasis: Emphasis,
   icon: Icon,
   label: string | null,
@@ -227,14 +229,17 @@ export function isDefaultComponentDescriptor(
 export interface ComponentDescriptorFromDescriptorFile {
   type: 'DESCRIPTOR_FILE'
   sourceDescriptorFile: string
+  bounds: ComponentDescriptorBounds | null
 }
 
 export function componentDescriptorFromDescriptorFile(
   sourceDescriptorFile: string,
+  bounds: ComponentDescriptorBounds | null,
 ): ComponentDescriptorFromDescriptorFile {
   return {
     type: 'DESCRIPTOR_FILE',
     sourceDescriptorFile: sourceDescriptorFile,
+    bounds: bounds,
   }
 }
 
@@ -468,19 +473,19 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
-export function normalisePathToUnderlyingTarget(
+export function normalisePathToUnderlyingTargetUncached(
   projectContents: ProjectContentTreeRoot,
-  elementPath: ElementPath | null,
+  elementPath: ElementPath,
 ): NormalisePathResult {
-  if (elementPath == null || EP.isEmptyPath(elementPath)) {
+  if (EP.isEmptyPath(elementPath)) {
     return normalisePathError('Empty element path')
   }
 
   const staticPath = EP.dynamicPathToStaticPath(elementPath)
   const lastPartOfPath = EP.takeLastPartOfPath(elementPath)
 
-  const allUidsWithFiles = getAllUniqueUids(projectContents)
-  const filePathFromUID = allUidsWithFiles.uidsToFilePaths[EP.toUid(staticPath)]
+  const allUidsWithFiles = getUidMappings(projectContents)
+  const filePathFromUID = getFilePathForUid(allUidsWithFiles.filePathToUids, EP.toUid(staticPath))
   const fileFromUID =
     filePathFromUID == null ? null : getProjectFileByFilePath(projectContents, filePathFromUID)
 
@@ -503,6 +508,11 @@ export function normalisePathToUnderlyingTarget(
     lastPartOfPath,
   )
 }
+
+export const normalisePathToUnderlyingTarget = valueDependentCache(
+  normalisePathToUnderlyingTargetUncached,
+  EP.toString,
+)
 
 export function findUnderlyingTargetComponentImplementationFromImportInfo(
   projectContents: ProjectContentTreeRoot,

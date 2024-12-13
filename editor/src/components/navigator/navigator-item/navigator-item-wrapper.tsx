@@ -33,6 +33,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentAndMetadataSubstate,
   PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
@@ -56,6 +57,10 @@ import {
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { CondensedEntryItemWrapper } from './navigator-condensed-entry'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorNavigatorTargets,
+} from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -75,10 +80,10 @@ const targetElementMetadataSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const targetInNavigatorItemsSelector = createCachedSelector(
-  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  navigatorTargetsSelector,
   (store: EditorStorePatched, target: NavigatorEntry) => target,
   (navigatorTargets, target) => {
-    return navigatorTargets.some((navigatorTarget) => {
+    return navigatorTargets.navigatorTargets.some((navigatorTarget) => {
       return navigatorEntriesEqual(target, navigatorTarget)
     })
   },
@@ -142,11 +147,11 @@ export const labelSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const noOfChildrenSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.navigatorTargets,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  navigatorTargetsSelector,
+  (_: NavigatorTargetsSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (navigatorTargets, navigatorEntry) => {
     let result = 0
-    for (const nt of navigatorTargets) {
+    for (const nt of navigatorTargets.navigatorTargets) {
       if (
         isRegularNavigatorEntry(navigatorEntry) &&
         EP.isChildOf(nt.elementPath, navigatorEntry.elementPath)
@@ -269,7 +274,7 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   )
 
   const noOfChildren = useEditorState(
-    Substores.derived,
+    Substores.navigatorTargetsSubstate, // TODO do not use fullStore here
     (store) => {
       return noOfChildrenSelector(store, props.navigatorEntry)
     },
@@ -325,8 +330,8 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
   const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.visibleNavigatorTargets,
+    Substores.navigatorTargetsSubstate,
+    navigatorTargetsSelectorNavigatorTargets,
     'NavigatorItemWrapper navigatorTargets',
   )
   const dispatch = useDispatch()

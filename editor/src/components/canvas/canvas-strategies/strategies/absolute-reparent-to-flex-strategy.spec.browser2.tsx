@@ -28,6 +28,7 @@ import { ExtraPadding } from './reparent-helpers/reparent-strategy-sibling-posit
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -64,6 +65,7 @@ async function dragElement(
           movementY: dragDelta.y,
           buttons: 1,
         },
+        modifiers: cmdModifier,
       },
     )
   } else {
@@ -650,19 +652,21 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+    ])
   })
   it('moving the element into a flex layout to the middle of the last child reparents to the child', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -693,19 +697,21 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/targetdiv',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/targetdiv',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/targetdiv',
+    ])
   })
   it('moving the element into a flex layout to the edge of the last child reparents to the end as a sibling', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -736,19 +742,21 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+    ])
   })
   it('moving the element to the edge of a flex in flex layout will reparent to the outer flex container', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -778,19 +786,21 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+    ])
   })
   it('moving the element to the center of a flex in flex layout will reparent to flex grandchild', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -821,19 +831,21 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+    ])
   })
   it('moving one of the inner element over its parents edge while inside the parent area doesnt trigger reparent', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -857,26 +869,28 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: parentRightEdge.x - childCenter.x,
       y: parentRightEdge.y - childCenter.y,
     })
-    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+    await dragElement(renderResult, 'innerchild2', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+    ])
   })
   it('moving one of the inner element over its parents edge from the outside triggers reparent', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -900,26 +914,28 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: parentRightEdge.x - childCenter.x,
       y: parentRightEdge.y - childCenter.y,
     })
-    await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers)
+    await dragElement(renderResult, 'innerchild2', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
       'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
     ])
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+    ])
   })
   it('moving the inner child element to reparent to the parent sibling visually keeps the original layout until mouseup', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -943,7 +959,6 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       x: newParentTargetCenter.x - childCenter.x,
       y: newParentTargetCenter.y - childCenter.y,
     })
-
     await dragElement(renderResult, 'innerchild2', dragDelta, emptyModifiers, true)
     await renderResult.getDispatchFollowUpActionsFinished()
 

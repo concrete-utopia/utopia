@@ -214,9 +214,9 @@ vsCodePathsToPreload = [
         ("extensions.js", VSCodeJS),
         ("vscode/vs/code/browser/workbench/workbench.js", VSCodeJS),
         ("vscode/vs/loader.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.css", VSCodeCSS),
-        ("vscode/vs/workbench/workbench.web.api.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.nls.js", VSCodeJS)
+        ("vscode/vs/workbench/workbench.web.main.css", VSCodeCSS),
+        ("vscode/vs/workbench/workbench.web.main.js", VSCodeJS),
+        ("vscode/vs/workbench/workbench.web.main.nls.js", VSCodeJS)
         ]
 
 vscodePreloadTypeToPreloadAs :: VSCodePreloadType -> Text
@@ -277,7 +277,7 @@ injectIntoPage toInject@(_, _, _, _, editorScriptTags) (TagComment "editorScript
 injectIntoPage toInject (firstTag : remainder) = firstTag : injectIntoPage toInject remainder
 injectIntoPage _ [] = []
 
-renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe DB.DecodedProject -> Maybe Text -> Text -> ServerMonad H.Html
+renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe DB.DecodedProject -> Maybe Text -> Text -> ServerMonad ProjectPageResponse
 renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branchName pagePath = do
   indexHtml <- getEditorTextContent branchName pagePath
   siteRoot <- getSiteRoot
@@ -294,38 +294,38 @@ renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branch
   let reversedEditorScriptTags = partitionOutScriptDefer False $ reverse parsedTags
   let editorScriptPreloads = preloadsForScripts $ reverse reversedEditorScriptTags
   let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads) parsedTags
-  return $ H.preEscapedToHtml $ renderTags updatedContent
+  return $ addHeader "cross-origin" $ addHeader "same-origin" $ addHeader "credentialless" $ H.preEscapedToHtml $ renderTags updatedContent
 
-innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
+innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad ProjectPageResponse
 innerProjectPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found/index.html"
-  return $ H.preEscapedToHtml projectNotFoundHtml
+  return $ addHeader "cross-origin" $ addHeader "same-origin" $ addHeader "credentialless" $ H.preEscapedToHtml projectNotFoundHtml
 innerProjectPage possibleProjectID details possibleProject branchName =
   renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "index.html"
 
-projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad ProjectPageResponse
 projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
   possibleProject <- loadProject projectID
   innerProjectPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
-emptyProjectPage :: Maybe Text -> ServerMonad H.Html
+emptyProjectPage :: Maybe Text -> ServerMonad ProjectPageResponse
 emptyProjectPage = innerProjectPage Nothing UnknownProject Nothing
 
-innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad ProjectPageResponse
 innerPreviewPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found/index.html"
-  return $ H.preEscapedToHtml projectNotFoundHtml
+  return $ addHeader "cross-origin" $ addHeader "same-origin" $ addHeader "credentialless" $ H.preEscapedToHtml projectNotFoundHtml
 innerPreviewPage possibleProjectID details possibleProject branchName =
   renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "preview/index.html"
 
-previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
+previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad ProjectPageResponse
 previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
   possibleProject <- loadProject projectID
   innerPreviewPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
-emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
+emptyPreviewPage :: Maybe Text -> ServerMonad ProjectPageResponse
 emptyPreviewPage = innerPreviewPage Nothing UnknownProject Nothing
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
@@ -529,11 +529,26 @@ addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-ag
 addCacheControlRevalidate :: Middleware
 addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-revalidate, proxy-revalidate, max-age=0"
 
+addCrossOriginResourcePolicy :: Middleware
+addCrossOriginResourcePolicy = addMiddlewareHeader "Cross-Origin-Resource-Policy" "cross-origin"
+
+addCrossOriginOpenerPolicy :: Middleware
+addCrossOriginOpenerPolicy = addMiddlewareHeader "Cross-Origin-Opener-Policy" "same-origin"
+
+addCrossOriginEmbedderPolicy :: Middleware
+addCrossOriginEmbedderPolicy = addMiddlewareHeader "Cross-Origin-Embedder-Policy" "require-corp"
+
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
 addCDNHeadersCacheRevalidate :: Middleware
 addCDNHeadersCacheRevalidate = addCacheControlRevalidate . addAccessControlAllowOrigin
+
+addEditorAssetsHeaders :: Middleware
+addEditorAssetsHeaders = addCDNHeaders . addCrossOriginResourcePolicy . addCrossOriginOpenerPolicy . addCrossOriginEmbedderPolicy
+
+addVSCodeHeaders :: Middleware
+addVSCodeHeaders = addCDNHeadersCacheRevalidate . addCrossOriginResourcePolicy . addCrossOriginOpenerPolicy . addCrossOriginEmbedderPolicy
 
 fallbackOn404 :: Application -> Application -> Application
 fallbackOn404 firstApplication secondApplication request sendResponse =
@@ -557,7 +572,7 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
   mainApp <- case possibleBranchName of
     Just _  -> pure loadLocally
     Nothing -> maybe (pure loadLocally) loadFromProxy possibleProxyManager
-  pure $ addCDNHeaders $ downloadWithFallbacks mainApp
+  pure $ addEditorAssetsHeaders $ downloadWithFallbacks mainApp
 
 downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
 downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
@@ -580,7 +595,7 @@ websiteAssetsEndpoint notProxiedPath = do
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  addCDNHeadersCacheRevalidate <$> servePath pathToServeFrom Nothing
+  addVSCodeHeaders <$> servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ =

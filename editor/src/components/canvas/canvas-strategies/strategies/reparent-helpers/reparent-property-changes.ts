@@ -35,11 +35,15 @@ import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
-import type { CanvasCommand } from '../../../commands/commands'
+import type { CanvasCommand, WhenToRun } from '../../../commands/commands'
 import type { ConvertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { convertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
-import { setProperty } from '../../../commands/set-property-command'
+import {
+  propertyToDelete,
+  setProperty,
+  updateBulkProperties,
+} from '../../../commands/set-property-command'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
   singleAxisAutoLayoutContainerDirections,
@@ -63,12 +67,19 @@ import {
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
+import type { ShouldAddContainLayout } from './reparent-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
   PP.create('style', 'top'),
   PP.create('style', 'right'),
   PP.create('style', 'bottom'),
+  PP.create('style', 'gridRow'),
+  PP.create('style', 'gridColumn'),
+  PP.create('style', 'gridRowStart'),
+  PP.create('style', 'gridRowEnd'),
+  PP.create('style', 'gridColumnStart'),
+  PP.create('style', 'gridColumnEnd'),
 ]
 
 export type ForcePins = 'force-pins' | 'do-not-force-pins'
@@ -80,6 +91,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   forcePins: ForcePins,
+  willContainLayoutBeAdded: ShouldAddContainLayout,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -98,7 +110,10 @@ export function getAbsoluteReparentPropertyChanges(
 
   const currentParentContentBox =
     MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
-  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+  const newParentContentBox =
+    willContainLayoutBeAdded === 'add-contain-layout'
+      ? nullIfInfinity(newParentInstance.globalFrame)
+      : MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
 
   if (currentParentContentBox == null || newParentContentBox == null) {
     return []
@@ -339,6 +354,7 @@ export function getReparentPropertyChanges(
         currentMetadata,
         projectContents,
         'force-pins',
+        'dont-add-contain-layout',
       )
 
       const strategyCommands = runReparentPropertyStrategies([
@@ -404,7 +420,19 @@ export function getReparentPropertyChanges(
 
       return [...basicCommads, ...strategyCommands]
     }
+    case 'REPARENT_INTO_GRID':
+      return [removeAbsolutePositioningProps('always', target)]
     default:
       assertNever(reparentStrategy)
   }
+}
+
+export function removeAbsolutePositioningProps(whenToRun: WhenToRun, path: ElementPath) {
+  return updateBulkProperties(whenToRun, path, [
+    propertyToDelete(PP.create('style', 'position')),
+    propertyToDelete(PP.create('style', 'top')),
+    propertyToDelete(PP.create('style', 'left')),
+    propertyToDelete(PP.create('style', 'bottom')),
+    propertyToDelete(PP.create('style', 'right')),
+  ])
 }

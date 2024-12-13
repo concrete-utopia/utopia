@@ -6,10 +6,12 @@ import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
 import type { SourceNode } from 'source-map'
 import type { Either } from '../../shared/either'
 import { isRight, left, right } from '../../shared/either'
-import type { JSXElement } from '../../shared/element-template'
+import type { JSXElement, JSXElementLike } from '../../shared/element-template'
 import {
   getDefinedElsewhereFromElement,
+  getJSXElementLikeNameAsString,
   getJSXElementNameAsString,
+  isJSXElement,
 } from '../../shared/element-template'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
@@ -144,7 +146,7 @@ function babelRewriteJSExpressionCode(
 } {
   function transformForElementWithin(
     path: BabelTraverse.NodePath<BabelTypes.JSXElement>,
-    elementWithin: JSXElement,
+    elementWithin: JSXElementLike,
     uid: string,
   ): void {
     if (insertCanvasRenderCall) {
@@ -279,7 +281,7 @@ function babelRewriteJSExpressionCode(
     const foundElementWithin =
       foundByLocation ??
       elementsWithin.find((e) => {
-        return tagName === getJSXElementNameAsString(e.element.name)
+        return tagName === getJSXElementLikeNameAsString(e.element)
       })
 
     if (foundElementWithin != null) {
@@ -387,7 +389,13 @@ function rewriteBlockToCaptureEarlyReturns(source: string): () => {
           let identifiersToReturn: Array<string> = []
 
           function handleNodeAddingIdentifiers(nodeToProcess: BabelTypes.Node): void {
-            if (BabelTypes.isVariableDeclaration(nodeToProcess)) {
+            if (
+              BabelTypes.isExpressionStatement(nodeToProcess) &&
+              BabelTypes.isAssignmentExpression(nodeToProcess.expression) &&
+              BabelTypes.isIdentifier(nodeToProcess.expression.left)
+            ) {
+              identifiersToReturn.push(nodeToProcess.expression.left.name)
+            } else if (BabelTypes.isVariableDeclaration(nodeToProcess)) {
               for (const declaration of nodeToProcess.declarations) {
                 handleNodeAddingIdentifiers(declaration.id)
               }

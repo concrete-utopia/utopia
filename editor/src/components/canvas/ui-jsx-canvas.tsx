@@ -20,6 +20,7 @@ import {
   flatMapEither,
   foldEither,
   forEachRight,
+  isLeft,
   isRight,
   left,
   right,
@@ -54,6 +55,7 @@ import parse from 'html-react-parser'
 import type { ComponentRendererComponent } from './ui-jsx-canvas-renderer/component-renderer-component'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import {
+  ElementsToRerenderContext,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
@@ -67,12 +69,18 @@ import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-load
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import {
+  clearExecutionScopeCache,
+  createExecutionScope,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
-import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
+import {
+  projectContentsSameForRefreshRequire,
+  getParseSuccessForFilePath,
+  getValidElementPaths,
+} from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
-import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
   atomWithPubSub,
@@ -85,13 +93,15 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { useRefEditorState } from '../editor/store/store-hook'
+import { EditorStateContext, useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
+import { useInvalidatedCanvasRemount } from './canvas-component-entry'
+import { useTailwindCompilation } from '../../core/tailwind/tailwind-compilation'
 
 applyUIDMonkeyPatch()
 
@@ -205,7 +215,22 @@ export interface CanvasReactClearErrorsCallback {
 export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
   CanvasReactClearErrorsCallback
 
-export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
+type InvalidatedCanvasData = {
+  mountCountInvalidated: boolean
+  domWalkerInvalidated: boolean
+}
+
+export function emptyInvalidatedCanvasData(): InvalidatedCanvasData {
+  return {
+    mountCountInvalidated: false,
+    domWalkerInvalidated: false,
+  }
+}
+
+export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps &
+  CanvasReactClearErrorsCallback & {
+    invalidatedCanvasData: InvalidatedCanvasData
+  }
 
 export function pickUiJsxCanvasProps(
   editor: EditorState,
@@ -260,23 +285,17 @@ export function pickUiJsxCanvasProps(
 }
 
 function useClearSpyMetadataOnRemount(
-  canvasMountCount: number,
-  domWalkerInvalidateCount: number,
+  invalidatedCanvasData: InvalidatedCanvasData,
+  isRemounted: boolean,
   metadataContext: UiJsxCanvasContextData,
 ) {
-  const canvasMountCountRef = React.useRef(canvasMountCount)
-  const domWalkerInvalidateCountRef = React.useRef(domWalkerInvalidateCount)
-
-  const invalidated =
-    canvasMountCountRef.current !== canvasMountCount ||
-    domWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
-
-  if (invalidated) {
-    metadataContext.current.spyValues.metadata = {}
+  if (isRemounted) {
+    clearExecutionScopeCache()
   }
 
-  canvasMountCountRef.current = canvasMountCount
-  domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
+  if (invalidatedCanvasData.domWalkerInvalidated) {
+    metadataContext.current.spyValues.metadata = {}
+  }
 }
 
 function clearSpyCollectorInvalidPaths(
@@ -338,22 +357,20 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     DomWalkerInvalidatePathsCtxAtom,
     AlwaysFalse,
   )
-  useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
-  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
-  const shouldRerenderRef = React.useRef(false)
-  shouldRerenderRef.current =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEqualsByValue(
-      ElementsToRerenderGLOBAL.current,
-      elementsToRerenderRef.current,
-      EP.pathsEqual,
-    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
-  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
+  const isRemounted =
+    props.invalidatedCanvasData.mountCountInvalidated ||
+    props.invalidatedCanvasData.domWalkerInvalidated
+
+  useClearSpyMetadataOnRemount(props.invalidatedCanvasData, isRemounted, metadataContext)
 
   const maybeOldProjectContents = React.useRef(projectContents)
-  if (shouldRerenderRef.current) {
+
+  const projectContentsSimilarEnough = projectContentsSameForRefreshRequire(
+    maybeOldProjectContents.current,
+    projectContents,
+  )
+  if (!projectContentsSimilarEnough) {
     maybeOldProjectContents.current = projectContents
   }
 
@@ -454,7 +471,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
-    if (shouldRerenderRef.current) {
+    if (isRemounted) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
       unimportAllButTheseCSSFiles(resolvedFileNames.current)
@@ -471,13 +488,14 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     editedText,
     uiFilePath,
     updateInvalidatedPaths,
+    isRemounted,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
   const executionScope = scope
 
-  useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
+  useTailwindCompilation()
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
@@ -485,18 +503,26 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
-    remixDerivedDataRef.current == null
-      ? { type: 'inactive' }
-      : {
+  const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext => {
+    if (isLeft(remixDerivedDataRef.current)) {
+      return { type: 'inactive' }
+    } else {
+      const remixData = remixDerivedDataRef.current.value
+      if (remixData == null) {
+        return { type: 'inactive' }
+      } else {
+        return {
           type: 'active',
-          routeModulesToRelativePaths: remixDerivedDataRef.current.routeModulesToRelativePaths,
+          routeModulesToRelativePaths: remixData.routeModulesToRelativePaths,
           currentlyRenderedRouteModules:
             matchRoutes(
-              remixDerivedDataRef.current.routes,
+              remixData.routes,
               remixNavigationState[EP.toString(path)]?.location ?? '/',
             )?.map((p) => p.route) ?? [],
         }
+      }
+    }
+  }
 
   const {
     StoryboardRootComponent,
@@ -508,7 +534,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.focusedElementPath,
     topLevelElementsMap,
     executionScope,
-    projectContentsForRequireFn,
+    projectContents,
     autoFocusedPaths,
     uiFilePath,
     resolve,
@@ -558,19 +584,26 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         all: 'initial',
       }}
     >
-      <Helmet>{parse(linkTags)}</Helmet>
-      <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-        <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-          <CanvasContainer
-            validRootPaths={rootValidPathsArray}
-            canvasRootElementElementPath={storyboardRootElementPath}
-          >
-            <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRoot}
-            </SceneLevelUtopiaCtxAtom.Provider>
-          </CanvasContainer>
-        </UtopiaProjectCtxAtom.Provider>
-      </RerenderUtopiaCtxAtom.Provider>
+      {/* deliberately breaking useEditorState and useRefEditorState to enforce the usage of useCanvasState */}
+      <EditorStateContext.Provider value={null}>
+        <Helmet>{parse(linkTags)}</Helmet>
+        <ElementsToRerenderContext.Provider
+          value={useKeepReferenceEqualityIfPossible(ElementsToRerenderGLOBAL.current)} // TODO this should either be moved to EditorState or the context should be moved to the root level
+        >
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+              <CanvasContainer
+                validRootPaths={rootValidPathsArray}
+                canvasRootElementElementPath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                  {StoryboardRoot}
+                </SceneLevelUtopiaCtxAtom.Provider>
+              </CanvasContainer>
+            </UtopiaProjectCtxAtom.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
+        </ElementsToRerenderContext.Provider>
+      </EditorStateContext.Provider>
     </div>
   )
 })
@@ -797,7 +830,7 @@ function useGetStoryboardRoot(
           getRemixValidPathsGenerationContext,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
-    validPaths[0] ?? EP.emptyElementPath,
+    validPaths.at(0) ?? EP.emptyElementPath,
   )
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)

@@ -7,8 +7,8 @@ import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { applyValuesAtPath } from './utils/property-utils'
 
 export interface ConvertToAbsolute extends BaseCommand {
   type: 'CONVERT_TO_ABSOLUTE'

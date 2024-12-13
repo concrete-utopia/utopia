@@ -8,7 +8,7 @@ import {
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -38,6 +38,7 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -89,6 +90,10 @@ export function flexResizeBasicStrategy(
     elementParentBounds != null &&
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
+  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
+    return null
+  }
+
   return {
     id: 'FLEX_RESIZE_BASIC',
     name: 'Flex Resize (Basic)',
@@ -103,6 +108,14 @@ export function flexResizeBasicStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
@@ -216,24 +229,29 @@ export function flexResizeBasicStrategy(
             elementParentBounds?.height,
           )
 
-          return strategyApplicationResult([
-            adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateGroups(
-              [{ target: selectedElement, frame: resizedBounds }],
-              'starting-metadata',
-            ),
-            ...groupChildren.map((c) =>
-              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
-            ),
-          ])
+          return strategyApplicationResult(
+            [
+              adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              pushIntendedBoundsAndUpdateGroups(
+                [{ target: selectedElement, frame: resizedBounds }],
+                'starting-metadata',
+              ),
+              ...groupChildren.map((c) =>
+                queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+              ),
+            ],
+            selectedElements,
+          )
         } else {
-          return strategyApplicationResult([
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-          ])
+          return strategyApplicationResult(
+            [
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.

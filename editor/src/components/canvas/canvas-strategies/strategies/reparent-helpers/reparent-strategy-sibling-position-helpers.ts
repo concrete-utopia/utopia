@@ -44,7 +44,6 @@ export function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
   const children = MetadataUtils.getChildrenPathsOrdered(
-    metadata,
     pathTrees,
     singleAxisAutolayoutContainerPath,
   )

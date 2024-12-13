@@ -6,6 +6,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 export default defineConfig(({ mode }) => {
   const isDevEnv = mode === 'development'
+  const baseDomain = isDevEnv ? 'http://cdn.localhost:8000' : ''
   return {
     plugins: [
       isDevEnv && react(),
@@ -13,8 +14,8 @@ export default defineConfig(({ mode }) => {
         data: {
           VITE: true,
           UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH,
-          UTOPIA_DOMAIN: isDevEnv ? 'http://localhost:8000' : '',
-          VSCODE_DOMAIN: '${window.location.origin}',
+          UTOPIA_DOMAIN: isDevEnv ? baseDomain : '',
+          VSCODE_DOMAIN: baseDomain === '' ? '${window.location.origin}' : baseDomain,
         },
       }),
     ],
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => {
         host: 'localhost',
         port: 8088,
       },
+      cors: false, // This is being set by the server, leading to double values if we don't explicitly disable it
     },
     base: '/editor/',
     resolve: {
@@ -53,7 +55,7 @@ export default defineConfig(({ mode }) => {
       'process.env.GOOGLE_WEB_FONTS_KEY': `"${process.env.GOOGLE_WEB_FONTS_KEY}"`,
       'process.env.REACT_APP_COMMIT_HASH': `"${process.env.REACT_APP_COMMIT_HASH}"`,
       'process.env.HMR': mode === 'development' ? 'true' : 'false',
-      'process.env.UTOPIA_DOMAIN': isDevEnv ? '"http://localhost:8000"' : '""',
+      'process.env.UTOPIA_DOMAIN': isDevEnv ? `"${baseDomain}"` : '""',
       'process.env.UTOPIA_SHA': `"${process.env.REACT_APP_COMMIT_HASH}"`,
     },
     optimizeDeps: {

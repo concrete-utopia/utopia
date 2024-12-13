@@ -31,7 +31,6 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   emptyJsxMetadata,
-  getElementsByUIDFromTopLevelElements,
   isJSExpression,
   isJSXConditionalExpression,
   isJSXElement,
@@ -61,14 +60,12 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
-  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
 import {
   RevisionsState,
   codeFile,
-  foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isParsedTextFile,
@@ -125,7 +122,6 @@ import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
-  ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
   RenderPropNavigatorEntryKeepDeepEquality,
   RenderPropValueNavigatorEntryKeepDeepEquality,
@@ -140,7 +136,6 @@ import { objectMap, pick } from '../../../core/shared/object-utils'
 
 import type { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
-import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
@@ -192,6 +187,19 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
+import type { FancyError } from '../../../core/shared/code-exec-utils'
+import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+import {
+  emptyImportState,
+  type ImportState,
+} from '../../../core/shared/import/import-operation-types'
+import {
+  emptyProjectRequirements,
+  type ProjectRequirements,
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type { UpdatedProperties } from '../../canvas/plugins/style-plugins'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -356,6 +364,8 @@ export function githubOperationLocksEditor(op: GithubOperation): boolean {
     case 'loadRepositories':
     case 'listPullRequestsForBranch':
       return false
+    case 'loadBranch':
+      return !isFeatureEnabled('Import Wizard')
     default:
       return true
   }
@@ -463,6 +473,7 @@ export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport 
 }
 
 export type EditorStoreShared = {
+  elementMetadata: ElementInstanceMetadataMap
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
@@ -483,7 +494,7 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
-type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+type StoreName = 'editor-store' | 'canvas-store' | 'helper-controls-store' | 'low-priority-store'
 
 export type EditorStorePatched = EditorStoreShared & {
   storeName: StoreName
@@ -811,6 +822,49 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
+
+export interface GridContainerIdentifier {
+  type: 'GRID_CONTAINER'
+  container: ElementPath
+}
+
+export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
+  return {
+    type: 'GRID_CONTAINER',
+    container: path,
+  }
+}
+
+export interface GridItemIdentifier {
+  type: 'GRID_ITEM'
+  item: ElementPath
+}
+
+export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
+  return {
+    type: 'GRID_ITEM',
+    item: path,
+  }
+}
+
+export function pathOfGridFromGridIdentifier(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.item)
+    case 'GRID_CONTAINER':
+      return identifier.container
+    default:
+      assertNever(identifier)
+  }
+}
+
+export interface GridControlData {
+  grid: GridIdentifier
+  targetCell: GridCellCoordinates | null // the cell under the mouse
+  rootCell: GridCellCoordinates | null // the top-left cell of the target child
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -821,6 +875,7 @@ export interface EditorStateCanvasControls {
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
+  gridControlData: GridControlData | null
 }
 
 export function editorStateCanvasControls(
@@ -832,6 +887,7 @@ export function editorStateCanvasControls(
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
+  gridControlData: GridControlData | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -842,6 +898,7 @@ export function editorStateCanvasControls(
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
+    gridControlData: gridControlData,
   }
 }
 
@@ -1070,18 +1127,6 @@ export function editorStateTopMenu(
   return {
     formulaBarMode: formulaBarMode,
     formulaBarFocusCounter: formulaBarFocusCounter,
-  }
-}
-
-export interface EditorStatePreview {
-  visible: boolean
-  connected: boolean
-}
-
-export function editorStatePreview(visible: boolean, connected: boolean): EditorStatePreview {
-  return {
-    visible: visible,
-    connected: connected,
   }
 }
 
@@ -1360,17 +1405,23 @@ export function trueUpChildrenOfGroupChanged(
 export interface TrueUpHuggingElement {
   type: 'TRUE_UP_HUGGING_ELEMENT'
   target: ElementPath
+  elementFrame: CanvasRectangle
   frame: CanvasRectangle
+  huggingElementContentsStatus: HuggingElementContentsStatus
 }
 
 export function trueUpHuggingElement(
   target: ElementPath,
+  elementFrame: CanvasRectangle,
   frame: CanvasRectangle,
+  huggingElementContentsStatus: HuggingElementContentsStatus,
 ): TrueUpHuggingElement {
   return {
     type: 'TRUE_UP_HUGGING_ELEMENT',
     target: target,
+    elementFrame: elementFrame,
     frame: frame,
+    huggingElementContentsStatus: huggingElementContentsStatus,
   }
 }
 
@@ -1378,6 +1429,12 @@ export type TrueUpTarget =
   | TrueUpGroupElementChanged
   | TrueUpChildrenOfGroupChanged
   | TrueUpHuggingElement
+
+export type ErrorBoundaryHandling = 'use-error-boundaries' | 'ignore-error-boundaries'
+
+export interface EditorRemixConfig {
+  errorBoundaryHandling: ErrorBoundaryHandling
+}
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1424,7 +1481,6 @@ export interface EditorState {
   projectSettings: EditorStateProjectSettings
   navigator: NavigatorState
   topmenu: EditorStateTopMenu
-  preview: EditorStatePreview
   home: EditorStateHome
   lastUsedFont: FontSettings | null
   modal: ModalDialog | null
@@ -1452,6 +1508,9 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  importState: ImportState
+  projectRequirements: ProjectRequirements
+  importWizardOpen: boolean
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1462,6 +1521,8 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
+  editorRemixConfig: EditorRemixConfig
+  propertiesUpdatedDuringInteraction: UpdatedProperties
 }
 
 export function editorState(
@@ -1507,7 +1568,6 @@ export function editorState(
   projectSettings: EditorStateProjectSettings,
   editorStateNavigator: NavigatorState,
   topmenu: EditorStateTopMenu,
-  preview: EditorStatePreview,
   home: EditorStateHome,
   lastUsedFont: FontSettings | null,
   modal: ModalDialog | null,
@@ -1535,6 +1595,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  importState: ImportState,
+  importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1546,6 +1609,8 @@ export function editorState(
   forking: boolean,
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
+  remixConfig: EditorRemixConfig,
+  propertiesUpdatedDuringInteraction: UpdatedProperties,
 ): EditorState {
   return {
     id: id,
@@ -1591,7 +1656,6 @@ export function editorState(
     projectSettings: projectSettings,
     navigator: editorStateNavigator,
     topmenu: topmenu,
-    preview: preview,
     home: home,
     lastUsedFont: lastUsedFont,
     modal: modal,
@@ -1619,6 +1683,9 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
+    importState: importState,
+    importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -1629,6 +1696,8 @@ export function editorState(
     forking: forking,
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
+    editorRemixConfig: remixConfig,
+    propertiesUpdatedDuringInteraction: propertiesUpdatedDuringInteraction,
   }
 }
 
@@ -2421,29 +2490,23 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
-  navigatorRows: Array<NavigatorRow>
-  navigatorTargets: Array<NavigatorEntry>
-  visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
-  remixData: RemixDerivedData | null
+  remixData: Either<FancyError, RemixDerivedData | null>
   filePathMappings: FilePathMappings
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
-    navigatorRows: [],
-    navigatorTargets: [],
-    visibleNavigatorTargets: [],
     autoFocusedPaths: [],
     controls: [],
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
 }
@@ -2632,6 +2695,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -2667,10 +2731,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
-    preview: {
-      visible: false,
-      connected: false,
-    },
     home: {
       visible: false,
     },
@@ -2704,6 +2764,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importState: emptyImportState(),
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -2718,6 +2781,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    editorRemixConfig: {
+      errorBoundaryHandling: 'ignore-error-boundaries',
+    },
+    propertiesUpdatedDuringInteraction: {},
   }
 }
 
@@ -2794,9 +2861,6 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
-  navigatorRows: Array<NavigatorRow>
-  navigatorTargets: Array<NavigatorEntry>
-  visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
   autoFocusedPaths: Array<ElementPath>
 }
@@ -2810,15 +2874,6 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
-    jsxMetadata,
-    elementPathTree,
-    collapsedViews,
-    hiddenInNavigator,
-    propertyControlsInfo,
-    projectContents,
-  )
-
   const warnings = getElementWarnings(
     projectContents,
     jsxMetadata,
@@ -2839,9 +2894,6 @@ function deriveCacheableStateInner(
   )
 
   return {
-    navigatorRows: navigatorRows,
-    navigatorTargets: navigatorTargets,
-    visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
     autoFocusedPaths: autoFocusedPaths,
   }
@@ -2861,13 +2913,7 @@ export function deriveState(
   const deriveCacheableState =
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
-  const {
-    navigatorRows,
-    navigatorTargets,
-    visibleNavigatorTargets,
-    elementWarnings: warnings,
-    autoFocusedPaths,
-  } = deriveCacheableState(
+  const { elementWarnings: warnings, autoFocusedPaths } = deriveCacheableState(
     editor.projectContents,
     editor.jsxMetadata,
     editor.elementPathTree,
@@ -2878,6 +2924,7 @@ export function deriveState(
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(
+    editor.editorRemixConfig,
     editor.projectContents,
     editor.codeResultCache.curriedRequireFn,
     editor.codeResultCache.curriedResolveFn,
@@ -2886,9 +2933,6 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
-    navigatorRows: navigatorRows,
-    navigatorTargets: navigatorTargets,
-    visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
     elementWarnings: warnings,
@@ -3030,6 +3074,7 @@ export function editorModelFromPersistentModel(
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -3047,10 +3092,6 @@ export function editorModelFromPersistentModel(
     topmenu: {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
-    },
-    preview: {
-      visible: false,
-      connected: false,
     },
     home: {
       visible: false,
@@ -3094,6 +3135,9 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importState: emptyImportState(),
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),
@@ -3108,6 +3152,10 @@ export function editorModelFromPersistentModel(
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    editorRemixConfig: {
+      errorBoundaryHandling: 'ignore-error-boundaries',
+    },
+    propertiesUpdatedDuringInteraction: {},
   }
   return editor
 }
@@ -3285,14 +3333,17 @@ export function updatePackageJsonInEditorState(
       // There is a package.json file, we should update it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
-        RevisionsState.CodeAhead,
+        null,
         packageJsonFile.versionNumber + 1,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(JSON.stringify(DefaultPackageJson)),
         null,
+        0,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     }
   }
@@ -3407,46 +3458,6 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): {
-  metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTrees
-} {
-  const uiFile = getOpenUIJSFile(editor)
-  if (uiFile == null) {
-    return {
-      metadata: editor.jsxMetadata,
-      elementPathTree: editor.elementPathTree,
-    }
-  } else {
-    return foldParsedTextFile(
-      (_) => {
-        return {
-          metadata: editor.jsxMetadata,
-          elementPathTree: editor.elementPathTree,
-        }
-      },
-      (success) => {
-        const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
-        const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(
-          elementsByUID,
-          editor.spyMetadata,
-          editor.domMetadata,
-        )
-        return {
-          metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
-            .value,
-          elementPathTree: elementPathTree,
-        }
-      },
-      (_) => ({
-        metadata: editor.jsxMetadata,
-        elementPathTree: editor.elementPathTree,
-      }),
-      uiFile.fileContents.parsed,
-    )
-  }
-}
-
 export function getStoryboardElementPathFromEditorState(
   editor: EditorState,
 ): StaticElementPath | null {
@@ -3522,12 +3533,12 @@ export function getElementPathsInBounds(
   }
 }
 
-export function modifyParseSuccessAtPath(
+export function modifyParseSuccessAtPath<E extends { projectContents: ProjectContentTreeRoot }>(
   filePath: string,
-  editor: EditorState,
+  editor: E,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
   throwForErrors: boolean = true,
-): EditorState {
+): E {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
@@ -3572,7 +3583,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
 }
 
 export function modifyUnderlyingTarget(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
@@ -3585,6 +3596,9 @@ export function modifyUnderlyingTarget(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
+  if (target == null) {
+    throw new Error(`Target is null.`)
+  }
   const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3642,6 +3656,9 @@ export function modifyUnderlyingParseSuccessOnly(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
+  if (target == null) {
+    throw new Error(`Target is null.`)
+  }
   const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3654,7 +3671,7 @@ export function modifyUnderlyingParseSuccessOnly(
 }
 
 export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
@@ -3749,32 +3766,36 @@ export function withUnderlyingTarget<T>(
     underlyingDynamicTarget: ElementPath,
   ) => T,
 ): T {
-  const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target ?? null)
+  if (target == null) {
+    return defaultValue
+  } else {
+    const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target)
 
-  if (
-    underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-    underlyingTarget.normalisedPath != null &&
-    underlyingTarget.normalisedDynamicPath != null
-  ) {
-    const parsed = underlyingTarget.textFile.fileContents.parsed
-    if (isParseSuccess(parsed)) {
-      const element = findJSXElementChildAtPath(
-        getUtopiaJSXComponentsFromSuccess(parsed),
-        underlyingTarget.normalisedPath,
-      )
-      if (element != null) {
-        return withTarget(
-          parsed,
-          element,
+    if (
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
+      underlyingTarget.normalisedPath != null &&
+      underlyingTarget.normalisedDynamicPath != null
+    ) {
+      const parsed = underlyingTarget.textFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const element = findJSXElementChildAtPath(
+          getUtopiaJSXComponentsFromSuccess(parsed),
           underlyingTarget.normalisedPath,
-          underlyingTarget.filePath,
-          underlyingTarget.normalisedDynamicPath,
         )
+        if (element != null) {
+          return withTarget(
+            parsed,
+            element,
+            underlyingTarget.normalisedPath,
+            underlyingTarget.filePath,
+            underlyingTarget.normalisedDynamicPath,
+          )
+        }
       }
     }
-  }
 
-  return defaultValue
+    return defaultValue
+  }
 }
 
 export function withUnderlyingTargetFromEditorState<T>(
@@ -3864,4 +3885,11 @@ export function getNewSceneName(editor: EditorState): string {
 
   // Fallback.
   return 'New Scene'
+}
+
+export function getAllFocusedPaths(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+): Array<ElementPath> {
+  return focusedElementPath != null ? [focusedElementPath, ...autoFocusedPaths] : autoFocusedPaths
 }

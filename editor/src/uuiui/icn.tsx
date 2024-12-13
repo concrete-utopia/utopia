@@ -118,7 +118,7 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'on-highlight-main':
         return 'white'
       case 'on-highlight-secondary':
-        return 'lightgray'
+        return 'darkgray'
       case 'on-light-main':
         return 'black'
       case 'black':

@@ -2,7 +2,7 @@ import createCachedSelector from 're-reselect'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import { safeIndex } from '../../core/shared/array-utils'
-import { FlexRow, Icn, Tooltip } from '../../uuiui'
+import { FlexRow, Icn, SquareButton, Tooltip } from '../../uuiui'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -40,6 +40,7 @@ function checkGroupSuitability(
       // Do not let a group be the target of a resize to fit operation.
       return !treatElementAsGroupLike(metadata, target)
     case 'fill':
+    case 'stretch':
       // Neither a group or the child of a group should be eligible for a resize to fill operation.
       return !(
         treatElementAsGroupLike(metadata, target) || treatElementAsGroupLike(metadata, parentPath)
@@ -136,13 +137,14 @@ export const ResizeToFitControl = React.memo(() => {
 
   return (
     <Tooltip title={'Resize to Fit'}>
-      <div
+      <SquareButton
+        highlight
+        disabled={!isHugApplicable}
         data-testid={ResizeToFitControlTestId}
         onClick={onResizeToFit}
-        style={{ cursor: 'pointer', ...disabledStyles(isHugApplicable) }}
       >
         <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
-      </div>
+      </SquareButton>
     </Tooltip>
   )
 })
@@ -173,7 +175,7 @@ export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>((
         dispatch([applyCommandsAction(commands)])
       }
     }
-  }, [dispatch, metadataRef, selectedViewsRef, isFillApplicable])
+  }, [isFillApplicable, metadataRef, selectedViewsRef, dispatch])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = setToFixedSizeCommands(

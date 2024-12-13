@@ -7,7 +7,11 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
-import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
+import {
+  removeAlignJustifySelf,
+  removeExtraPinsWhenSettingSize,
+  widthHeightFromAxis,
+} from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
 import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import {
@@ -48,6 +52,7 @@ export const fixedSizeBasicStrategy = (
 
       return [
         ...removeExtraPinsWhenSettingSize(axis, elementMetadata),
+        ...removeAlignJustifySelf(axis, elementMetadata),
         setCssLengthProperty(
           whenToRun,
           path,

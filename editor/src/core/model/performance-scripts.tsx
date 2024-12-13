@@ -181,12 +181,6 @@ async function loadProject(
   return editorReady
 }
 
-const storeToAllRegularPaths = fromField<EditorStorePatched, 'derived'>('derived')
-  .compose(fromField('navigatorTargets'))
-  .compose(traverseArray())
-  .compose(regularNavigatorEntryOptic)
-  .compose(fromField('elementPath'))
-
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
@@ -199,7 +193,9 @@ export function useTriggerScrollPerformanceTest(): () => void {
     (store) => store.editor.id,
     'useTriggerScrollPerformanceTest id',
   )
-  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
+  const allPaths = useRefEditorState((store) =>
+    MetadataUtils.getAllPaths(store.editor.jsxMetadata, store.editor.elementPathTree),
+  )
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(
       dispatch,
@@ -243,7 +239,9 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
-  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
+  const allPaths = useRefEditorState((store) =>
+    MetadataUtils.getAllPaths(store.editor.jsxMetadata, store.editor.elementPathTree),
+  )
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
   const dispatch = useDispatch() as DebugDispatch
@@ -322,7 +320,9 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
 
 export function useTriggerSelectionPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
-  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
+  const allPaths = useRefEditorState((store) =>
+    MetadataUtils.getAllPaths(store.editor.jsxMetadata, store.editor.elementPathTree),
+  )
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
     Substores.restOfStore,
@@ -458,8 +458,8 @@ export function useTriggerAbsoluteMovePerformanceTest(
   projectContents: ProjectContentTreeRoot,
 ): () => void {
   const dispatch = useDispatch() as DebugDispatch
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
+  const allPaths = useRefEditorState((store) =>
+    MetadataUtils.getAllPaths(store.editor.jsxMetadata, store.editor.elementPathTree),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(
@@ -651,8 +651,8 @@ export function useTriggerAbsoluteMovePerformanceTest(
 export function useTriggerSelectionChangePerformanceTest(): () => void {
   const projectContents = LargeProjectContents
   const dispatch = useDispatch() as DebugDispatch
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
+  const allPaths = useRefEditorState((store) =>
+    MetadataUtils.getAllPaths(store.editor.jsxMetadata, store.editor.elementPathTree),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(

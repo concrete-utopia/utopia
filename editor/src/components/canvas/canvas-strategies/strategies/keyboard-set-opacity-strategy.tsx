@@ -1,5 +1,6 @@
 import { shallowEqual } from '../../../../core/shared/equality-utils'
 import * as PP from '../../../../core/shared/property-path'
+import * as EP from '../../../../core/shared/element-path'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import Keyboard, { isDigit } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -29,7 +30,7 @@ export function keyboardSetOpacityStrategy(
 
   return {
     id: 'set-opacity',
-    name: 'Set opacity',
+    name: 'Set Opacity',
     descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
       'Changing Opacity',
       pathsWereReplaced,
@@ -56,7 +57,7 @@ export function keyboardSetOpacityStrategy(
         setProperty('always', path, PP.create('style', 'opacity'), inputValue),
       )
 
-      return strategyApplicationResult(commands)
+      return strategyApplicationResult(commands, selectedElements)
     },
   }
 }

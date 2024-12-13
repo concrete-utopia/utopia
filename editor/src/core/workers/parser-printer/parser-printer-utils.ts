@@ -1,5 +1,5 @@
 import * as TS from 'typescript-for-the-editor'
-import type { JSXElement } from '../../shared/element-template'
+import type { JSXElement, JSXElementLike } from '../../shared/element-template'
 import { TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
 import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
@@ -135,7 +135,7 @@ export function prependToSourceString(
 
 interface ElementWithinInPosition {
   uid: string
-  element: JSXElement
+  element: JSXElementLike
   startLine: number
   startColumn: number
 }

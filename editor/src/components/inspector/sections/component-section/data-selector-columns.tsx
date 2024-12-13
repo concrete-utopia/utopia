@@ -98,10 +98,33 @@ const DataSelectorColumn = React.memo((props: DataSelectorColumnProps) => {
     [onTargetPathChange, parentScope],
   )
 
+  const sortedActiveScope = React.useMemo(() => {
+    let folders: DataPickerOption[] = []
+    let rest: DataPickerOption[] = []
+    activeScope.forEach((option) => {
+      switch (option.type) {
+        case 'array':
+        case 'object':
+          folders.push(option)
+          break
+        case 'jsx':
+        case 'primitive':
+          rest.push(option)
+          break
+        default:
+          assertNever(option)
+      }
+    })
+
+    folders.sort((a, b) => a.variableInfo.expression.localeCompare(b.variableInfo.expression))
+    rest.sort((a, b) => a.variableInfo.expression.localeCompare(b.variableInfo.expression))
+    return [...folders, ...rest]
+  }, [activeScope])
+
   return (
     <>
       <DataSelectorFlexColumn ref={columnRef} onClick={onClickColumnBackground}>
-        {activeScope.map((option, index) => {
+        {sortedActiveScope.map((option, index) => {
           const selected = arrayEqualsByReference(option.valuePath, targetPathInsideScope)
           const onActivePath = isPrefixOf(option.valuePath, targetPathInsideScope)
           return (

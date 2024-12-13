@@ -1465,7 +1465,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
   `,
       {
-        'app.js': `
+        '/app.js': `
     import { throwError } from './card'
 
     export function throwErrorFromCard() {

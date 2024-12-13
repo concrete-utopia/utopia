@@ -51,6 +51,7 @@ describe('setCssLengthProperty', () => {
     const result = runSetCssLengthProperty(
       renderResult.getEditorState().editor,
       setCSSPropertyCommand,
+      'end-interaction',
     )
 
     const patchedEditor = updateEditorStateWithPatches(
@@ -227,7 +228,7 @@ function runCommandUpdateEditor(
   store: EditorStorePatched,
   command: SetCssLengthProperty,
 ): EditorState {
-  const result = runSetCssLengthProperty(store.editor, command)
+  const result = runSetCssLengthProperty(store.editor, command, 'end-interaction')
 
   return updateEditorStateWithPatches(store.editor, result.editorStatePatches)
 }

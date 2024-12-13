@@ -12,7 +12,7 @@ import { Clipboard } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import type { ContextMenuItem } from '../context-menu-items'
 import { requireDispatch } from '../context-menu-items'
-import { ContextMenuWrapper } from '../context-menu-wrapper'
+import { ContextMenuWrapper_DEPRECATED } from '../context-menu-wrapper'
 import type { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
@@ -887,14 +887,14 @@ class FileBrowserItemInner extends React.PureComponent<
           style={{ width: '100%' }}
           key={`${contextMenuID}-wrapper`}
         >
-          <ContextMenuWrapper
+          <ContextMenuWrapper_DEPRECATED
             id={contextMenuID}
             dispatch={this.props.dispatch}
             items={items}
             data={{}}
           >
             {fileBrowserItem}
-          </ContextMenuWrapper>
+          </ContextMenuWrapper_DEPRECATED>
         </div>
       )
     }

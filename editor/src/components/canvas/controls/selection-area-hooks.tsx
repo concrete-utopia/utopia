@@ -21,6 +21,7 @@ import {
   getSelectionAreaRenderedRect,
   isValidMouseEventForSelectionArea,
 } from './selection-area-helpers'
+import { getAllFocusedPaths } from '../../editor/store/editor-state'
 
 export function useSelectionArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -44,6 +45,11 @@ export function useSelectionArea(
       allElementProps: store.editor.allElementProps,
       interactionSession: store.editor.canvas.interactionSession,
       keysPressed: store.editor.keysPressed,
+      lockedElements: store.editor.lockedElements,
+      focusedPaths: getAllFocusedPaths(
+        store.editor.focusedElementPath,
+        store.derived.autoFocusedPaths,
+      ),
     }
   })
 
@@ -93,6 +99,8 @@ export function useSelectionArea(
         storeRef.current.canvasOffset,
         area,
         localSelectedViews,
+        storeRef.current.lockedElements,
+        storeRef.current.focusedPaths,
       )
     },
     [storeRef, localSelectedViews, getSelectableViews],

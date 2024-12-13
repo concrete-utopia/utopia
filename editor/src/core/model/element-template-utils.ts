@@ -43,6 +43,7 @@ import {
   isJSIdentifierForName,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
+  isIntrinsicHTMLElement,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -82,19 +83,20 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-import { getAllUniqueUids } from './get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from './get-uid-mappings'
 import type { ElementPathTrees } from '../shared/element-path-tree'
-import { MetadataUtils } from './element-metadata-utils'
+import { MetadataUtils, getSimpleAttributeAtPath } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import { foldEither, right } from '../shared/either'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents).allIDs
-    return generateUID(existingUIDS)
+    const existingUIDS = getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids)
+    return generateUID(new Set(existingUIDS))
   } else {
     return mockUID
   }
@@ -106,8 +108,10 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
-    return generateUID([...existingUIDSFromProject, ...additionalUids])
+    const existingUIDSFromProject = getAllUniqueUidsFromMapping(
+      getUidMappings(projectContents).filePathToUids,
+    )
+    return generateUID(new Set([...existingUIDSFromProject, ...additionalUids]))
   } else {
     return mockUID
   }
@@ -406,11 +410,9 @@ export function findJSXElementChildAtPath(
             for (const prop of element.props) {
               if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
                 const propValue = prop.value
-                if (isJSXElement(propValue)) {
-                  const propResult = findAtPathInner(propValue, tailPath)
-                  if (propResult != null) {
-                    return propResult
-                  }
+                const propResult = findAtPathInner(propValue, tailPath)
+                if (propResult != null) {
+                  return propResult
                 }
               }
             }
@@ -849,29 +851,90 @@ export function componentUsesProperty(component: UtopiaJSXComponent, property: s
   }
 }
 
-export function componentHonoursPropsPosition(component: UtopiaJSXComponent): boolean {
-  if (component.params == null) {
-    return false
-  } else {
-    const rootElement = component.rootElement
-    if (isJSXElement(rootElement)) {
-      const leftStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'left'))
-      const topStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'top'))
-      const rightStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'right'))
-      const bottomStyleAttr = getJSXAttributesAtPath(
-        rootElement.props,
-        PP.create('style', 'bottom'),
-      )
-      return (
-        ((propertyComesFromPropsStyle(component.params, leftStyleAttr, 'left') ||
-          propertyComesFromPropsStyle(component.params, rightStyleAttr, 'right')) &&
-          (propertyComesFromPropsStyle(component.params, topStyleAttr, 'top') ||
-            propertyComesFromPropsStyle(component.params, bottomStyleAttr, 'bottom'))) ||
-        propsStyleIsSpreadInto(component.params, rootElement.props)
-      )
+export type HonoursPosition =
+  | 'absolute-position-and-honours-numeric-props'
+  | 'honours-numeric-props-only'
+  | 'does-not-honour'
+
+function combineHonoursPositions(first: HonoursPosition, second: HonoursPosition): HonoursPosition {
+  switch (first) {
+    case 'absolute-position-and-honours-numeric-props':
+      return second
+    case 'honours-numeric-props-only':
+      if (second === 'absolute-position-and-honours-numeric-props') {
+        return 'honours-numeric-props-only'
+      } else {
+        return second
+      }
+    case 'does-not-honour':
+      return 'does-not-honour'
+    default:
+      assertNever(first)
+  }
+}
+
+function concatHonoursPositions(honoursPositions: Array<HonoursPosition>): HonoursPosition {
+  let result: HonoursPosition | null = null
+  for (const honoursPosition of honoursPositions) {
+    if (result == null) {
+      result = honoursPosition
     } else {
-      return false
+      result = combineHonoursPositions(result, honoursPosition)
     }
+  }
+  return result ?? 'does-not-honour'
+}
+
+export function componentHonoursPropsPosition(component: UtopiaJSXComponent): HonoursPosition {
+  if (component.params == null) {
+    return 'does-not-honour'
+  } else {
+    const nonNullParams = component.params
+    function checkElements(element: JSXElementChild): HonoursPosition {
+      switch (element.type) {
+        case 'JSX_ELEMENT':
+          const leftStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'left'))
+          const topStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'top'))
+          const rightStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'right'))
+          const bottomStyleAttr = getJSXAttributesAtPath(
+            element.props,
+            PP.create('style', 'bottom'),
+          )
+          const propsStyleIsSpread = propsStyleIsSpreadInto(nonNullParams, element.props)
+          const honoursNumericProps =
+            propsStyleIsSpread ||
+            ((propertyComesFromPropsStyle(nonNullParams, leftStyleAttr, 'left') ||
+              propertyComesFromPropsStyle(nonNullParams, rightStyleAttr, 'right')) &&
+              (propertyComesFromPropsStyle(nonNullParams, topStyleAttr, 'top') ||
+                propertyComesFromPropsStyle(nonNullParams, bottomStyleAttr, 'bottom')))
+
+          const positionValue = getSimpleAttributeAtPath(
+            right(element.props),
+            PP.create('style', 'position'),
+          )
+          const absolutePosition =
+            propsStyleIsSpread ||
+            foldEither(
+              () => false,
+              (position) => position === 'absolute',
+              positionValue,
+            )
+          if (honoursNumericProps) {
+            if (absolutePosition) {
+              return 'absolute-position-and-honours-numeric-props'
+            } else {
+              return 'honours-numeric-props-only'
+            }
+          } else {
+            return 'does-not-honour'
+          }
+        case 'JSX_FRAGMENT':
+          return concatHonoursPositions(element.children.map(checkElements))
+        default:
+          return 'does-not-honour'
+      }
+    }
+    return checkElements(component.rootElement)
   }
 }
 
@@ -879,21 +942,70 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   if (component.params == null) {
     return false
   } else {
-    const rootElement = component.rootElement
-    if (isJSXElement(rootElement)) {
-      const widthStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'width'))
-      const heightStyleAttr = getJSXAttributesAtPath(
-        rootElement.props,
-        PP.create('style', 'height'),
-      )
-      return (
-        (propertyComesFromPropsStyle(component.params, widthStyleAttr, 'width') &&
-          propertyComesFromPropsStyle(component.params, heightStyleAttr, 'height')) ||
-        propsStyleIsSpreadInto(component.params, rootElement.props)
-      )
-    } else {
-      return false
+    const nonNullParams = component.params
+    function checkElements(rootElement: JSXElementChild): boolean {
+      switch (rootElement.type) {
+        case 'JSX_ELEMENT':
+          const widthStyleAttr = getJSXAttributesAtPath(
+            rootElement.props,
+            PP.create('style', 'width'),
+          )
+          const heightStyleAttr = getJSXAttributesAtPath(
+            rootElement.props,
+            PP.create('style', 'height'),
+          )
+          return (
+            (propertyComesFromPropsStyle(nonNullParams, widthStyleAttr, 'width') &&
+              propertyComesFromPropsStyle(nonNullParams, heightStyleAttr, 'height')) ||
+            propsStyleIsSpreadInto(nonNullParams, rootElement.props)
+          )
+        case 'JSX_FRAGMENT':
+          return rootElement.children.every(checkElements)
+        default:
+          return false
+      }
     }
+    return checkElements(component.rootElement)
+  }
+}
+
+export function componentHonoursStyleProps(
+  component: UtopiaJSXComponent,
+  props: Array<string>,
+  everyOrSome: 'every' | 'some',
+): boolean {
+  if (component.params == null) {
+    return false
+  } else {
+    const nonNullParams = component.params
+    function checkElements(rootElement: JSXElementChild): boolean {
+      switch (rootElement.type) {
+        case 'JSX_ELEMENT':
+          if (propsStyleIsSpreadInto(nonNullParams, rootElement.props)) {
+            return true
+          }
+          const styleAttrs = props.map((prop) => ({
+            propName: prop,
+            attr: getJSXAttributesAtPath(rootElement.props, PP.create('style', prop)),
+          }))
+          const filterFn = (styleAttr: { propName: string; attr: GetJSXAttributeResult }) =>
+            propertyComesFromPropsStyle(nonNullParams, styleAttr.attr, styleAttr.propName)
+          switch (everyOrSome) {
+            case 'some':
+              return styleAttrs.some(filterFn)
+            case 'every':
+              return styleAttrs.every(filterFn)
+            default:
+              assertNever(everyOrSome)
+          }
+          break
+        case 'JSX_FRAGMENT':
+          return rootElement.children.every(checkElements)
+        default:
+          return false
+      }
+    }
+    return checkElements(component.rootElement)
   }
 }
 
@@ -965,6 +1077,7 @@ function propsStyleIsSpreadInto(propsParams: Array<Param>, attributes: JSXAttrib
           case 'JS_IDENTIFIER':
             return true
           case 'JS_PROPERTY_ACCESS':
+            return styleAttribute.originalJavascript === stylePropPath
           case 'JS_ELEMENT_ACCESS':
           case 'JSX_ELEMENT':
             return false
@@ -1450,9 +1563,8 @@ export function elementChildSupportsChildrenAlsoText(
   propertyControlsInfo: PropertyControlsInfo,
 ): ElementSupportsChildren | null {
   const componentDescriptor = getComponentDescriptorForTarget(
+    { propertyControlsInfo, projectContents },
     path,
-    propertyControlsInfo,
-    projectContents,
   )
   if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
     return 'doesNotSupportChildren'
@@ -1528,9 +1640,13 @@ function findAmongJSXElementChildren(
   condition: (e: JSXElementChild) => boolean,
   children: JSXElementChild[],
 ): Array<ElementPathPart> {
-  return children.flatMap((child) =>
-    findPathToJSXElementChild(condition, child).map((path) => [parentUid, ...path]),
-  )
+  let result: Array<ElementPathPart> = []
+  for (const child of children) {
+    for (const path of findPathToJSXElementChild(condition, child)) {
+      result.push([parentUid, ...path])
+    }
+  }
+  return result
 }
 
 export function findPathToJSXElementChild(
@@ -1694,4 +1810,8 @@ export function findContainingComponentForPathInProjectContents(
     )
     return containingComponent
   })
+}
+
+export function isComponentInstance(element: JSXElementChild): boolean {
+  return isJSXElement(element) && !isIntrinsicHTMLElement(element.name)
 }

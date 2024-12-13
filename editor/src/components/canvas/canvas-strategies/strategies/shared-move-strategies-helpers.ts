@@ -11,7 +11,12 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   zeroRectIfNullOrInfinity,
@@ -22,9 +27,11 @@ import {
   roundRectangleToNearestWhole,
   zeroCanvasPoint,
   zeroCanvasRect,
+  localPoint,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getJSXElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
@@ -38,7 +45,7 @@ import {
 import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import {
@@ -60,8 +67,11 @@ import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
-import { rectangleToSixFramePoints } from '../../commands/utils/group-resize-utils'
-import invariant from '../../../../third-party/remix/invariant'
+import type { FrameWithFourToSixPoints } from '../../commands/utils/group-resize-utils'
+import {
+  rectangleToFourFramePoints,
+  rectangleToSixFramePoints,
+} from '../../commands/utils/group-resize-utils'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
@@ -69,6 +79,7 @@ import {
 } from '../../commands/set-css-length-command'
 import type { ActiveFrame, ActiveFrameAction } from '../../commands/set-active-frames-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -143,17 +154,20 @@ export function applyMoveCommon(
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
-          'starting-metadata',
-        ),
-        updateHighlightedViews('mid-interaction', []),
-        setElementsToRerenderCommand(targets),
-        setCursorCommand(CSSCursor.Select),
-        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
-      ])
+      return strategyApplicationResult(
+        [
+          ...commandsForSelectedElements.commands,
+          pushIntendedBoundsAndUpdateGroups(
+            commandsForSelectedElements.intendedBounds,
+            'starting-metadata',
+          ),
+          updateHighlightedViews('mid-interaction', []),
+
+          setCursorCommand(CSSCursor.Select),
+          setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
+        ],
+        targets,
+      )
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
@@ -180,18 +194,21 @@ export function applyMoveCommon(
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        updateHighlightedViews('mid-interaction', []),
-        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
-          'starting-metadata',
-        ),
-        setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
-        setCursorCommand(CSSCursor.Select),
-        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
-      ])
+      return strategyApplicationResult(
+        [
+          ...commandsForSelectedElements.commands,
+          updateHighlightedViews('mid-interaction', []),
+          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+          pushIntendedBoundsAndUpdateGroups(
+            commandsForSelectedElements.intendedBounds,
+            'starting-metadata',
+          ),
+
+          setCursorCommand(CSSCursor.Select),
+          setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
+        ],
+        [...targets, ...targetsForSnapping],
+      )
     }
   } else {
     // Fallback for when the checks above are not satisfied.
@@ -209,18 +226,22 @@ function getAppropriateLocalFrame(
     : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(selectedElement, startingMetadata)
 }
 
+interface CommandsAndIntendedBounds {
+  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
+  intendedBounds: Array<CanvasFrameAndTarget>
+}
+
 export function getDirectMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
+  startingAllElementProps: AllElementProps,
+  startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   leftOrTop: 'left' | 'top',
   newPixelValue: number,
   options?: MoveCommandsOptions,
-): {
-  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
+): CommandsAndIntendedBounds {
   const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
 
   const drag = canvasVector({
@@ -231,23 +252,63 @@ export function getDirectMoveCommandsForSelectedElement(
   return getMoveCommandsForSelectedElement(
     projectContents,
     startingMetadata,
+    startingAllElementProps,
+    startingElementPathTree,
     selectedElement,
     mappedPath,
     drag,
   )
 }
 
+export function getMoveCommandsForDrag(
+  elementParentBounds: CanvasRectangle | null,
+  element: JSXElement,
+  selectedElement: ElementPath,
+  mappedPath: ElementPath,
+  drag: CanvasVector,
+  globalFrame: CanvasRectangle | null,
+  localFrame: LocalRectangle | null,
+  parentFlexDirection: FlexDirection | null,
+  ignoreLocalFrame: boolean,
+): CommandsAndIntendedBounds {
+  if (ignoreLocalFrame) {
+    return createMoveCommandsForElementPositionRelative(
+      element,
+      selectedElement,
+      mappedPath,
+      drag,
+      globalFrame,
+      elementParentBounds,
+      parentFlexDirection,
+    )
+  }
+
+  if (globalFrame == null || localFrame == null) {
+    return { commands: [], intendedBounds: [] }
+  }
+
+  return createMoveCommandsForElementCreatingMissingPins(
+    element,
+    selectedElement,
+    mappedPath,
+    drag,
+    globalFrame,
+    localFrame,
+    elementParentBounds,
+    parentFlexDirection,
+  )
+}
+
 export function getMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
+  startingAllElementProps: AllElementProps,
+  startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
   options?: MoveCommandsOptions,
-): {
-  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
+): CommandsAndIntendedBounds {
   const element: JSXElement | null = getJSXElementFromProjectContents(
     selectedElement,
     projectContents,
@@ -258,50 +319,49 @@ export function getMoveCommandsForSelectedElement(
     selectedElement,
   )
 
+  const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
+    startingMetadata,
+    startingAllElementProps,
+    startingElementPathTree,
+    EP.parentPath(mappedPath),
+  )
+  const closestNonFragmentParentMetadata = MetadataUtils.findElementByElementPath(
+    startingMetadata,
+    closestNonFragmentParent,
+  )
+  const providesBoundsForAbsoluteChildren =
+    closestNonFragmentParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ??
+    false
+
   const elementParentBounds =
-    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
-
-  const globalFrame = nullIfInfinity(
-    MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
-  )
-
-  invariant(
-    globalFrame != null,
-    `Error in changeBounds: the ${EP.toString(
-      selectedElement,
-    )} element's global frame was null or infinity`,
-  )
-  invariant(
-    elementParentBounds != null,
-    `Error in changeBounds: the ${EP.toString(
-      selectedElement,
-    )} element's coordinateSystemBounds was null`,
-  )
+    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ??
+    (providesBoundsForAbsoluteChildren
+      ? nullIfInfinity(closestNonFragmentParentMetadata?.globalFrame)
+      : null) ??
+    null
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
 
-  if (options?.ignoreLocalFrame === true) {
-    return createMoveCommandsForElementPositionRelative(
-      element,
-      selectedElement,
-      mappedPath,
-      drag,
-      globalFrame,
-      elementParentBounds,
-      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
-    )
-  }
+  const globalFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
+  )
 
-  return createMoveCommandsForElementCreatingMissingPins(
+  const localFrame = nullIfInfinity(
+    MetadataUtils.getLocalFrame(selectedElement, startingMetadata, EP.parentPath(mappedPath)),
+  )
+
+  return getMoveCommandsForDrag(
+    elementParentBounds,
     element,
     selectedElement,
     mappedPath,
     drag,
     globalFrame,
-    elementParentBounds,
+    localFrame,
     elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    options?.ignoreLocalFrame ?? false,
   )
 }
 
@@ -321,6 +381,8 @@ export function getInteractionMoveCommandsForSelectedElement(
   return getMoveCommandsForSelectedElement(
     canvasState.projectContents,
     canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     selectedElement,
     mappedPath,
     drag,
@@ -330,6 +392,8 @@ export function getInteractionMoveCommandsForSelectedElement(
 
 export function moveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   movement: CanvasVector,
@@ -343,6 +407,8 @@ export function moveInspectorStrategy(
         const moveCommandsResult = getMoveCommandsForSelectedElement(
           projectContents,
           metadata,
+          allElementProps,
+          elementPathTree,
           selectedPath,
           selectedPath,
           movement,
@@ -351,7 +417,7 @@ export function moveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'live-metadata'))
-      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+
       return commands
     },
   }
@@ -359,6 +425,8 @@ export function moveInspectorStrategy(
 
 export function directMoveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   leftOrTop: 'left' | 'top',
@@ -373,6 +441,8 @@ export function directMoveInspectorStrategy(
         const moveCommandsResult = getDirectMoveCommandsForSelectedElement(
           projectContents,
           metadata,
+          allElementProps,
+          elementPathTree,
           selectedPath,
           selectedPath,
           leftOrTop,
@@ -382,7 +452,7 @@ export function directMoveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'live-metadata'))
-      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+
       return commands
     },
   }
@@ -444,7 +514,8 @@ export function createMoveCommandsForElementCreatingMissingPins(
   mappedPath: ElementPath,
   drag: CanvasVector,
   globalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle,
+  localFrame: LocalRectangle,
+  elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<SetCssLengthProperty>
@@ -466,10 +537,13 @@ export function createMoveCommandsForElementCreatingMissingPins(
 
   const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
 
-  const intendedLocalFullFrame = rectangleToSixFramePoints(
-    canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
-    elementParentBounds,
-  )
+  const intendedLocalFullFrame: FrameWithFourToSixPoints =
+    elementParentBounds == null
+      ? rectangleToFourFramePoints(offsetRect(localFrame, localPoint(drag)))
+      : rectangleToSixFramePoints(
+          canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
+          elementParentBounds,
+        )
 
   const setCssLengthPropertyCommands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
@@ -478,6 +552,9 @@ export function createMoveCommandsForElementCreatingMissingPins(
     )
 
     const adjustedValue = intendedLocalFullFrame[pin]
+    if (adjustedValue == null) {
+      return null
+    }
 
     return setCssLengthProperty(
       'always',
@@ -488,19 +565,12 @@ export function createMoveCommandsForElementCreatingMissingPins(
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
       ),
       elementParentFlexDirection,
-
       'create-if-not-existing',
       'warn-about-replacement',
     )
   }, pinsOnlyForDimensionThatChanged)
 
-  const intendedBounds = (() => {
-    if (globalFrame == null) {
-      return []
-    } else {
-      return [{ target: mappedPath, frame: intendedGlobalFrame }]
-    }
-  })()
+  const intendedBounds = [{ target: mappedPath, frame: intendedGlobalFrame }]
 
   return { commands: setCssLengthPropertyCommands, intendedBounds: intendedBounds }
 }

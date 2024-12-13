@@ -3,6 +3,7 @@ import type { light } from './light'
 
 const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primarySubdued: createUtopiColor('oklch(43% 0.15 254)'),
   primary10solid: createUtopiColor('oklch(0.98 0.01 253.75)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),
@@ -20,6 +21,7 @@ const darkBase = {
   brandNeonPink10: createUtopiColor('oklch(78.64% 0.237 327.81 / 10%)'),
   brandNeonPink60: createUtopiColor('oklch(78.64% 0.237 327.81 / 50%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
+  brandNeonOrange: createUtopiColor('oklch(79% 0.19 70)'),
   green: createUtopiColor('oklch(88% 0.2535 150)'),
   green10: createUtopiColor('oklch(88% 0.2535 150 / 10%)'),
   green20: createUtopiColor('oklch(88% 0.2535 150 / 20%)'),
@@ -57,6 +59,7 @@ const darkBase = {
   bg3: createUtopiColor('#393d49'),
   bg4: createUtopiColor('#55575f'),
   bg5: createUtopiColor('#848998'),
+  bg6: createUtopiColor('#1a1a1a'),
   fg0: createUtopiColor('#ffffff'),
   fg1: createUtopiColor('#D9DCE3'),
   fg2: createUtopiColor('#c9cCc3'),
@@ -64,7 +67,7 @@ const darkBase = {
   fg4: createUtopiColor('#a9aCa3'),
   fg5: createUtopiColor('#8B91A0'),
   fg6: createUtopiColor('#6F778B'),
-  fg7: createUtopiColor('#525B72'),
+  fg7: createUtopiColor('#545454'),
   fg8: createUtopiColor('#2F374A'),
   fg9: createUtopiColor('#151A27'),
   border0: createUtopiColor('#181C20'),
@@ -72,6 +75,7 @@ const darkBase = {
   border2: createUtopiColor('#181C20'),
   border3: createUtopiColor('#181C20'),
   bg1transparentgradient: createUtopiColor('radial-gradient(circle, #181C20 15%, #181C2000 80%)'),
+  gridControlsPink: createUtopiColor('oklch(72.2% 0.36 331.7)'), // copy of light theme's brandNeonPink
 }
 
 const darkPrimitives = {
@@ -109,6 +113,7 @@ const darkErrorStates = {
   // TODO vv only used by image-thumbnail-control, consider removing
   warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
+  warningOrange: createUtopiColor('#FFB751'),
 }
 
 // TEMP colors with preset opacity pulled from within the app
@@ -133,8 +138,10 @@ const colorsWithOpacity = {
   whiteOpacity20: createUtopiColor('oklch(100% 0 0 /20%)'),
   whiteOpacity30: createUtopiColor('oklch(100% 0 0 /30%)'),
   whiteOpacity35: createUtopiColor('oklch(100% 0 0 /35%)'),
-  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(255,255,255,0.20)'),
-  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(255,255,255,0.5)'),
+  grey65: createUtopiColor('oklch(65% 0 0)'),
+  blackOpacity35: createUtopiColor('oklch(0% 0 0 / 35%)'),
+  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
+  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
   neutralInvertedBackground10: createUtopiColor('rgba(217, 220, 227, 0.1)'),
   neutralInvertedBackground20: createUtopiColor('rgba(217, 220, 227, 0.2)'),
   neutralInvertedBackground30: createUtopiColor('rgba(217, 220, 227, 0.3)'),
@@ -266,7 +273,7 @@ const darkTheme: typeof light = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControlsBg: darkBase.brandNeonGreen,
+  gapControlsBg: darkBase.brandNeonOrange,
 }
 
 export const dark = enforceUtopiColorTheme(darkTheme)

@@ -259,6 +259,92 @@ describe('shortcuts', () => {
         canvasRectangle({ x: 186, y: 34, width: 94, height: 55 }),
       )
     })
+
+    describe('inside grid', () => {
+      it('can place element spanning a single cell into the grid and take it out', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 620,
+        height: 548,
+        position: 'absolute',
+        left: 212,
+        top: 103,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+      data-uid='grid'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 527,
+          height: 461,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr 1fr 1fr',
+          contain: 'layout',
+          gridGap: 2,
+          position: 'absolute',
+          left: 46,
+          top: 43,
+        }}
+      >
+        <div
+        data-uid='child'
+        data-testid='child'
+          style={{
+            backgroundColor: '#0162ff',
+            gridColumn: 3,
+            gridRow: 3,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+        await pressKey('x') // convert it to absolute
+
+        {
+          const { position, gridRow, gridColumn, width, height } =
+            editor.renderedDOM.getByTestId('child').style
+          expect({ position, gridRow, gridColumn, width, height }).toEqual({
+            gridColumn: '',
+            gridRow: '',
+            height: '91px',
+            position: 'absolute',
+            width: '104px',
+          })
+        }
+
+        await pressKey('x') // convert it back to flow with size kept (but no gridColumn/Row or other grid specific prop is set yet)
+
+        {
+          const { position, gridRow, gridColumn, width, height, top, left } =
+            editor.renderedDOM.getByTestId('child').style
+          expect({ position, gridRow, gridColumn, width, height, top, left }).toEqual({
+            gridColumn: '',
+            gridRow: '',
+            height: '91px',
+            left: '',
+            position: '',
+            top: '',
+            width: '104px',
+          })
+        }
+      })
+    })
   })
 
   describe('jump to parent', () => {

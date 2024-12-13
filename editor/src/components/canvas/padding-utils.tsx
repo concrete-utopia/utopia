@@ -1,9 +1,6 @@
 import { styleStringInArray } from '../../utils/common-constants'
-import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { defaultEither, isLeft, right } from '../../core/shared/either'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { isJSXElement } from '../../core/shared/element-template'
 import type { CanvasVector, Size } from '../../core/shared/math-utils'
 import { numberIsZero, roundTo, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -11,13 +8,14 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { printCSSNumber } from '../inspector/common/css-utils'
-import type { EdgePiece } from './canvas-types'
+import { maybePropertyValue, type EdgePiece, type StyleInfo } from './canvas-types'
 import type {
   AdjustPrecision,
   CSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
 import {
   cssNumberWithRenderedValue,
+  fallbackEmptyValue,
   offsetMeasurementByDelta,
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
@@ -57,12 +55,11 @@ export function paddingFromSpecialSizeMeasurements(
   return paddingMappedMeasurements
 }
 
-export function simplePaddingFromMetadata(
+export function simplePaddingFromStyleInfo(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
+  styleInfo: StyleInfo | null,
 ): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-
   const defaults: CSSPaddingMappedValues<CSSNumber | undefined> = {
     paddingTop: undefined,
     paddingRight: undefined,
@@ -70,39 +67,15 @@ export function simplePaddingFromMetadata(
     paddingLeft: undefined,
   }
 
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return {
-      paddingTop: undefined,
-      paddingRight: undefined,
-      paddingBottom: undefined,
-      paddingLeft: undefined,
-    }
-  }
-
   const paddingNumbers = paddingFromSpecialSizeMeasurements(metadata, elementPath)
 
-  const padding: CSSPadding | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('padding', right(element.element.value.props), styleStringInArray),
-  )
+  const padding = optionalMap(maybePropertyValue, styleInfo?.padding)
 
-  const paddingLonghands: CSSPaddingMappedValues<CSSNumber | undefined> = {
-    paddingTop: defaultEither(
-      undefined,
-      getLayoutProperty('paddingTop', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingBottom: defaultEither(
-      undefined,
-      getLayoutProperty('paddingBottom', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingLeft: defaultEither(
-      undefined,
-      getLayoutProperty('paddingLeft', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingRight: defaultEither(
-      undefined,
-      getLayoutProperty('paddingRight', right(element.element.value.props), styleStringInArray),
-    ),
+  const paddingLonghands: CSSPaddingMappedValues<CSSNumber | null> = {
+    paddingTop: optionalMap(maybePropertyValue, styleInfo?.paddingTop),
+    paddingBottom: optionalMap(maybePropertyValue, styleInfo?.paddingBottom),
+    paddingLeft: optionalMap(maybePropertyValue, styleInfo?.paddingLeft),
+    paddingRight: optionalMap(maybePropertyValue, styleInfo?.paddingRight),
   }
 
   const make = (prop: CSSPaddingKey): CSSNumberWithRenderedValue | undefined => {
@@ -201,10 +174,10 @@ export function offsetPaddingByEdge(
 
 export function paddingToPaddingString(padding: CSSPaddingMeasurements): string {
   return [
-    printCssNumberWithDefaultUnit(padding.paddingTop.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingRight.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingBottom.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingLeft.value, 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingTop), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingRight), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingBottom), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingLeft), 'px'),
   ].join(' ')
 }
 
@@ -272,7 +245,7 @@ export function getSizeUpdateCommandsForNewPadding(
   const selectedElement = selectedElements[0]
   const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
 
-  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, selectedElement)
+  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, selectedElement)
 
   const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
     MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),

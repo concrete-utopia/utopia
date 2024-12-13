@@ -7,16 +7,30 @@ import invariant from '../../third-party/remix/invariant'
 import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth-hooks'
 import { Dialog, FormButton } from '../../uuiui'
 import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
-import { setGithubState, showToast, updateGithubData } from '../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setGithubState,
+  showToast,
+  updateGithubData,
+} from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { GithubUser } from '../editor/store/editor-state'
-import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
+import {
+  StoryboardFilePath,
+  type EditorStorePatched,
+  type GithubRepoWithBranch,
+} from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
 import { CloneParamKey } from '../editor/persistence/persistence-backend'
 import { getPublicRepositoryEntryOrNull } from '../../core/shared/github/operations/load-repositories'
 import { OperationContext } from '../../core/shared/github/operations/github-operation-context'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import {
+  notifyOperationCriticalError,
+  startImportProcess,
+} from '../../core/shared/import/import-operation-service'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -114,7 +128,16 @@ async function cloneGithubRepo(
     repo: githubRepo.repository,
   })
   if (repositoryEntry == null) {
-    dispatch([showToast(notice('Cannot find repository', 'ERROR'))])
+    if (isFeatureEnabled('Import Wizard')) {
+      startImportProcess(dispatch)
+      notifyOperationCriticalError(dispatch, {
+        type: 'loadBranch',
+        branchName: githubRepo.branch ?? undefined,
+        githubRepo: githubRepo,
+      })
+    } else {
+      dispatch([showToast(notice('Cannot find repository', 'ERROR'))])
+    }
     return
   }
   const githubBranch = githubRepo.branch ?? repositoryEntry.defaultBranch
@@ -136,6 +159,7 @@ async function cloneGithubRepo(
   dispatch([
     setGithubState({ gitRepoToLoad: null }),
     updateGithubData({ publicRepositories: [repositoryEntry] }),
+    openCodeEditorFile(StoryboardFilePath, false),
   ])
 }
 

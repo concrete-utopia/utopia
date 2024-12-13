@@ -30,23 +30,20 @@ export const BlendModeRow = React.memo(() => {
     ['mixBlendMode'],
     blendModeMetadata.onUnsetValues,
   )
-
   return (
     <InspectorContextMenuWrapper
       id='blendmode-row-context-menu'
       items={blendModeContextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-        <PropertyLabel target={blendModeProp}>Blendmode</PropertyLabel>
-        <PopupList
-          containerMode='default'
-          value={whichBlendModeOption}
-          options={blendModeOptions}
-          onSubmitValue={onSubmitBlendModeOption}
-          controlStyles={blendModeMetadata.controlStyles}
-        />
-      </UIGridRow>
+      <PopupList
+        containerMode='default'
+        value={whichBlendModeOption}
+        options={blendModeOptions}
+        onSubmitValue={onSubmitBlendModeOption}
+        controlStyles={blendModeMetadata.controlStyles}
+        style={{ background: 'transparent' }}
+      />
     </InspectorContextMenuWrapper>
   )
 })

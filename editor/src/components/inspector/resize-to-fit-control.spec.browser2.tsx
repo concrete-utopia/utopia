@@ -43,7 +43,9 @@ describe('Resize to fit control', () => {
     expect(view.style.flexBasis).toEqual('')
 
     const control = editor.renderedDOM.getByTestId(ResizeToFitControlTestId)
-    expect(control.style.opacity).toEqual('0.5')
+
+    // this should check for a disabled flag on the element, really. But it's not implemented yet.
+    expect(getComputedStyle(control).opacity).toEqual('0.5')
   })
 
   it('resizes to fit, with shortcut', async () => {

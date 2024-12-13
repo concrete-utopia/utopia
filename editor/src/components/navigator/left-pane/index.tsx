@@ -22,6 +22,7 @@ import { when } from '../../../utils/react-conditionals'
 import { PagesPane } from './pages-pane'
 import { getRemixRootFile } from '../../canvas/remix/remix-utils'
 import { getRemixRootDir } from '../../editor/store/remix-derived-data'
+import { foldEither } from '../../../core/shared/either'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -47,7 +48,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const dispatch = useDispatch()
 
-  const onClickTab = React.useCallback(
+  const onMouseDownTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
       actions.push(setLeftMenuTab(menuTab))
@@ -56,31 +57,40 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     [dispatch],
   )
 
-  const onClickPagesTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Pages)
-  }, [onClickTab])
+  const onMouseDownPagesTab = React.useCallback(() => {
+    onMouseDownTab(LeftMenuTab.Pages)
+  }, [onMouseDownTab])
 
-  const onClickProjectTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Project)
-  }, [onClickTab])
+  const onMouseDownProjectTab = React.useCallback(() => {
+    onMouseDownTab(LeftMenuTab.Project)
+  }, [onMouseDownTab])
 
-  const onClickNavigatorTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Navigator)
-  }, [onClickTab])
+  const onMouseDownNavigatorTab = React.useCallback(() => {
+    onMouseDownTab(LeftMenuTab.Navigator)
+  }, [onMouseDownTab])
 
-  const onClickGithubTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Github)
-  }, [onClickTab])
+  const onMouseDownGithubTab = React.useCallback(() => {
+    onMouseDownTab(LeftMenuTab.Github)
+  }, [onMouseDownTab])
 
   const isMyProject = useIsMyProject()
 
+  const curriedRequireFn = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.codeResultCache.curriedRequireFn,
+    'LeftPaneComponent curriedRequireFn',
+  )
+
   const isRemixProject = useEditorState(
     Substores.projectContents,
-    (store) =>
-      getRemixRootFile(
-        getRemixRootDir(store.editor.projectContents),
-        store.editor.projectContents,
-      ) != null,
+    (store) => {
+      const rootDir = getRemixRootDir(store.editor.projectContents, curriedRequireFn)
+      return foldEither(
+        () => false,
+        (dir) => getRemixRootFile(dir, store.editor.projectContents) != null,
+        rootDir,
+      )
+    },
     'LeftPaneComponent isRemixProject',
   )
   return (
@@ -116,23 +126,23 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
                 <MenuTab
                   label={'Pages'}
                   selected={selectedTab === LeftMenuTab.Pages}
-                  onClick={onClickPagesTab}
+                  onMouseDown={onMouseDownPagesTab}
                 />,
               )}
               <MenuTab
                 label={'Navigator'}
                 selected={selectedTab === LeftMenuTab.Navigator}
-                onClick={onClickNavigatorTab}
+                onMouseDown={onMouseDownNavigatorTab}
               />
               <MenuTab
                 label={'Project'}
                 selected={selectedTab === LeftMenuTab.Project}
-                onClick={onClickProjectTab}
+                onMouseDown={onMouseDownProjectTab}
               />
               <MenuTab
                 label={'Github'}
                 selected={selectedTab === LeftMenuTab.Github}
-                onClick={onClickGithubTab}
+                onMouseDown={onMouseDownGithubTab}
               />
             </FlexRow>,
           )}

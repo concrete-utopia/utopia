@@ -2,7 +2,7 @@ import React from 'react'
 import type { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { shallowEqual } from '../../../core/shared/equality-utils'
+import { keysEquality, shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
   MultiplayerSubstateKeepDeepEquality,
@@ -29,6 +29,7 @@ import type {
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
+  NavigatorTargetsSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
   ProjectContentAndMetadataAndVariablesInScopeSubstate,
@@ -39,6 +40,7 @@ import type {
   RestOfEditorState,
   SelectedViewsSubstate,
   StoreKey,
+  StyleInfoSubstate,
   Substates,
   ThemeSubstate,
   UserStateSubstate,
@@ -51,11 +53,13 @@ import {
   githubSubstateKeys,
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
+  navigatorTargetsSubstateKeys,
   projectContentsKeys,
   propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
+  styleInfoSubstateKeys,
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 import { Getter } from '../hook-utils'
@@ -78,6 +82,8 @@ export const EditorStateContext = React.createContext<UtopiaStoreAPI | null>(nul
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 CanvasStateContext.displayName = 'CanvasStateContext'
+export const HelperControlsStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+HelperControlsStateContext.displayName = 'HelperControlsStateContext'
 export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 LowPriorityStateContext.displayName = 'LowPriorityStateContext'
 
@@ -128,9 +134,10 @@ export const useEditorState = <K extends StoreKey, S extends (typeof Substores)[
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): U => {
   const storeKey: K = storeKey_.name as K
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
@@ -221,8 +228,9 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Su
 export const useRefEditorState = <U>(
   selector: StateSelector<EditorStorePatched, U>,
   explainMe = false,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): { readonly current: U } => {
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
@@ -292,6 +300,9 @@ export const Substores = {
   navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
     return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
   },
+  navigatorTargetsSubstate: (a: NavigatorTargetsSubstate, b: NavigatorTargetsSubstate) => {
+    return keysEquality(navigatorTargetsSubstateKeys, a.editor, b.editor)
+  },
   postActionInteractionSession: (
     a: PostActionInteractionSessionSubstate,
     b: PostActionInteractionSessionSubstate,
@@ -348,6 +359,9 @@ export const Substores = {
       b.editor,
     )
   },
+  styleInfo: (a: StyleInfoSubstate, b: StyleInfoSubstate) => {
+    return keysEquality(styleInfoSubstateKeys, a.editor, b.editor)
+  },
 } as const
 
 export const SubstateEqualityFns: {
@@ -360,11 +374,4 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   key: K,
 ) {
   return SubstateEqualityFns[key](oldEditorStore, editorStore)
-}
-
-function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
-  return a[key] === b[key]
-}
-function keysEquality<T>(keys: ReadonlyArray<keyof T>, a: T, b: T): boolean {
-  return keys.every((key) => keyEquality(key, a, b))
 }

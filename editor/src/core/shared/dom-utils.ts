@@ -1,7 +1,8 @@
 import type { ReactDOM } from 'react'
-import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
+import type { CanvasRectangle, MaybeInfinityCanvasRectangle, SimpleRectangle } from './math-utils'
 import {
   boundingRectangle,
+  boundingRectangleArray,
   canvasRectangle,
   isNotNullFiniteRectangle,
   roundToNearestHalf,
@@ -265,7 +266,7 @@ export function setDOMAttribute(element: Element, attributeName: string, value: 
   element.attributes.setNamedItemNS(attr)
 }
 
-function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
+export function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
   switch (rounding) {
     case 'nearest-half':
       return roundToNearestHalf
@@ -276,56 +277,83 @@ function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
   }
 }
 
+export type ElementCanvasRectangleCache = Map<HTMLElement, { [key: string]: CanvasRectangle }>
+
+export function domRectToScaledCanvasRectangle(
+  rect: SimpleRectangle,
+  scale: number,
+  roundingFn: (value: number) => number,
+): CanvasRectangle {
+  // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
+  return scaleRect(
+    canvasRectangle({
+      x: roundingFn(rect.x),
+      y: roundingFn(rect.y),
+      width: roundingFn(rect.width),
+      height: roundingFn(rect.height),
+    }),
+    scale,
+  )
+}
+
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
-  withContent: 'without-content' | 'with-content' | 'only-content',
+  withContent: 'without-text-content' | 'with-text-content' | 'only-text-content',
   rounding: 'nearest-half' | 'no-rounding',
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): CanvasRectangle {
-  const scale = canvasScale < 1 ? 1 / canvasScale : 1
+  const cacheKey: string = `${canvasScale}-${withContent}-${rounding}`
+  const elementCacheValue = elementCanvasRectangleCache.get(element)
+  if (elementCacheValue != null) {
+    const cachedRectangle = elementCacheValue[cacheKey]
+    if (cachedRectangle != null) {
+      return cachedRectangle
+    }
+  }
+
+  function returnAddToCache(rect: CanvasRectangle): CanvasRectangle {
+    if (elementCacheValue == null) {
+      elementCanvasRectangleCache.set(element, { [cacheKey]: rect })
+    } else {
+      elementCacheValue[cacheKey] = rect
+    }
+    return rect
+  }
+
+  const scale = 1 / canvasScale
 
   const roundingFn = getRoundingFn(rounding)
 
-  const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
-    // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
-    return scaleRect(
-      canvasRectangle({
-        x: roundingFn(rect.left),
-        y: roundingFn(rect.top),
-        width: roundingFn(rect.width),
-        height: roundingFn(rect.height),
-      }),
-      scale,
-    )
-  }
-
-  const boundingRect = element.getBoundingClientRect()
-  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-  if (withContent === 'without-content') {
-    return elementRect
-  }
-
-  const range = document.createRange()
   switch (withContent) {
-    case 'only-content':
-      range.selectNodeContents(element)
-      break
-    case 'with-content':
-      range.selectNode(element)
-      break
-    default:
-      assertNever(withContent)
-  }
-  const rangeBounding =
-    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
-    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
-  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
-
-  switch (withContent) {
-    case 'only-content':
-      return contentRect
-    case 'with-content':
-      return boundingRectangle(elementRect, contentRect)
+    case 'without-text-content': {
+      const boundingRect = element.getBoundingClientRect()
+      const elementRect = domRectToScaledCanvasRectangle(boundingRect, scale, roundingFn)
+      return returnAddToCache(elementRect)
+    }
+    case 'only-text-content':
+    case 'with-text-content':
+      let rectangles: Array<CanvasRectangle> = []
+      for (const childNode of element.childNodes) {
+        if (childNode.nodeType === Node.TEXT_NODE) {
+          const range = document.createRange()
+          // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
+          if (typeof range.getBoundingClientRect === 'function') {
+            range.selectNode(childNode)
+            rectangles.push(
+              domRectToScaledCanvasRectangle(range.getBoundingClientRect(), scale, roundingFn),
+            )
+          }
+        }
+      }
+      if (withContent === 'with-text-content') {
+        rectangles.push(
+          domRectToScaledCanvasRectangle(element.getBoundingClientRect(), scale, roundingFn),
+        )
+      }
+      return returnAddToCache(
+        boundingRectangleArray(rectangles) ?? canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+      )
     default:
       assertNever(withContent)
   }
@@ -460,4 +488,33 @@ function hugPropertyFromStyleValue(
     return 'collapsed'
   }
   return hugProp
+}
+
+export function parseHtml(html: string): Document | null {
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    return doc
+  } catch (e) {
+    return null
+  }
+}
+
+export function getRootElement(doc: Document): Element | null {
+  const body = doc.body
+  if (body != null) {
+    return body.firstElementChild
+  }
+  return null
+}
+
+export function getMainScriptElement(doc: Document): Element | null {
+  const body = doc.body
+  if (body != null) {
+    const scriptElement = body.querySelector('script[type="module"]')
+    if (scriptElement != null) {
+      return scriptElement
+    }
+  }
+  return null
 }

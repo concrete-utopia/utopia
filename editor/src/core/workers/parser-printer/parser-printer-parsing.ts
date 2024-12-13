@@ -114,6 +114,7 @@ import {
   jsAssignmentStatement,
   clearAssignmentUniqueIDsAndSourceMaps,
   clearJSExpressionOtherJavaScriptUniqueIDs,
+  propertiesExposedByParams,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -150,7 +151,7 @@ import {
 import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
-import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUidsFromAttributes } from '../../model/get-uid-mappings'
 import type { SteganographyMode } from './parser-printer'
 import { hashObject } from '../../shared/hash'
 
@@ -1099,7 +1100,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
     }
 
     let parsedElementsWithin: ElementsWithinInPosition = []
-    let highlightBounds = existingHighlightBounds
+    let highlightBounds_MUTABLE = { ...existingHighlightBounds }
 
     function addToParsedElementsWithin(
       currentScope: Array<string>,
@@ -1113,7 +1114,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         imports,
         topLevelNames,
         propsObjectName,
-        highlightBounds,
+        highlightBounds_MUTABLE,
         alreadyExistingUIDs,
         applySteganography,
       )
@@ -1121,7 +1122,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         // Be conservative with this for the moment.
         if (success.value.length === 1) {
           const firstChild = success.value[0]
-          if (isJSXElement(firstChild.value)) {
+          if (isJSXElementLike(firstChild.value)) {
             const uid = getUtopiaIDFromJSXElement(firstChild.value)
             parsedElementsWithin.push({
               uid: uid,
@@ -1132,7 +1133,10 @@ function parseOtherJavaScript<T extends { uid: string }>(
                   ? firstChild.startColumn - startColumnShift
                   : firstChild.startColumn,
             })
-            highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+            highlightBounds_MUTABLE = mergeHighlightBounds(
+              highlightBounds_MUTABLE,
+              success.highlightBounds,
+            )
 
             fastForEach(success.definedElsewhere, (val) =>
               pushToDefinedElsewhereIfNotThere(currentScope, val),
@@ -1512,11 +1516,11 @@ function parseOtherJavaScript<T extends { uid: string }>(
 
     return mapEither((created) => {
       // Add in the bounds for the entire value.
-      highlightBounds = addToHighlightBounds(
-        highlightBounds,
+      addToHighlightBoundsMutate(
+        highlightBounds_MUTABLE,
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
-      return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
+      return withParserMetadata(created, highlightBounds_MUTABLE, propsUsed, definedElsewhere)
     }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, paramsToUse, statements)))
   }
 }
@@ -2994,11 +2998,13 @@ function buildHighlightBoundsForUids(
 function mergeHighlightBounds(
   ...multipleBounds: Array<HighlightBoundsForUids>
 ): Readonly<HighlightBoundsForUids> {
-  let result: HighlightBoundsForUids = {}
+  const acc: HighlightBoundsForUids = {}
   for (const bounds of multipleBounds) {
-    Object.assign(result, bounds)
+    for (const key in bounds) {
+      acc[key] = bounds[key]
+    }
   }
-  return result
+  return acc
 }
 
 function merge2WithParserMetadata<T1, T2, U>(
@@ -3031,17 +3037,14 @@ function addBoundsIntoWithParser<T>(
   }
 }
 
-function addToHighlightBounds(
-  existing: Readonly<HighlightBoundsForUids>,
+function addToHighlightBoundsMutate(
+  existing: HighlightBoundsForUids,
   toAdd: HighlightBounds | null,
-): Readonly<HighlightBoundsForUids> {
-  if (toAdd == null) {
-    return existing
-  } else {
-    let result: HighlightBoundsForUids = { ...existing }
-    result[toAdd.uid] = toAdd
-    return result
+): HighlightBoundsForUids {
+  if (toAdd != null) {
+    existing[toAdd.uid] = toAdd
   }
+  return existing
 }
 
 interface UpdateUIDResult {
@@ -3105,8 +3108,8 @@ function forciblyUpdateDataUID(
   )
   // Remove any UIDs that have been eliminated as a result of the update.
   if (props != null && updatedProps != null) {
-    const attributeUniqueUIDsBefore = new Set(getAllUniqueUidsFromAttributes(props).uniqueIDs)
-    const attributeUniqueUIDsAfter = new Set(getAllUniqueUidsFromAttributes(updatedProps).uniqueIDs)
+    const attributeUniqueUIDsBefore = getAllUniqueUidsFromAttributes(props).allUids
+    const attributeUniqueUIDsAfter = getAllUniqueUidsFromAttributes(updatedProps).allUids
     const uidsToRemove = difference(attributeUniqueUIDsBefore, attributeUniqueUIDsAfter)
     uidsToRemove.forEach((uidToRemove) => {
       delete highlightBoundsResult[uidToRemove]
@@ -4105,7 +4108,7 @@ export function parseOutFunctionContents(
         jsBlock = null
       }
 
-      let declared: Array<string> = [...topLevelNames]
+      let declared: Array<string> = [...topLevelNames, ...propertiesExposedByParams(params)]
       if (jsBlock != null) {
         declared.push(...jsBlock.definedWithin)
       }

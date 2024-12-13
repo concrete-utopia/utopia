@@ -82,6 +82,7 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -420,68 +421,68 @@ describe('actions', () => {
         `,
         wantSelection: [makeTargetPath('view/group/child1')],
       },
-      // {
-      //   name: 'delete group child selects next sibling (multiple selection)',
-      //   input: `
-      //     <View data-uid='view'>
-      //       <Group data-uid='group'>
-      //         <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
-      //         <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
-      //         <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
-      //         <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
-      //       </Group>
-      //       <div data-uid='foo'>
-      //         <div data-uid='bar' />
-      //       </div>
-      //     </View>
-      //   `,
-      //   targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
-      //   wantCode: `
-      //     <View data-uid='view'>
-      //       <Group data-uid='group'>
-      //         <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
-      //         <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
-      //         <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
-      //       </Group>
-      //       <div data-uid='foo' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 50 }} />
-      //     </View>
-      //   `,
-      //   wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
-      // },
-      // {
-      //   name: 'delete last group child deletes the group',
-      //   input: `
-      //     <View data-uid='view'>
-      //       <Group data-uid='group'>
-      //         <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
-      //       </Group>
-      //     </View>
-      //   `,
-      //   targets: [makeTargetPath('view/group/child1')],
-      //   wantCode: `
-      //     <View data-uid='view' style={{ width: 400, height: 10, position: 'absolute', left: 0, top: 0 }} />
-      //   `,
-      //   wantSelection: [makeTargetPath('view')],
-      // },
-      // {
-      //   name: 'recursively delete empty parents when groups or fragments',
-      //   input: `
-      //   <div data-uid='root'>
-      //     <Group data-uid='g1'>
-      //       <Group data-uid='g2'>
-      //         <React.Fragment data-uid='f1'>
-      //           <div data-uid='child' />
-      //         </React.Fragment>
-      //       </Group>
-      //     </Group>
-      //   </div>
-      //   `,
-      //   targets: [makeTargetPath(`root/g1/g2/f1/child`)],
-      //   wantCode: `
-      //     <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
-      //   `,
-      //   wantSelection: [makeTargetPath(`root`)],
-      // },
+      {
+        name: 'delete group child selects next sibling (multiple selection)',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child3' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 0, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo'>
+              <div data-uid='bar' />
+            </div>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
+        wantCode: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+              <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
+              <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
+            </Group>
+            <div data-uid='foo' style={{ width: 400, height: 0 }} />
+          </View>
+        `,
+        wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
+      },
+      {
+        name: 'delete last group child deletes the group',
+        input: `
+          <View data-uid='view'>
+            <Group data-uid='group'>
+              <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
+            </Group>
+          </View>
+        `,
+        targets: [makeTargetPath('view/group/child1')],
+        wantCode: `
+          <View data-uid='view' style={{ width: 400, height: 10 }} />
+        `,
+        wantSelection: [makeTargetPath('view')],
+      },
+      {
+        name: 'recursively delete empty parents when groups or fragments',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`)],
+        wantCode: `
+          <div data-uid='root' style={{ width: 400, height: 0 }} />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
       {
         name: 'recursively delete empty parents when groups or fragments and stops',
         input: `
@@ -506,26 +507,26 @@ describe('actions', () => {
         `,
         wantSelection: [makeTargetPath(`root/g1/stop-here`)],
       },
-      // {
-      //   name: 'recursively delete empty parents when groups or fragments with multiselect',
-      //   input: `
-      //   <div data-uid='root'>
-      //     <Group data-uid='g1'>
-      //       <div data-uid='delete-me' />
-      //       <Group data-uid='g2'>
-      //         <React.Fragment data-uid='f1'>
-      //           <div data-uid='child' />
-      //         </React.Fragment>
-      //       </Group>
-      //     </Group>
-      //   </div>
-      //   `,
-      //   targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
-      //   wantCode: `
-      //     <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
-      //   `,
-      //   wantSelection: [makeTargetPath(`root`)],
-      // },
+      {
+        name: 'recursively delete empty parents when groups or fragments with multiselect',
+        input: `
+        <div data-uid='root'>
+          <Group data-uid='g1'>
+            <div data-uid='delete-me' />
+            <Group data-uid='g2'>
+              <React.Fragment data-uid='f1'>
+                <div data-uid='child' />
+              </React.Fragment>
+            </Group>
+          </Group>
+        </div>
+        `,
+        targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
+        wantCode: `
+          <div data-uid='root' style={{ width: 400, height: 0 }} />
+        `,
+        wantSelection: [makeTargetPath(`root`)],
+      },
     ]
     tests.forEach((tt, idx) => {
       it(`(${idx + 1}) ${tt.name}`, async () => {
@@ -604,7 +605,11 @@ describe('actions', () => {
         'await-first-dom-report',
       )
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -622,7 +627,11 @@ describe('actions', () => {
 
       await pressKey('Backspace')
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -2316,7 +2325,9 @@ export var storyboard = (
           y: 2,
         })
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2361,7 +2372,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2406,7 +2419,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2515,7 +2530,11 @@ export var storyboard = (
         await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -2688,7 +2707,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -2863,7 +2884,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5752,7 +5775,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5803,7 +5828,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',

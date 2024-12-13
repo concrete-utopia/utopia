@@ -1,25 +1,32 @@
-import type { ProjectCollaborator, UserDetails } from 'prisma-client'
+import type { UserDetails } from 'prisma-client'
 import type { UtopiaPrismaClient } from '../db.server'
 import { prisma } from '../db.server'
-import type { CollaboratorsByProject } from '../types'
-import { userToCollaborator } from '../types'
 import type { GetBatchResult } from 'prisma-client/runtime/library.js'
+import type { Collaborators } from '../types'
+import { buildCollaboratorsFromProjects } from '../util/collaborators.server'
+
+export const selectUserDetailsForProjectCollaborator: Partial<Record<keyof UserDetails, boolean>> =
+  {
+    user_id: true,
+    name: true,
+    picture: true,
+  }
 
 export async function getCollaborators(params: {
-  ids: string[]
+  projectIds: string[]
   userId: string
-}): Promise<CollaboratorsByProject> {
+}): Promise<Collaborators> {
   const projects = await prisma.project.findMany({
-    where: { proj_id: { in: params.ids }, owner_id: params.userId },
-    include: { ProjectCollaborator: { include: { User: true } } },
+    where: { proj_id: { in: params.projectIds }, owner_id: params.userId },
+    select: {
+      proj_id: true,
+      ProjectCollaborator: {
+        select: { User: { select: selectUserDetailsForProjectCollaborator } },
+      },
+    },
   })
 
-  let collaboratorsByProject: CollaboratorsByProject = {}
-  for (const project of projects) {
-    const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
-    collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
-  }
-  return collaboratorsByProject
+  return buildCollaboratorsFromProjects(projects)
 }
 
 export async function addToProjectCollaborators(params: {

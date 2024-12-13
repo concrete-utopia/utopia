@@ -1,6 +1,7 @@
 import { clearModifiableAttributeUniqueIDs } from '../../../core/shared/jsx-attributes'
 import type { Either } from '../../../core/shared/either'
-import { isLeft, isRight, right } from '../../../core/shared/either'
+import { isLeft, isRight, left, right } from '../../../core/shared/either'
+import type { GridContainerProperties } from '../../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionFunctionCall,
@@ -10,6 +11,12 @@ import {
   jsxTestElement,
   clearExpressionUniqueIDs,
   clearJSXElementChildUniqueIDs,
+  gridContainerProperties,
+  gridAutoOrTemplateDimensions,
+  gridPositionValue,
+  gridRange,
+  gridSpanNumeric,
+  gridSpanArea,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import type {
@@ -19,6 +26,7 @@ import type {
   CSSColor,
   CSSTextShadows,
   CSSTransforms,
+  GridDimension,
 } from './css-utils'
 import {
   cssAngle,
@@ -31,7 +39,6 @@ import {
   cssNumber,
   cssPixelLength,
   cssPixelLengthZero,
-  CSSSolidColor,
   cssTransformRotate,
   cssTransformRotateX,
   cssTransformRotateY,
@@ -48,12 +55,15 @@ import {
   cssTransformTranslateY,
   cssTransformTranslateZ,
   cssUnitlessLength,
-  CSSUnknownArrayItem,
   defaultBGSize,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
   disabledFunctionName,
+  gridCSSKeyword,
+  gridCSSMinmax,
+  gridCSSNumber,
+  gridCSSRepeat,
   parseBackgroundColor,
   parseBackgroundImage,
   parseBorderRadius,
@@ -62,13 +72,16 @@ import {
   parseConicGradient,
   parseCSSURLFunction,
   parsedCurlyBrace,
+  parseGridRange,
   parseLinearGradient,
   parseRadialGradient,
   parseTextShadow,
   parseTransform,
   printBackgroundImage,
   printBackgroundSize,
+  printGridDimensionCSS,
   RegExpLibrary,
+  stringifyGridDimension,
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
@@ -1805,5 +1818,320 @@ describe('printBackgroundSize', () => {
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)
+  })
+})
+
+describe('stringifyGridDimension', () => {
+  it('keyword', async () => {
+    expect(stringifyGridDimension(gridCSSKeyword(cssKeyword('auto'), null))).toBe('auto')
+    expect(stringifyGridDimension(gridCSSKeyword(cssKeyword('auto'), 'the-area'))).toBe('auto')
+  })
+
+  it('number', async () => {
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123), null))).toBe('123')
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123, 'px'), null))).toBe('123px')
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123), 'the-area'))).toBe('123')
+  })
+
+  it('repeat', async () => {
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(
+          3,
+          [
+            gridCSSKeyword(cssKeyword('auto'), null),
+            gridCSSKeyword(cssKeyword('min-content'), null),
+            gridCSSNumber(cssNumber(123, 'px'), null),
+          ],
+          null,
+        ),
+      ),
+    ).toBe(`repeat(3, auto min-content 123px)`)
+
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(
+          3,
+          [
+            gridCSSKeyword(cssKeyword('auto'), 'foo'),
+            gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+            gridCSSNumber(cssNumber(123, 'px'), null),
+          ],
+          'the-area',
+        ),
+      ),
+    ).toBe(`repeat(3, [foo] auto [bar] min-content 123px)`)
+
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(
+          cssKeyword('auto-fit'),
+          [
+            gridCSSMinmax(
+              gridCSSNumber(cssNumber(400, 'px'), null),
+              gridCSSNumber(cssNumber(1, 'fr'), null),
+              null,
+            ),
+          ],
+          null,
+        ),
+      ),
+    ).toBe(`repeat(auto-fit, minmax(400px, 1fr))`)
+  })
+
+  it('minmax', async () => {
+    expect(
+      stringifyGridDimension(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          null,
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+
+    expect(
+      stringifyGridDimension(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          'the-area',
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+  })
+})
+
+describe('printGridDimensionCSS', () => {
+  it('keyword', async () => {
+    expect(printGridDimensionCSS(gridCSSKeyword(cssKeyword('auto'), null))).toBe('auto')
+    expect(printGridDimensionCSS(gridCSSKeyword(cssKeyword('auto'), 'the-area'))).toBe(
+      '[the-area] auto',
+    )
+  })
+
+  it('number', async () => {
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123), null))).toBe('123')
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123, 'px'), null))).toBe('123px')
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123), 'the-area'))).toBe('[the-area] 123')
+  })
+
+  it('repeat', async () => {
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(
+          3,
+          [
+            gridCSSKeyword(cssKeyword('auto'), null),
+            gridCSSKeyword(cssKeyword('min-content'), null),
+            gridCSSNumber(cssNumber(123, 'px'), null),
+          ],
+          null,
+        ),
+      ),
+    ).toBe(`repeat(3, auto min-content 123px)`)
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(
+          3,
+          [
+            gridCSSKeyword(cssKeyword('auto'), 'foo'),
+            gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+            gridCSSNumber(cssNumber(123, 'px'), null),
+          ],
+          'the-area',
+        ),
+      ),
+    ).toBe(`[the-area] repeat(3, [foo] auto [bar] min-content 123px)`)
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(
+          cssKeyword('auto-fit'),
+          [
+            gridCSSMinmax(
+              gridCSSNumber(cssNumber(400, 'px'), null),
+              gridCSSNumber(cssNumber(1, 'fr'), null),
+              null,
+            ),
+          ],
+          null,
+        ),
+      ),
+    ).toBe(`repeat(auto-fit, minmax(400px, 1fr))`)
+  })
+
+  it('minmax', async () => {
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          null,
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          'the-area',
+        ),
+      ),
+    ).toBe('[the-area] minmax(auto, min-content)')
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), 'foo'),
+          gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+          'the-area',
+        ),
+      ),
+    ).toBe('[the-area] minmax(auto, min-content)')
+  })
+})
+
+function testGridContainerProperties(
+  cols: GridDimension[],
+  rows: GridDimension[],
+): GridContainerProperties {
+  return gridContainerProperties(
+    gridAutoOrTemplateDimensions(cols),
+    gridAutoOrTemplateDimensions(rows),
+    gridAutoOrTemplateDimensions([]),
+    gridAutoOrTemplateDimensions([]),
+    null,
+  )
+}
+
+describe('parseGridRange', () => {
+  it('can parse a numerical unit', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '3')
+    expect(got).toEqual(right(gridRange(gridPositionValue(3), null)))
+  })
+  it('can parse a numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '3 / 4')
+    expect(got).toEqual(right(gridRange(gridPositionValue(3), gridPositionValue(4))))
+  })
+  it('can parse a line', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), null)))
+  })
+  it('errors if the line is not found in the template', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'WRONG',
+    )
+    expect(got).toEqual(left('missing grid item start'))
+  })
+  it('can parse a line range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar / baz',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), gridPositionValue(3))))
+  })
+  it('can parse a line / unit mixed range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar / 3',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), gridPositionValue(3))))
+  })
+  it('can parse a numerical span', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span 2')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
+  })
+  it('can parse a numerical span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '2 span')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
+  })
+  it('can parse an area span', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span some-area')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
+  })
+  it('can parse an area span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'some-area span')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
+  })
+  it('can parse a span numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span 2 / span 3')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), gridSpanNumeric(3))))
+  })
+  it('can parse an area span range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties([], []),
+      'row',
+      'span some-area / span some-other-area',
+    )
+    expect(got).toEqual(
+      right(gridRange(gridSpanArea('some-area'), gridSpanArea('some-other-area'))),
+    )
+  })
+  it('can parse a mixed span range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties([], []),
+      'row',
+      'span some-area / span 3',
+    )
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridSpanNumeric(3))))
+  })
+  it('can parse a mixed span and numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span some-area / 3')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridPositionValue(3))))
+  })
+  it('can parse a mixed span and line range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'span some-area / bar',
+    )
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridPositionValue(2))))
   })
 })

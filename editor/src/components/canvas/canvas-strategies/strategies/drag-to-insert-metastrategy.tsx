@@ -47,6 +47,7 @@ import {
   targetPaths,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import type { ParentDisplayType } from './reparent-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
@@ -92,7 +93,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    interactionData.modifiers.cmd,
+    true, // cmd is necessary to allow reparenting
     true,
     'allow-smaller-parent',
     customStrategyState,
@@ -116,9 +117,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: ParentDisplayType,
 ): string {
   switch (strategyType) {
+    case 'REPARENT_INTO_GRID':
+      return 'Drag to Insert (Grid)'
     case 'REPARENT_AS_ABSOLUTE':
       return 'Drag to Insert (Abs)'
     case 'REPARENT_AS_STATIC':
@@ -213,6 +216,7 @@ function dragToInsertStrategyFactory(
         if (insertionSubjects.length === 0) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
+            [],
             {},
             'failure',
           )
@@ -277,6 +281,7 @@ function dragToInsertStrategyFactory(
               reparentCommand,
               ...optionalWrappingCommand,
             ],
+            [targetParent.intendedParentPath],
             {
               strategyGeneratedUidsCache: {
                 [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
@@ -386,6 +391,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   // because that element is inserted to the storyboard before reparenting to the correct location,
   // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,

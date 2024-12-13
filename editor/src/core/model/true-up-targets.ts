@@ -1,6 +1,7 @@
 import type { CanvasFrameAndTarget } from '../../components/canvas/canvas-types'
 import type { PushIntendedBoundsAndUpdateGroups } from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
+import type { IntendedBoundsAndChildrenState } from '../../components/canvas/commands/push-intended-bounds-and-update-hugging-elements-command'
 import {
   pushIntendedBoundsAndUpdateHuggingElements,
   type PushIntendedBoundsAndUpdateHuggingElements,
@@ -48,7 +49,7 @@ export function getCommandsForPushIntendedBounds(
   }
 
   let groupTargets: Array<CanvasFrameAndTarget> = []
-  let huggingElementTargets: Array<CanvasFrameAndTarget> = []
+  let huggingElementTargets: Array<IntendedBoundsAndChildrenState> = []
 
   for (const trueUpTarget of targets) {
     switch (trueUpTarget.type) {
@@ -59,11 +60,7 @@ export function getCommandsForPushIntendedBounds(
         }
         break
       case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
-        const children = MetadataUtils.getChildrenPathsOrdered(
-          metadata,
-          pathTree,
-          trueUpTarget.targetParent,
-        )
+        const children = MetadataUtils.getChildrenPathsOrdered(pathTree, trueUpTarget.targetParent)
         groupTargets.push(
           ...mapDropNulls((child) => {
             const frame = getFrame(child)
@@ -72,7 +69,12 @@ export function getCommandsForPushIntendedBounds(
         )
         break
       case 'TRUE_UP_HUGGING_ELEMENT':
-        huggingElementTargets.push(trueUpTarget)
+        huggingElementTargets.push({
+          target: trueUpTarget.target,
+          elementFrame: trueUpTarget.elementFrame,
+          frame: trueUpTarget.frame,
+          huggingElementContentsStatus: trueUpTarget.huggingElementContentsStatus,
+        })
         break
       default:
         assertNever(trueUpTarget)
@@ -81,8 +83,7 @@ export function getCommandsForPushIntendedBounds(
 
   return [
     pushIntendedBoundsAndUpdateGroups(groupTargets, isStartingMetadata),
-    // disabling this as the collapsed elements detection is way too agressive and converts too many elements to absolute
-    // pushIntendedBoundsAndUpdateHuggingElements(huggingElementTargets),
+    pushIntendedBoundsAndUpdateHuggingElements(huggingElementTargets),
   ]
 }
 

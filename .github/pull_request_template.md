@@ -14,6 +14,6 @@ Describe the fix you have made as succinctly as possible.
 I hereby swear that:
 
 - [ ] I opened a hydrogen project and it loaded
-- [ ] I could navigate to various routes in Preview mode
+- [ ] I could navigate to various routes in Play mode
 
 Fixes #[ticket_number] (<< pls delete this line if it's not relevant)

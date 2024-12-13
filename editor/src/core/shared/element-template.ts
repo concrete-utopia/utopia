@@ -4,12 +4,7 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import type {
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
-} from './math-utils'
+import type { CanvasRectangle, LocalPoint, MaybeInfinityCanvasRectangle } from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
 import { flatMapEither, isRight, left, mapEither, right } from './either'
@@ -21,15 +16,26 @@ import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type {
+  CSSKeyword,
+  CSSPosition,
+  FlexDirection,
+  GridAutoFlow,
+  GridDimension,
+} from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
-import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
-import { allComments } from './comment-flags'
+import type {
+  AlignContent,
+  FlexAlignment,
+  FlexJustifyContent,
+  SelfAlignment,
+} from '../../components/inspector/inspector-common'
+import { allComments } from './utopia-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
@@ -201,6 +207,7 @@ import {
   emptyAttributeMetadata,
   simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
+import type { GridCellGlobalFrames } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
 export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
@@ -646,7 +653,7 @@ export function clearJSXMapExpressionUniqueIDs(mapExpression: JSXMapExpression):
 export function clearJSExpressionOtherJavaScriptUniqueIDs(
   expression: JSExpressionOtherJavaScript,
 ): JSExpressionOtherJavaScript {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, expression.elementsWithin)
+  const updatedElementsWithin = objectMap(clearJSXElementLikeUniqueIDs, expression.elementsWithin)
   return {
     ...expression,
     uid: '',
@@ -1488,8 +1495,10 @@ export function getDefinedElsewhereFromElementChild(
   }
 }
 
-export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
-  const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
+export function getDefinedElsewhereFromElement(element: JSXElementLike): Array<string> {
+  const fromAttributes = isJSXElement(element)
+    ? getDefinedElsewhereFromAttributes(element.props)
+    : []
   return element.children.reduce(
     (working, child) => getDefinedElsewhereFromElementChild(working, child),
     fromAttributes,
@@ -1603,6 +1612,17 @@ export function getJSXElementNameAsString(name: JSXElementName): string {
     return name.baseVariable
   } else {
     return `${name.baseVariable}.${PP.toString(name.propertyPath)}`
+  }
+}
+
+export function getJSXElementLikeNameAsString(element: JSXElementLike): string {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return getJSXElementNameAsString(element.name)
+    case 'JSX_FRAGMENT':
+      return 'Fragment'
+    default:
+      assertNever(element)
   }
 }
 
@@ -1837,6 +1857,26 @@ interface ElementWithUid {
 
 export function isElementWithUid(element: unknown): element is ElementWithUid {
   return (element as ElementWithUid).uid != null
+}
+
+export function clearJSXElementLikeUniqueIDs(element: JSXElementLike): JSXElementLike {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return clearJSXElementUniqueIDs(element)
+    case 'JSX_FRAGMENT':
+      return clearJSXFragmentUniqueIDs(element)
+    default:
+      assertNever(element)
+  }
+}
+
+export function clearJSXFragmentUniqueIDs(element: JSXFragment): JSXFragment {
+  const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementChildUniqueIDs)
+  return {
+    ...element,
+    children: updatedChildren,
+    uid: '',
+  }
 }
 
 export function clearJSXElementUniqueIDs(element: JSXElement): JSXElement {
@@ -2501,13 +2541,12 @@ export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
   globalFrame: MaybeInfinityCanvasRectangle | null
-  localFrame: MaybeInfinityLocalRectangle | null
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null
+  attributeMetadata: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
@@ -2516,17 +2555,32 @@ export interface ElementInstanceMetadata {
   assignedToProp: string | null
 }
 
+export interface DomElementMetadata {
+  element: Either<string, JSXElementChild>
+  globalFrame: MaybeInfinityCanvasRectangle | null
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
+  specialSizeMeasurements: SpecialSizeMeasurements
+  textContent: string | null
+
+  computedStyle: ComputedStyle | null
+  attributeMetadata: StyleAttributeMetadata | null
+}
+
+export interface ComputedStyleMetadata {
+  computedStyle: ComputedStyle
+  attributeMetadata: StyleAttributeMetadata
+}
+
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
   globalFrame: MaybeInfinityCanvasRectangle | null,
-  localFrame: MaybeInfinityLocalRectangle | null,
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
-  attributeMetadatada: StyleAttributeMetadata | null,
+  attributeMetadata: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
@@ -2538,13 +2592,12 @@ export function elementInstanceMetadata(
     elementPath: elementPath,
     element: element,
     globalFrame: globalFrame,
-    localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadatada,
+    attributeMetadata: attributeMetadata,
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
@@ -2554,7 +2607,193 @@ export function elementInstanceMetadata(
   }
 }
 
+export function domElementMetadata(
+  element: Either<string, JSXElementChild>,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
+  sizeMeasurements: SpecialSizeMeasurements,
+  textContent: string | null,
+): DomElementMetadata {
+  return {
+    element: element,
+    globalFrame: globalFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
+    specialSizeMeasurements: sizeMeasurements,
+    textContent: textContent,
+
+    computedStyle: null,
+    attributeMetadata: null,
+  }
+}
+
+export function computedStyleMetadata(
+  computedStyle: ComputedStyle,
+  attributeMetadata: StyleAttributeMetadata,
+): ComputedStyleMetadata {
+  return {
+    computedStyle: computedStyle,
+    attributeMetadata: attributeMetadata,
+  }
+}
+
+export function metadataHasPositionAbsoluteOrNull(
+  metadata: ElementInstanceMetadata | null | undefined,
+): boolean {
+  if (metadata == null) {
+    return false
+  } else {
+    return (
+      metadata.specialSizeMeasurements.position === 'absolute' ||
+      metadata.specialSizeMeasurements.position === null
+    )
+  }
+}
+
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
+
+export interface GridPositionValue {
+  numericalPosition: number | null
+}
+
+export function gridPositionValue(numericalPosition: number | null): GridPositionValue {
+  return {
+    numericalPosition: numericalPosition,
+  }
+}
+
+export function isGridPositionValue(p: GridPositionOrSpan | null): p is GridPositionValue {
+  const maybe = p as GridPositionValue
+  return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
+}
+
+export const validGridPositionKeywords = ['auto']
+
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance
+
+export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
+
+export const isValidGridPositionKeyword =
+  (labels: string[]) =>
+  (u: unknown): u is ValidGridPositionKeyword => {
+    if (u == null || typeof u !== 'string') {
+      return false
+    }
+    if (validGridPositionKeywords.includes(u)) {
+      return true
+    }
+    return labels.includes(u)
+  }
+
+export interface GridRange {
+  start: GridPositionOrSpan
+  end: GridPositionOrSpan | null
+}
+
+export function gridRange(start: GridPositionOrSpan, end: GridPositionOrSpan | null): GridRange {
+  return {
+    start: start,
+    end: end,
+  }
+}
+
+export type GridColumnStart = GridPositionOrSpan
+export type GridColumnEnd = GridPositionOrSpan
+export type GridRowStart = GridPositionOrSpan
+export type GridRowEnd = GridPositionOrSpan
+
+export interface GridAutoOrTemplateFallback {
+  type: 'FALLBACK'
+  value: string
+}
+
+export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFallback {
+  return {
+    type: 'FALLBACK',
+    value: value,
+  }
+}
+
+export interface GridAutoOrTemplateDimensions {
+  type: 'DIMENSIONS'
+  dimensions: Array<GridDimension>
+}
+
+export function gridAutoOrTemplateDimensions(
+  dimensions: Array<GridDimension>,
+): GridAutoOrTemplateDimensions {
+  return {
+    type: 'DIMENSIONS',
+    dimensions: dimensions,
+  }
+}
+
+export type GridAutoOrTemplateBase = GridAutoOrTemplateDimensions | GridAutoOrTemplateFallback
+
+export function isGridAutoOrTemplateDimensions(
+  value: GridAutoOrTemplateBase,
+): value is GridAutoOrTemplateDimensions {
+  return value.type === 'DIMENSIONS'
+}
+
+export type GridAuto = GridAutoOrTemplateBase
+export type GridTemplate = GridAutoOrTemplateBase
+
+export type GridTemplateColumns = GridTemplate
+export type GridTemplateRows = GridTemplate
+export type GridAutoColumns = GridAuto
+export type GridAutoRows = GridAuto
+
+export interface GridContainerProperties {
+  gridTemplateColumns: GridTemplateColumns | null
+  gridTemplateRows: GridTemplateRows | null
+  gridAutoColumns: GridAutoColumns | null
+  gridAutoRows: GridAutoRows | null
+  gridAutoFlow: GridAutoFlow | null
+}
+
+export function gridContainerProperties(
+  gridTemplateColumns: GridTemplateColumns | null,
+  gridTemplateRows: GridTemplateRows | null,
+  gridAutoColumns: GridAutoColumns | null,
+  gridAutoRows: GridAutoRows | null,
+  gridAutoFlow: GridAutoFlow | null,
+): GridContainerProperties {
+  return {
+    gridTemplateColumns: gridTemplateColumns,
+    gridTemplateRows: gridTemplateRows,
+    gridAutoColumns: gridAutoColumns,
+    gridAutoRows: gridAutoRows,
+    gridAutoFlow: gridAutoFlow,
+  }
+}
+
+export interface GridElementProperties {
+  gridColumnStart: GridColumnStart | null
+  gridColumnEnd: GridColumnEnd | null
+  gridRowStart: GridRowStart | null
+  gridRowEnd: GridRowEnd | null
+}
+
+export function gridElementProperties(
+  gridColumnStart: GridColumnStart | null,
+  gridColumnEnd: GridColumnEnd | null,
+  gridRowStart: GridRowStart | null,
+  gridRowEnd: GridRowEnd | null,
+): GridElementProperties {
+  return {
+    gridColumnStart: gridColumnStart,
+    gridColumnEnd: gridColumnEnd,
+    gridRowStart: gridRowStart,
+    gridRowEnd: gridRowEnd,
+  }
+}
+
+export type BorderWidths = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
 
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
@@ -2563,10 +2802,11 @@ export interface SpecialSizeMeasurements {
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
   textBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
-  closestOffsetParentPath: ElementPath
+  closestOffsetParentPath: ElementPath | null
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem | null
+  layoutSystemForChildrenInherited: boolean
   providesBoundsForAbsoluteChildren: boolean
   display: string
   position: CSSPosition | null
@@ -2584,7 +2824,10 @@ export interface SpecialSizeMeasurements {
   gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
+  alignContent: AlignContent | null
   alignItems: FlexAlignment | null
+  alignSelf: SelfAlignment | null
+  justifySelf: SelfAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null
@@ -2598,6 +2841,18 @@ export interface SpecialSizeMeasurements {
   fontStyle: string | null
   textDecorationLine: string | null
   computedHugProperty: HugPropertyWidthHeight
+  containerGridProperties: GridContainerProperties
+  parentContainerGridProperties: GridContainerProperties
+  elementGridProperties: GridElementProperties
+  containerGridPropertiesFromProps: GridContainerProperties
+  parentContainerGridPropertiesFromProps: GridContainerProperties
+  elementGridPropertiesFromProps: GridElementProperties
+  rowGap: number | null
+  columnGap: number | null
+  gridCellGlobalFrames: GridCellGlobalFrames | null
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null
+  borderWidths: BorderWidths
+  parentGridFrame: CanvasRectangle | null
 }
 
 export function specialSizeMeasurements(
@@ -2606,10 +2861,11 @@ export function specialSizeMeasurements(
   immediateParentBounds: CanvasRectangle | null,
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem | null,
+  layoutSystemForChildrenInherited: boolean,
   providesBoundsForAbsoluteChildren: boolean,
   display: string,
   position: CSSPosition | null,
@@ -2627,6 +2883,7 @@ export function specialSizeMeasurements(
   gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
+  alignContent: AlignContent | null,
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
@@ -2642,6 +2899,20 @@ export function specialSizeMeasurements(
   textDecorationLine: string | null,
   textBounds: CanvasRectangle | null,
   computedHugProperty: HugPropertyWidthHeight,
+  containerGridProperties: GridContainerProperties,
+  parentContainerGridProperties: GridContainerProperties,
+  elementGridProperties: GridElementProperties,
+  containerGridPropertiesFromProps: GridContainerProperties,
+  parentContainerGridPropertiesFromProps: GridContainerProperties,
+  elementGridPropertiesFromProps: GridElementProperties,
+  rowGap: number | null,
+  columnGap: number | null,
+  gridCellGlobalFrames: GridCellGlobalFrames | null,
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null,
+  justifySelf: SelfAlignment | null,
+  alignSelf: SelfAlignment | null,
+  borderWidths: BorderWidths,
+  parentGridFrame: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2654,6 +2925,7 @@ export function specialSizeMeasurements(
     usesParentBounds,
     parentLayoutSystem,
     layoutSystemForChildren,
+    layoutSystemForChildrenInherited,
     providesBoundsForAbsoluteChildren,
     display,
     position,
@@ -2671,6 +2943,7 @@ export function specialSizeMeasurements(
     gap,
     flexDirection,
     justifyContent,
+    alignContent,
     alignItems,
     htmlElementName,
     renderedChildrenCount,
@@ -2685,6 +2958,20 @@ export function specialSizeMeasurements(
     fontStyle,
     textDecorationLine,
     computedHugProperty,
+    containerGridProperties,
+    parentContainerGridProperties,
+    elementGridProperties,
+    containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
+    elementGridPropertiesFromProps,
+    rowGap,
+    columnGap,
+    gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
+    justifySelf,
+    alignSelf,
+    borderWidths,
+    parentGridFrame,
   }
 }
 
@@ -2702,8 +2989,9 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   'flow',
   null,
   false,
+  false,
   'initial',
-  'static',
+  null,
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),
   null,
@@ -2715,6 +3003,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   sides(undefined, undefined, undefined, undefined),
   false,
+  null,
   null,
   null,
   null,
@@ -2733,6 +3022,59 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   { width: null, height: null },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
+    gridColumnStart: null,
+    gridColumnEnd: null,
+    gridRowStart: null,
+    gridRowEnd: null,
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  null,
 )
 
 export function walkElement(
@@ -2895,4 +3237,51 @@ export function clearJSArbitraryStatementSourceMaps(
     default:
       assertNever(statement)
   }
+}
+
+export type GridPositionOrSpan = GridPosition | GridSpan
+
+export type GridSpan = GridSpanNumeric | GridSpanArea
+
+export function isGridSpan(u: unknown): u is GridSpan {
+  const maybe = u as GridSpan
+  return (
+    maybe != null && typeof u === 'object' && (isGridSpanNumeric(maybe) || isGridSpanArea(maybe))
+  )
+}
+
+export function stringifyGridSpan(span: GridSpan): string {
+  return `span ${span.value}`
+}
+
+export type GridSpanNumeric = {
+  type: 'SPAN_NUMERIC'
+  value: number
+}
+
+export function gridSpanNumeric(value: number): GridSpanNumeric {
+  return {
+    type: 'SPAN_NUMERIC',
+    value: value,
+  }
+}
+
+function isGridSpanNumeric(span: GridSpan): span is GridSpanNumeric {
+  return span.type === 'SPAN_NUMERIC'
+}
+
+export type GridSpanArea = {
+  type: 'SPAN_AREA'
+  value: string
+}
+
+export function gridSpanArea(areaName: string): GridSpanArea {
+  return {
+    type: 'SPAN_AREA',
+    value: areaName,
+  }
+}
+
+function isGridSpanArea(span: GridSpan): span is GridSpanArea {
+  return span.type === 'SPAN_AREA'
 }

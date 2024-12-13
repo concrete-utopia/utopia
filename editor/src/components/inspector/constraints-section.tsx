@@ -125,7 +125,7 @@ const GroupChildConstraintsSection = React.memo(() => {
 
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
-      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
+      <UIGridRow padded variant='<--auto--><--1fr-->|22px|'>
         <ChildPinControl
           key={selectedViews.map(EP.toString).join('-')}
           isGroupChild='group-child'
@@ -148,7 +148,7 @@ const FrameChildConstraintsSection = React.memo(() => {
 
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
-      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
+      <UIGridRow padded variant='<--auto--><--1fr-->|22px|'>
         <ChildPinControl isGroupChild='frame-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn css={{ gap: 8 }}>
           <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />

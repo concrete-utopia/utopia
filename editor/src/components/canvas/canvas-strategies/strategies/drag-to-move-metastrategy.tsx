@@ -29,6 +29,8 @@ import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { CSSCursor } from '../../canvas-types'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -56,7 +58,8 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     selectedElements.length === 0 ||
     selectedElements.some(EP.isRootElementOfInstance) ||
     interactionSession == null ||
-    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    (interactionSession.activeControl.type !== 'BOUNDING_AREA' &&
+      interactionSession.activeControl.type !== 'GRID_CELL_HANDLE') ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.modifiers.alt
   ) {
@@ -102,7 +105,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     )
   } else {
     return filterStrategiesWhileSpacePressed(interactionSession.interactionData.spacePressed, [
-      doNothingStrategy(canvasState, interactionSession, customStrategyState),
+      doNothingStrategy(canvasState),
     ])
   }
 }
@@ -119,19 +122,16 @@ export function filterStrategiesWhileSpacePressed(
 }
 
 export const DoNothingStrategyID = 'DO_NOTHING'
+export const DoNothingFitness = 1.5
 
-export function doNothingStrategy(
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-): CanvasStrategy {
+export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasStrategy {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   return {
     id: DoNothingStrategyID,
     name: 'No Default Available',
     descriptiveLabel: 'Doing Nothing',
-    icon: { category: 'semantic', type: 'cross-medium' },
+    icon: { category: 'tools', type: 'noop' },
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
@@ -152,24 +152,28 @@ export function doNothingStrategy(
         show: 'visible-only-while-active',
       }),
     ],
-    fitness: 1.5,
+    fitness: DoNothingFitness,
     apply: () => {
-      return strategyApplicationResult([
-        wildcardPatch('mid-interaction', {
-          canvas: {
-            controls: {
-              dragToMoveIndicatorFlags: {
-                $set: {
-                  showIndicator: true,
-                  dragType: 'none',
-                  reparent: 'none',
-                  ancestor: false,
+      return strategyApplicationResult(
+        [
+          wildcardPatch('mid-interaction', {
+            canvas: {
+              controls: {
+                dragToMoveIndicatorFlags: {
+                  $set: {
+                    showIndicator: true,
+                    dragType: 'none',
+                    reparent: 'none',
+                    ancestor: false,
+                  },
                 },
               },
             },
-          },
-        }),
-      ])
+          }),
+          setCursorCommand(CSSCursor.NotPermitted),
+        ],
+        [],
+      )
     },
   }
 }

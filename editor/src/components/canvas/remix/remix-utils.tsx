@@ -32,17 +32,22 @@ import {
 } from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
-import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
+import type {
+  CanvasBase64Blobs,
+  ErrorBoundaryHandling,
+  EditorRemixConfig,
+} from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getFilePathForUid } from '../../../core/model/get-uid-mappings'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
 import urljoin from 'url-join'
 import json5 from 'json5'
+import { Route } from '@remix-run/server-runtime/dist/routes'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -93,18 +98,15 @@ export function createRouteManifestFromProjectContents(
   },
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
-  const routesFromRemix = (() => {
-    try {
-      return flatRoutes(rootDir, projectContentsToFileOps(projectContents))
-    } catch (e) {
+  try {
+    const routesFromRemix = flatRoutes(rootDir, projectContentsToFileOps(projectContents))
+    if (routesFromRemix == null) {
       return null
     }
-  })()
-
-  if (routesFromRemix == null) {
+    return patchRemixRoutes(rootFilePath, rootDir, routesFromRemix, projectContents)
+  } catch (e) {
     return null
   }
-  return patchRemixRoutes(rootFilePath, rootDir, routesFromRemix, projectContents)
 }
 
 function patchRemixRoutes(
@@ -112,17 +114,13 @@ function patchRemixRoutes(
   rootDir: string,
   routesFromRemix: RouteManifest<ConfigRoute> | null,
   projectContents: ProjectContentTreeRoot,
-) {
-  const routesFromRemixWithRoot: RouteManifest<ConfigRoute> = {
-    ...routesFromRemix,
-    root: { path: '', id: 'root', file: path.basename(rootFilePath), parentId: '' },
-  }
-
-  const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
+): RouteManifest<EntryRoute> {
+  let resultRoutes: RouteManifest<EntryRoute> = {}
+  function addRoute(route: ConfigRoute): void {
     const filePath = `${rootDir}/${route.file}`
 
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
-    acc[route.id] = {
+    resultRoutes[route.id] = {
       ...route,
       parentId: route.parentId ?? 'root',
       module: filePath,
@@ -130,8 +128,13 @@ function patchRemixRoutes(
       hasLoader: false,
       hasErrorBoundary: fileExportsFunctionWithName(projectContents, filePath, 'ErrorBoundary'),
     }
-    return acc
-  }, {} as RouteManifest<EntryRoute>)
+  }
+  if (routesFromRemix != null) {
+    for (const route of Object.values(routesFromRemix)) {
+      addRoute(route)
+    }
+  }
+  addRoute({ path: '', id: 'root', file: path.basename(rootFilePath), parentId: '' })
 
   return resultRoutes
 }
@@ -210,9 +213,8 @@ function getRouteModulesWithPaths(
   const children = route.children ?? []
 
   for (const pathPartToOutlet of pathPartsToOutlets) {
+    const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
     for (const child of children) {
-      const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
-
       const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
 
       for (const [routeId, value] of Object.entries(paths)) {
@@ -334,10 +336,19 @@ function safeGetClientRoutes(
   routeManifest: RouteManifestWithContents,
   routeModulesCache: RouteModules,
   futureConfig: FutureConfig,
+  errorBoundaryHandling: ErrorBoundaryHandling,
 ): DataRouteObject[] | null {
   const routesByParentId = groupRoutesByParentId(routeManifest)
   try {
-    return createClientRoutes(routeManifest, routeModulesCache, futureConfig, '', routesByParentId)
+    return createClientRoutes(
+      routeManifest,
+      routeModulesCache,
+      futureConfig,
+      '',
+      routesByParentId,
+      null,
+      errorBoundaryHandling,
+    )
   } catch (e) {
     console.error(e)
     return null
@@ -371,6 +382,7 @@ export function getRoutesAndModulesFromManifest(
   curriedResolveFn: CurriedResolveFn,
   projectContents: ProjectContentTreeRoot,
   routeModulesCache: RouteModules,
+  remixConfig: EditorRemixConfig,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
@@ -380,7 +392,12 @@ export function getRoutesAndModulesFromManifest(
     return null
   }
 
-  const routes = safeGetClientRoutes(routeManifest, routeModulesCache, futureConfig)
+  const routes = safeGetClientRoutes(
+    routeManifest,
+    routeModulesCache,
+    futureConfig,
+    remixConfig.errorBoundaryHandling,
+  )
   if (routes == null) {
     return null
   }
@@ -441,8 +458,8 @@ export function getRouteComponentNameForOutlet(
     return null
   }
 
-  const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
-  const filePath = uidsToFilePath[EP.toUid(outletChild)]
+  const uidsToFilePath = getUidMappings(projectContents).filePathToUids
+  const filePath = getFilePathForUid(uidsToFilePath, EP.toUid(outletChild))
   if (filePath == null) {
     return null
   }

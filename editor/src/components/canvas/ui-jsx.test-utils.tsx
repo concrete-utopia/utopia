@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
+import { collectElementsToRerender, EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -112,6 +112,7 @@ import {
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
+  updateMetadataInEditorState,
   updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
@@ -130,7 +131,7 @@ import type { DomWalkerMutableStateData } from './dom-walker'
 import {
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
-  runDomWalker,
+  resubscribeObservers,
 } from './dom-walker'
 import { flushSync } from 'react-dom'
 import { shouldUpdateLowPriorityUI } from '../inspector/inspector'
@@ -142,8 +143,8 @@ import { createStoresAndState } from '../editor/store/store-hook'
 import { checkAnyWorkerUpdates, simpleStringifyActions } from '../editor/actions/action-utils'
 import { modify } from '../../core/shared/optics/optic-utilities'
 import { fromField } from '../../core/shared/optics/optic-creators'
-import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import type { DuplicateUIDsResult } from '../../core/model/get-uid-mappings'
+import { getUidMappings } from '../../core/model/get-uid-mappings'
 import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
@@ -154,6 +155,16 @@ import {
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
+import { RadixComponentsPortalId } from '../../uuiui/radix-components'
+import {
+  resetDomSamplerExecutionCounts,
+  runDomSamplerGroups,
+  runDomSamplerRegular,
+} from './dom-sampler'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
+} from '../editor/store/store-deep-equality-instances'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -299,6 +310,8 @@ export function optOutFromCheckFileTimestamps() {
   })
 }
 
+let prevDomWalkerMutableState: DomWalkerMutableStateData | null = null
+
 export async function renderTestEditorWithModel(
   rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
@@ -345,6 +358,7 @@ export async function renderTestEditorWithModel(
     waitForDispatchEntireUpdate = false,
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
+    resetDomSamplerExecutionCounts()
     recordedActions.push(...actions)
     const originalEditorState = workingEditorState
     const result = editorDispatchActionRunner(
@@ -355,7 +369,7 @@ export async function renderTestEditorWithModel(
       innerStrategiesToUse,
     )
 
-    const duplicateUIDs = getAllUniqueUids(result.patchedEditor.projectContents).duplicateIDs
+    const duplicateUIDs = getUidMappings(result.patchedEditor.projectContents).duplicateIDs
     if (Object.keys(duplicateUIDs).length > 0) {
       actionsCausingDuplicateUIDs.push({
         actions: actions,
@@ -414,28 +428,38 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      helperControlsStoreHook.setState(
+        patchedStoreFromFullStore(workingEditorState, 'helper-controls-store'),
+      )
     })
 
-    // run dom walker
+    // run dom SAMPLER
 
     {
-      const domWalkerResult = runDomWalker({
-        domWalkerMutableState: domWalkerMutableState,
-        selectedViews: workingEditorState.patchedEditor.selectedViews,
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-        scale: workingEditorState.patchedEditor.canvas.scale,
-        additionalElementsToUpdate:
+      resubscribeObservers(domWalkerMutableState)
+
+      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+      const metadataResult = runDomSamplerRegular({
+        elementsToFocusOn: elementsToFocusOn,
+        domWalkerAdditionalElementsToFocusOn:
           workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-        rootMetadataInStateRef: {
-          current: workingEditorState.patchedEditor.domMetadata,
-        },
+        scale: workingEditorState.patchedEditor.canvas.scale,
+        metadataToUpdate: workingEditorState.elementMetadata,
+        selectedViews: workingEditorState.patchedEditor.selectedViews,
+        spyCollector: spyCollector,
       })
 
-      if (domWalkerResult != null) {
-        const saveDomReportAction = saveDOMReport(
-          domWalkerResult.metadata,
-          domWalkerResult.cachedPaths,
-          domWalkerResult.invalidatedPaths,
+      const deepEqualityResult = ElementInstanceMetadataMapKeepDeepEquality(
+        workingEditorState.elementMetadata,
+        metadataResult.metadata,
+      )
+
+      workingEditorState.elementMetadata = deepEqualityResult.value
+
+      if (!deepEqualityResult.areEqual) {
+        const saveDomReportAction = updateMetadataInEditorState(
+          workingEditorState.elementMetadata,
+          metadataResult.tree,
         )
         recordedActions.push(saveDomReportAction)
         const editorWithNewMetadata = editorDispatchActionRunner(
@@ -475,32 +499,36 @@ export async function renderTestEditorWithModel(
 
         // re-render the canvas
         {
-          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
           flushSync(() => {
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })
         }
 
-        // re-run the dom-walker
+        // re-run the dom SAMPLER
+
         {
-          const domWalkerResult = runDomWalker({
-            domWalkerMutableState: domWalkerMutableState,
-            selectedViews: workingEditorState.patchedEditor.selectedViews,
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-            scale: workingEditorState.patchedEditor.canvas.scale,
-            additionalElementsToUpdate:
+          resubscribeObservers(domWalkerMutableState)
+
+          // TODO: The real dispatch updates ElementsToRerenderGLOBAL.current,
+          // while the fake one doesn't. Ideally this behaviour would be the
+          // same, but solving this was out of scope for the PR that introduced
+          // collectElementsToRerender
+          // (https://github.com/concrete-utopia/utopia/pull/6465)
+          const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+          const metadataResult = runDomSamplerGroups({
+            elementsToFocusOn: elementsToFocusOn,
+            domWalkerAdditionalElementsToFocusOn:
               workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-            rootMetadataInStateRef: {
-              current: workingEditorState.patchedEditor.domMetadata,
-            },
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            metadataToUpdate: workingEditorState.elementMetadata,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            spyCollector: spyCollector,
           })
 
-          if (domWalkerResult != null) {
-            const saveDomReportAction = saveDOMReport(
-              domWalkerResult.metadata,
-              domWalkerResult.cachedPaths,
-              domWalkerResult.invalidatedPaths,
+          if (metadataResult != null) {
+            const saveDomReportAction = updateMetadataInEditorState(
+              metadataResult.metadata,
+              metadataResult.tree,
             )
             recordedActions.push(saveDomReportAction)
             const editorWithNewMetadata = editorDispatchActionRunner(
@@ -544,7 +572,7 @@ export async function renderTestEditorWithModel(
   }
 
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )
@@ -573,6 +601,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
+    elementMetadata: {},
     postActionInteractionSession: null,
     projectServerState: {
       ...emptyProjectServerState(),
@@ -586,7 +615,14 @@ export async function renderTestEditorWithModel(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
+  const helperControlsStoreHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'helper-controls-store'),
+  )
+
+  prevDomWalkerMutableState?.resizeObserver.disconnect()
+  prevDomWalkerMutableState?.mutationObserver.disconnect()
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook, asyncTestDispatch)
+  prevDomWalkerMutableState = domWalkerMutableState
 
   const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
@@ -605,6 +641,20 @@ export async function renderTestEditorWithModel(
 
   let numberOfCommits = 0
 
+  // This results in the portal element existing before the subsequent render,
+  // which is necessary as any component that attempts to look for the portal as part of that render
+  // will not find it as it is not yet in the DOM.
+  const renderTargetDiv = document.createElement('div')
+  document.body.appendChild(renderTargetDiv)
+  render(
+    <React.Profiler onRender={NO_OP} id='editor-root'>
+      <div id='utopia-editor-root'>
+        <div id={CanvasContextMenuPortalTargetID}></div>
+        <div id={RadixComponentsPortalId}></div>
+      </div>
+    </React.Profiler>,
+    { container: renderTargetDiv },
+  )
   const result = render(
     <React.Profiler
       id='editor-root'
@@ -615,6 +665,7 @@ export async function renderTestEditorWithModel(
     >
       <div id='utopia-editor-root'>
         <div id={CanvasContextMenuPortalTargetID}></div>
+        <div id={RadixComponentsPortalId}></div>
         {failOnCanvasError ? <FailJestOnCanvasError /> : null}
         <style>{`
 div,
@@ -629,12 +680,14 @@ label {
           dispatch={asyncTestDispatch as EditorDispatch}
           mainStore={storeHook}
           canvasStore={canvasStoreHook}
+          helperControlsStore={helperControlsStoreHook}
           spyCollector={spyCollector}
           lowPriorityStore={lowPriorityStoreHook}
           domWalkerMutableState={domWalkerMutableState}
         />
       </div>
     </React.Profiler>,
+    { container: renderTargetDiv },
   )
 
   // Capture how many times the project server state update has been triggered.
@@ -997,7 +1050,7 @@ export function createBuiltinDependenciesWithTestWorkers(
   extraBuiltinDependencies: BuiltInDependencies,
 ): BuiltInDependencies {
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )

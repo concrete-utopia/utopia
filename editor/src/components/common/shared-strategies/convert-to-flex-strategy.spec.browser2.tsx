@@ -18,6 +18,7 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../inspector/inspector-common'
 import { MaxContent } from '../../inspector/inspector-common'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 type LTWH = [
   left: number,
@@ -437,7 +438,7 @@ describe('Smart Convert To Flex', () => {
       data-uid='zero-sized'
     >
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -450,7 +451,7 @@ describe('Smart Convert To Flex', () => {
         data-uid='first-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -462,7 +463,7 @@ describe('Smart Convert To Flex', () => {
         data-uid='second-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -519,20 +520,20 @@ describe('Smart Convert To Flex', () => {
       }}
     >
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-testid='first-child'
         data-uid='first-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-uid='second-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-uid='third-child'
@@ -740,15 +741,19 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       'regular-sb/parent/second',
     ]
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      originalElementOrder,
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual(originalElementOrder)
 
     await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      originalElementOrder,
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual(originalElementOrder)
   })
 })
 

@@ -386,7 +386,7 @@ export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boole
 export function getFallbackControlStatusForProperty(
   property: keyof ParsedCSSProperties,
   jsxAttributes: JSXAttributes,
-  attributeMetadatada: StyleAttributeMetadata | null,
+  attributeMetadata: StyleAttributeMetadata | null,
 ): ControlStatus {
   const modifiableAttribute = getModifiableJSXAttributeAtPath(
     jsxAttributes,
@@ -399,7 +399,7 @@ export function getFallbackControlStatusForProperty(
   )
 
   const fromStyleSheet =
-    attributeMetadatada != null && attributeMetadatada[property]?.fromStyleSheet === true
+    attributeMetadata != null && attributeMetadata[property]?.fromStyleSheet === true
 
   const overwritable = isOverwritable(modifiableAttribute)
   const controlled = isControlled(modifiableAttribute, null)

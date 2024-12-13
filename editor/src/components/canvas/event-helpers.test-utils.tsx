@@ -19,7 +19,7 @@ import { getDomRectCenter } from '../../core/shared/dom-utils'
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
 
-interface Point {
+export interface Point {
   x: number
   y: number
 }
@@ -178,6 +178,7 @@ export async function mouseDragFromPointWithDelta(
   dragDelta: Point,
   options: {
     modifiers?: Modifiers
+    mouseDownModifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
@@ -197,12 +198,14 @@ export async function mouseDragFromPointToPoint(
   endPoint: Point,
   options: {
     modifiers?: Modifiers
+    mouseDownModifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
     moveBeforeMouseDown?: boolean
     skipMouseUp?: boolean
     realMouseDown?: boolean
+    tab?: boolean
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
@@ -216,10 +219,13 @@ export async function mouseDragFromPointToPoint(
   if (options.moveBeforeMouseDown) {
     await mouseMoveToPoint(eventSourceElement, startPoint, options)
   }
+
+  const mouseDownOptions = { ...options, modifiers: options.mouseDownModifiers }
+
   if (options.realMouseDown) {
-    dispatchMouseDownEventAtPoint(startPoint)
+    dispatchMouseDownEventAtPoint(startPoint, mouseDownOptions)
   } else {
-    await mouseDownAtPoint(eventSourceElement, startPoint, options)
+    await mouseDownAtPoint(eventSourceElement, startPoint, mouseDownOptions)
   }
 
   if (staggerMoveEvents) {
@@ -264,6 +270,10 @@ export async function mouseDragFromPointToPoint(
         },
       },
     )
+  }
+
+  if (options.tab) {
+    await keyDown('Tab')
   }
 
   if (options.midDragCallback != null) {

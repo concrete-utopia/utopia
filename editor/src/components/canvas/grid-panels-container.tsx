@@ -15,7 +15,7 @@ import {
   useResolvedGridPanels,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import type { LayoutUpdate, StoredPanel } from './stored-layout'
+import type { LayoutUpdate, PanelVisibility, StoredPanel } from './stored-layout'
 import {
   GridHorizontalExtraPadding,
   GridPanelHorizontalGapHalf,
@@ -23,11 +23,31 @@ import {
   GridVerticalExtraPadding,
   NumberOfColumns,
 } from './stored-layout'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const GridPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = useGridPanelState()
 
   const orderedPanels = useResolvedGridPanels()
+
+  const panelVisibility = useEditorState(
+    Substores.restOfEditor,
+    (store): PanelVisibility => {
+      return {
+        navigator: store.editor.leftMenu.visible,
+        inspector: store.editor.rightMenu.visible,
+        'code-editor': store.editor.interfaceDesigner.codePaneVisible,
+      }
+    },
+    'GridPanelsContainer panelVisibility',
+  )
+
+  const isPanelVisible = React.useCallback(
+    (panel: StoredPanel): boolean => {
+      return panelVisibility[panel.name]
+    },
+    [panelVisibility],
+  )
 
   const nonEmptyColumns = React.useMemo(() => {
     return Array.from(
@@ -37,13 +57,13 @@ export const GridPanelsContainer = React.memo(() => {
         acc.add(wrapAroundColIndex(NumberOfColumns - 1))
 
         panelState.forEach((column, colIndex) => {
-          if (column.panels.length > 0) {
+          if (column.panels.length > 0 && column.panels.some(isPanelVisible)) {
             acc.add(wrapAroundColIndex(colIndex))
           }
         })
       }),
     )
-  }, [panelState])
+  }, [panelState, isPanelVisible])
 
   const onDrop = React.useCallback(
     (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {

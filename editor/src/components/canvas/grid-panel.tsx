@@ -9,6 +9,8 @@ import {
   GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
 } from './stored-layout'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { clearHighlightedViews } from '../editor/actions/action-creators'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
@@ -84,6 +86,12 @@ const GridPanelInner = React.memo<GridPanelProps>((props) => {
     }
   })()
 
+  const dispatch = useDispatch()
+
+  const onMouseEnter = React.useCallback(() => {
+    dispatch([clearHighlightedViews()], 'everyone')
+  }, [dispatch])
+
   return (
     <div
       style={{
@@ -99,6 +107,7 @@ const GridPanelInner = React.memo<GridPanelProps>((props) => {
         paddingTop: GridPanelVerticalGapHalf,
         paddingBottom: GridPanelVerticalGapHalf,
       }}
+      onMouseEnter={onMouseEnter}
     >
       {draggablePanelComponent}
       <div

@@ -146,12 +146,12 @@ export function isAbsolutePositionedFrame(
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(metadata, elementPath),
     ) &&
-    MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath).length > 0 &&
+    MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath).length > 0 &&
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ).every((childPath) =>
       MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, childPath)),
     )
@@ -258,7 +258,7 @@ export function getInstanceForFragmentToFrameConversion(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 
@@ -380,7 +380,7 @@ export function getInstanceForFragmentToGroupConversion(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 
@@ -542,7 +542,7 @@ export function convertSizelessDivToFrameCommands(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 
@@ -597,7 +597,7 @@ export function getInstanceForFrameToFragmentConversion(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 
@@ -686,7 +686,7 @@ export function getInstanceForFrameToGroupConversion(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 
@@ -724,7 +724,7 @@ export function convertFrameToGroup(
   const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
   const elementToAdd = jsxElement('Group', uid, propsWithoutPadding, childrenWithoutMargins)
 
-  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
 
   return [
     deleteElement('always', elementPath),
@@ -762,7 +762,7 @@ export function getInstanceForGroupToFrameConversion(
       metadata,
       allElementProps,
       pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ),
   )
 

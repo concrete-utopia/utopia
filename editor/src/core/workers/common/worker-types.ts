@@ -1,3 +1,9 @@
+import {
+  chunkArrayEqually,
+  sortArrayByAndReturnPermutation,
+  revertArrayOrder,
+} from '../../../core/shared/array-utils'
+import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -9,6 +15,11 @@ import type {
 } from '../../shared/project-file-types'
 import type { SteganographyMode } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { FilePathMappings } from './project-file-utils'
+import type { ParserPrinterWorker } from '../workers'
+import { isParseableFile } from '../../../core/shared/file-utils'
+
+export const ARBITRARY_CODE_FILE_NAME = 'code.tsx'
 
 export type FileContent = string | TextFile
 
@@ -32,6 +43,27 @@ export function createParseFile(
     content: content,
     previousParsed: previousParsed,
     versionNumber: versionNumber,
+  }
+}
+
+export interface ParseAndPrintOptions {
+  filePathMappings: FilePathMappings
+  alreadyExistingUIDs_MUTABLE: Set<string>
+  applySteganography: SteganographyMode
+  parsingCacheOptions: ParseCacheOptions
+}
+
+export function createParseAndPrintOptions(
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+  applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
+): ParseAndPrintOptions {
+  return {
+    filePathMappings: filePathMappings,
+    alreadyExistingUIDs_MUTABLE: alreadyExistingUIDs_MUTABLE,
+    applySteganography: applySteganography,
+    parsingCacheOptions: parsingCacheOptions,
   }
 }
 
@@ -138,38 +170,129 @@ export function createParsePrintFailedMessage(messageID: number): ParsePrintFail
 
 export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMessage
 
+export interface ClearParseCacheMessage {
+  type: 'clearparsecache'
+  parsingCacheOptions: ParseCacheOptions
+}
+
+export function createClearParseCacheMessage(
+  parsingCacheOptions: ParseCacheOptions,
+): ClearParseCacheMessage {
+  return {
+    type: 'clearparsecache',
+    parsingCacheOptions: parsingCacheOptions,
+  }
+}
+
 export interface ParsePrintFilesRequest extends ParsePrintBase {
   type: 'parseprintfiles'
+  filePathMappings: FilePathMappings
   files: Array<ParseOrPrint>
   alreadyExistingUIDs: Set<string>
   applySteganography: SteganographyMode
+  parsingCacheOptions: ParseCacheOptions
 }
 
 export function createParsePrintFilesRequest(
   files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
   alreadyExistingUIDs: Set<string>,
   messageID: number,
   applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
 ): ParsePrintFilesRequest {
   return {
     type: 'parseprintfiles',
     files: files,
+    filePathMappings: filePathMappings,
     alreadyExistingUIDs: alreadyExistingUIDs,
     messageID: messageID,
     applySteganography: applySteganography,
+    parsingCacheOptions: parsingCacheOptions,
   }
 }
 
 let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 
+const fileParsableLength = (file: ParseOrPrint) =>
+  file.type === 'parsefile' && isParseableFile(file.filename) ? file.content.length : 0
+
 export function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
+  numChunks: number = 1,
+  parsingCacheOptions: ParseCacheOptions,
+): Promise<Array<ParseOrPrintResult>> {
+  // this is to eliminate unnecessary overhead when numChunks is 1
+  if (numChunks === 1 || files.length === 1) {
+    return getParseResultSerial(
+      workers,
+      files,
+      filePathMappings,
+      alreadyExistingUIDs,
+      applySteganography,
+      parsingCacheOptions,
+    )
+  } else {
+    return getParseResultChunked(
+      workers,
+      files,
+      filePathMappings,
+      alreadyExistingUIDs,
+      applySteganography,
+      numChunks,
+      parsingCacheOptions,
+    )
+  }
+}
+
+export async function getParseResultChunked(
+  workers: UtopiaTsWorkers,
+  files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+  numChunks: number = 1,
+  parsingCacheOptions: ParseCacheOptions,
+): Promise<Array<ParseOrPrintResult>> {
+  const { sortedArray, permutation } = sortArrayByAndReturnPermutation(
+    [...files],
+    fileParsableLength,
+    false,
+  )
+  const chunks = chunkArrayEqually(sortedArray, numChunks, fileParsableLength)
+
+  const promises = chunks.map((chunk) =>
+    getParseResultSerial(
+      workers,
+      chunk,
+      filePathMappings,
+      alreadyExistingUIDs,
+      applySteganography,
+      parsingCacheOptions,
+    ),
+  )
+  const results = await Promise.all(promises)
+  const flattenedResults = results.flat()
+
+  // this is to return the results in the original order
+  return revertArrayOrder(flattenedResults, permutation)
+}
+
+export function getParseResultSerial(
+  workers: UtopiaTsWorkers,
+  files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
+    const availableWorker = workers.getNextParserPrinterWorker()
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as ParsePrintResultMessage
       // Ensure that rapidly fired requests are distinguished between the handlers.
@@ -177,26 +300,29 @@ export function getParseResult(
         switch (data.type) {
           case 'parseprintfilesresult': {
             resolve(data.files)
-            workers.removeParserPrinterEventListener(handleMessage)
+            workers.removeParserPrinterEventListener(handleMessage, availableWorker)
             break
           }
           case 'parseprintfailed': {
             reject()
-            workers.removeParserPrinterEventListener(handleMessage)
+            workers.removeParserPrinterEventListener(handleMessage, availableWorker)
             break
           }
         }
       }
     }
 
-    workers.addParserPrinterEventListener(handleMessage)
+    workers.addParserPrinterEventListener(handleMessage, availableWorker)
     workers.sendParsePrintMessage(
       createParsePrintFilesRequest(
         files,
+        filePathMappings,
         alreadyExistingUIDs,
         messageIDForThisRequest,
         applySteganography,
+        parsingCacheOptions,
       ),
+      availableWorker,
     )
   })
 }
@@ -358,10 +484,18 @@ export function createInitTSWorkerMessage(
 }
 
 export interface UtopiaTsWorkers {
-  sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
+  getNextParserPrinterWorker: () => ParserPrinterWorker
+  sendParsePrintMessage: (request: ParsePrintFilesRequest, worker: ParserPrinterWorker) => void
+  sendClearParseCacheMessage: (parsingCacheOptions: ParseCacheOptions) => void
   sendLinterRequestMessage: (filename: string, content: string) => void
-  addParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
-  removeParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
+  addParserPrinterEventListener: (
+    handler: (e: MessageEvent) => void,
+    worker: ParserPrinterWorker,
+  ) => void
+  removeParserPrinterEventListener: (
+    handler: (e: MessageEvent) => void,
+    worker: ParserPrinterWorker,
+  ) => void
   addLinterResultEventListener: (handler: (e: MessageEvent) => void) => void
   removeLinterResultEventListener: (handler: (e: MessageEvent) => void) => void
   initWatchdogWorker(projectID: string): void

@@ -14,7 +14,6 @@ import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -66,38 +65,7 @@ export function baseReparentAsStaticStrategy(
 
     return {
       ...getDescriptivePropertiesOfReparentToStaticStrategy(targetLayout),
-      controlsToRender: [
-        controlWithProps({
-          control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent.intendedParentPath },
-          key: 'parent-outlines-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent.intendedParentPath },
-          key: 'parent-bounds-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: FlexReparentTargetIndicator,
-          props: {},
-          key: 'flex-reparent-target-indicator',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ZeroSizedElementControls,
-          props: { showAllPossibleElements: true },
-          key: 'zero-size-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: StaticReparentTargetOutlineIndicator,
-          props: {},
-          key: 'parent-outline-highlight',
-          show: 'visible-only-while-active',
-        }),
-      ],
+      controlsToRender: controlsForStaticReparent(reparentTarget),
       fitness: shouldKeepMovingDraggedGroupChildren(
         canvasState.startingMetadata,
         selectedElements,
@@ -115,6 +83,41 @@ export function baseReparentAsStaticStrategy(
       },
     }
   }
+}
+
+export function controlsForStaticReparent(reparentTarget: ReparentTarget) {
+  return [
+    controlWithProps({
+      control: ParentOutlines,
+      props: { targetParent: reparentTarget.newParent.intendedParentPath },
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: { targetParent: reparentTarget.newParent.intendedParentPath },
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: FlexReparentTargetIndicator,
+      props: {},
+      key: 'flex-reparent-target-indicator',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ZeroSizedElementControls,
+      props: { showAllPossibleElements: true },
+      key: 'zero-size-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: StaticReparentTargetOutlineIndicator,
+      props: {},
+      key: 'parent-outline-highlight',
+      show: 'visible-only-while-active',
+    }),
+  ]
 }
 
 function getDescriptivePropertiesOfReparentToStaticStrategy(
@@ -146,7 +149,7 @@ function getDescriptivePropertiesOfReparentToStaticStrategy(
   }
 }
 
-function applyStaticReparent(
+export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
@@ -177,7 +180,6 @@ function applyStaticReparent(
             ) ?? zeroCanvasRect
 
           const siblingsOfTarget = MetadataUtils.getChildrenPathsOrdered(
-            canvasState.startingMetadata,
             canvasState.startingElementPathTree,
             newParent.intendedParentPath,
           )
@@ -226,7 +228,7 @@ function applyStaticReparent(
 
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand(elementsToRerender),
+
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
@@ -345,6 +347,7 @@ function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
+              elementsToRerender: elementsToRerender,
               customStatePatch: { duplicatedElementNewUids, elementsToRerender },
               status: 'success',
             }

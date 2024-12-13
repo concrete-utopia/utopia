@@ -106,7 +106,7 @@ export const App = (props) => {
     supportsChildren: true,
     preferredChildComponents: [],
     variants: [],
-    source: componentDescriptorFromDescriptorFile('/components.utopia.js'),
+    source: componentDescriptorFromDescriptorFile('/components.utopia.js', null),
     focus: 'default',
     inspector: { type: 'hidden' },
     emphasis: 'regular',
@@ -121,18 +121,16 @@ export const App = (props) => {
   it('works with the regular path', () => {
     const projectContents = getProjectContents('regular-path')
     const actualResult = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       EP.fromString(`sample-storyboard/sample-scene/sample-app:div/component`),
-      propertyControlsInfo,
-      projectContents,
     )
     expect(actualResult).toEqual(componentDescriptor)
   })
   it('works with a mapped path', () => {
     const projectContents = getProjectContents('mapped-path')
     const actualResult = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       EP.fromString(`sample-storyboard/sample-scene/sample-app:div/component`),
-      propertyControlsInfo,
-      projectContents,
     )
     expect(actualResult).toEqual(componentDescriptor)
   })

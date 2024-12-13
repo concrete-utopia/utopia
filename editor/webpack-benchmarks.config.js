@@ -30,6 +30,8 @@ module.exports = {
           },
         ],
       },
+      // CSS Loading.
+      { test: /\.css$/, use: 'null-loader' },
     ],
   },
   plugins: [
@@ -51,7 +53,7 @@ module.exports = {
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
   ],
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    extensions: ['.ts', '.tsx', '.js', '.json', '.ttf'],
     symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
       uuiui: srcPath('uuiui'),

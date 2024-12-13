@@ -34,15 +34,16 @@ import {
   paddingAdjustMode,
   paddingFromSpecialSizeMeasurements,
   PaddingIndictorOffset,
-  simplePaddingFromMetadata,
+  simplePaddingFromStyleInfo,
 } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { getActivePlugin } from '../../plugins/style-plugins'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -288,7 +289,7 @@ const PaddingResizeControlI = React.memo((props: ResizeContolProps) => {
             }}
           >
             <CanvasLabel
-              value={printCSSNumber(props.paddingValue.value, 'px')}
+              value={printCSSNumber(fallbackEmptyValue(props.paddingValue), 'px')}
               scale={scale}
               color={color}
               textColor={colorTheme.white.value}
@@ -358,12 +359,23 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   }, [hoveredViews, selectedElements])
 
+  const styleInfoReaderRef = useRefEditorState((store) =>
+    getActivePlugin(store.editor).styleInfoFactory({
+      projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
+    }),
+  )
+
   const currentPadding = React.useMemo(() => {
     return combinePaddings(
       paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
-      simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
+      simplePaddingFromStyleInfo(
+        elementMetadata,
+        selectedElements[0],
+        styleInfoReaderRef.current(selectedElements[0]),
+      ),
     )
-  }, [elementMetadata, selectedElements])
+  }, [elementMetadata, selectedElements, styleInfoReaderRef])
 
   const shownByParent = selectedElementHovered || anyControlHovered
 

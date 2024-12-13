@@ -1,16 +1,20 @@
 import React from 'react'
-import type { AllElementProps } from '../../editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import type { CanvasVector } from '../../../core/shared/math-utils'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
-import type { InsertionSubject } from '../../editor/editor-modes'
-import type { CanvasCommand } from '../commands/commands'
-import type { StrategyApplicationStatus } from './interaction-state'
-import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import type { InsertionSubject } from '../../editor/editor-modes'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import type { CanvasCommand } from '../commands/commands'
+import type { ActiveFrameAction } from '../commands/set-active-frames-command'
+import type { StrategyApplicationStatus } from './interaction-state'
+import type { StyleInfo } from '../canvas-types'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -20,6 +24,11 @@ export interface CustomStrategyState {
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
   elementsToRerender: Array<ElementPath>
   action: ActiveFrameAction | null
+  grid: GridCustomStrategyState
+}
+
+export type GridCustomStrategyState = {
+  metadataCacheForGrids: { [gridPath: string]: ElementInstanceMetadata }
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -32,28 +41,35 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     strategyGeneratedUidsCache: {},
     elementsToRerender: [],
     action: null,
+    grid: {
+      metadataCacheForGrids: {},
+    },
   }
 }
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
+  elementsToRerender: ElementPath[]
   customStatePatch: CustomStrategyStatePatch
   status: StrategyApplicationStatus
 }
 
 export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
+  elementsToRerender: [],
   customStatePatch: {},
   status: 'success',
 }
 
 export function strategyApplicationResult(
   commands: Array<CanvasCommand>,
+  elementsToRerender: ElementPath[],
   customStatePatch: CustomStrategyStatePatch = {},
   status: StrategyApplicationStatus = 'success',
 ): StrategyApplicationResult {
   return {
     commands: commands,
+    elementsToRerender: elementsToRerender,
     customStatePatch: customStatePatch,
     status: status,
   }
@@ -69,8 +85,12 @@ export interface ControlForStrategy<P> {
   control: React.FC<P>
 }
 
+export function controlForStrategy<P>(control: React.FC<P>): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: control }
+}
+
 export function controlForStrategyMemoized<P>(control: React.FC<P>): ControlForStrategy<P> {
-  return { type: 'ControlForStrategy', control: React.memo<any>(control) }
+  return controlForStrategy(React.memo<any>(control))
 }
 
 export type WhenToShowControl =
@@ -83,11 +103,20 @@ export interface ControlWithProps<P> {
   props: P
   key: string
   show: WhenToShowControl
+  priority?: 'top' | 'bottom'
 }
 
 export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProps<P> {
   return value
 }
+
+export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
+
+export type StyleInfoContext = {
+  projectContents: ProjectContentTreeRoot
+  jsxMetadata: ElementInstanceMetadataMap
+}
+export type StyleInfoFactory = (context: StyleInfoContext) => StyleInfoReader
 
 export interface InteractionCanvasState {
   interactionTarget: InteractionTarget
@@ -101,6 +130,7 @@ export interface InteractionCanvasState {
   startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
   propertyControlsInfo: PropertyControlsInfo
+  styleInfoReader: StyleInfoReader
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects

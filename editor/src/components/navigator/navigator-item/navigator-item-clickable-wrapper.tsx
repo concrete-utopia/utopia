@@ -21,7 +21,6 @@ import {
   selectedElementChangedMessageFromHighlightBounds,
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
-import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { isRight } from '../../../core/shared/either'
@@ -31,6 +30,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
+import { navigatorTargetsSelector } from '../navigator-utils'
 
 export const NavigatorRowClickableWrapper = React.memo(
   (props: { row: NavigatorRow; children: React.ReactNode }) => {
@@ -46,21 +46,18 @@ export const NavigatorRowClickableWrapper = React.memo(
       return selectedViews.current.some((view) => EP.pathsEqual(targetPath, view))
     }, [selectedViews, targetPath])
 
-    const getActions = useGetNavigatorClickActions(targetPath, selected, props.row)
+    const getMouseDownActions = useGetNavigatorMouseDownActions(targetPath, selected, props.row)
 
-    const onClick = React.useCallback(
+    const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-
-        const actions = getActions(e)
+        const actions = getMouseDownActions(e)
         dispatch(actions)
       },
-      [dispatch, getActions],
+      [dispatch, getMouseDownActions],
     )
 
     return (
-      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }} onClick={onClick}>
+      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }} onMouseDown={onMouseDown}>
         {props.children}
       </div>
     )
@@ -68,12 +65,12 @@ export const NavigatorRowClickableWrapper = React.memo(
 )
 NavigatorRowClickableWrapper.displayName = 'NavigatorRowClickableWrapper'
 
-export function useGetNavigatorClickActions(
+export function useGetNavigatorMouseDownActions(
   targetPath: ElementPath,
   selected: boolean,
   row: NavigatorRow,
-) {
-  const navigatorTargets = useRefEditorState((store) => store.derived.navigatorTargets)
+): (event: React.MouseEvent) => Array<EditorAction> {
+  const navigatorTargets = useRefEditorState(navigatorTargetsSelector)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
   const projectContents = useRefEditorState((store) => store.editor.projectContents)
@@ -89,7 +86,7 @@ export function useGetNavigatorClickActions(
       } else if (e.shiftKey) {
         return actionsForRangeSelection(
           targetPath,
-          navigatorTargets.current,
+          navigatorTargets.current.navigatorTargets,
           selectedViews.current,
           collapsedViews.current,
           projectContents.current,
@@ -99,9 +96,7 @@ export function useGetNavigatorClickActions(
         // when we click on an already selected item we should force vscode to navigate there
         if (selected && highlightBounds != null) {
           sendMessage(
-            toVSCodeExtensionMessage(
-              selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
-            ),
+            selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
           )
         }
         return actionsForSingleSelection(targetPath, row, conditionalOverrideUpdate)

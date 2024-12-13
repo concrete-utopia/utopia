@@ -1,5 +1,6 @@
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import { altModifier, cmdModifier } from '../../../utils/modifiers'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -7,6 +8,7 @@ import {
   TestSceneUID,
 } from '../../canvas//ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
+import { keyDown } from '../event-helpers.test-utils'
 
 describe('Canvas Controls', () => {
   it('absolute children outline only included for non-group absolutely positioned elements', async () => {
@@ -104,5 +106,73 @@ describe('Canvas Controls', () => {
     const possibleAbsoluteControlForDiv =
       renderResult.renderedDOM.queryByTestId(`absolute-children-outline`)
     expect(possibleAbsoluteControlForDiv).not.toBeNull()
+  })
+})
+
+describe('Mouse Cursor', () => {
+  it('Uses the default cursor in select mode', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-default.png')
+  })
+  it('Uses the duplicate cursor in select mode when ALT is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Alt', { modifiers: altModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-duplicate.png')
+  })
+  it('Uses the zoom in cursor in select mode when Z is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z')
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-zoom-in.png')
+  })
+  it('Uses the zoom out cursor in select mode when ALT-Z is pressed (and not duplicate)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z', { modifiers: altModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-zoom-out.png')
+  })
+  it('Uses the default cursor in select mode when CMD-Z is pressed (and not zoom in)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z', { modifiers: cmdModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-default.png')
+  })
+  it('Uses the open hand cursor in select mode when SPACE is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('space', { modifiers: cmdModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-open-hand.png')
   })
 })

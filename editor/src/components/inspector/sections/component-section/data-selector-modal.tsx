@@ -20,7 +20,7 @@ import {
   useColorTheme,
 } from '../../../../uuiui'
 import type { FileRootPath } from '../../../canvas/ui-jsx-canvas'
-import { insertionCeilingToString } from '../../../canvas/ui-jsx-canvas'
+import { insertionCeilingToString, insertionCeilingsEqual } from '../../../canvas/ui-jsx-canvas'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { InspectorModal } from '../../widgets/inspector-modal'
 import {
@@ -84,13 +84,17 @@ export const DataSelectorModal = React.memo(
         return matchingScope
       }, [lowestInsertionCeiling, startingSelectedValuePath, scopeBuckets])
 
-      const [selectedScope, setSelectedScope] = React.useState<ElementPath | FileRootPath>(
-        lowestMatchingScope,
+      const [selectedScopes, setSelectedScopes] = React.useState<Array<ElementPath | FileRootPath>>(
+        [lowestMatchingScope],
       )
       const setSelectedScopeAndResetSelection = React.useCallback(
         (scope: ElementPath | FileRootPath) => {
-          setSelectedScope(scope)
-          setSelectedVariableOption(null)
+          setSelectedScopes((currentScopes) => {
+            const scopeAlreadySelected = currentScopes.some((s) => insertionCeilingsEqual(s, scope))
+            return scopeAlreadySelected
+              ? currentScopes.filter((s) => !insertionCeilingsEqual(s, scope))
+              : [...currentScopes, scope]
+          })
         },
         [],
       )
@@ -98,7 +102,7 @@ export const DataSelectorModal = React.memo(
       const { filteredVariablesInScope } = useFilterVariablesInScope(
         allVariablesInScope,
         scopeBuckets,
-        selectedScope,
+        selectedScopes,
       )
 
       const searchBoxRef = React.useRef<HTMLInputElement>(null)
@@ -228,7 +232,7 @@ export const DataSelectorModal = React.memo(
             >
               <DataSelectorLeftSidebar
                 scopes={scopeLabels}
-                activeScope={selectedScope}
+                activeScopes={selectedScopes}
                 setSelectedScope={setSelectedScopeAndResetSelection}
               />
               <FlexColumn
@@ -257,7 +261,7 @@ export const DataSelectorModal = React.memo(
                       onChange={onSearchFieldValueChange}
                       ref={searchBoxRef}
                       value={searchTerm ?? ''}
-                      data-testId='data-selector-modal-search-input'
+                      data-testid='data-selector-modal-search-input'
                       placeholder='Search data'
                       style={{
                         outline: 'none',
@@ -418,24 +422,25 @@ function putVariablesIntoScopeBuckets(options: DataPickerOption[]): ScopeBuckets
 function useFilterVariablesInScope(
   options: DataPickerOption[],
   scopeBuckets: ScopeBuckets,
-  scopeToShow: ElementPath | FileRootPath | 'do-not-filter',
+  scopesToShow: Array<ElementPath | FileRootPath>,
 ): {
   filteredVariablesInScope: Array<DataPickerOption>
 } {
   return React.useMemo(() => {
-    if (scopeToShow === 'do-not-filter') {
+    if (scopesToShow.length === 0) {
       return {
         filteredVariablesInScope: options,
       }
     }
 
-    const matchingScope = findClosestMatchingScope(scopeToShow, scopeBuckets)
-    const filteredOptions: Array<DataPickerOption> =
-      scopeBuckets[insertionCeilingToString(matchingScope)] ?? []
+    const filteredOptions: Array<DataPickerOption> = scopesToShow.flatMap(
+      (scope) =>
+        scopeBuckets[insertionCeilingToString(findClosestMatchingScope(scope, scopeBuckets))] ?? [],
+    )
     return {
       filteredVariablesInScope: filteredOptions,
     }
-  }, [scopeBuckets, options, scopeToShow])
+  }, [scopeBuckets, options, scopesToShow])
 }
 
 function disabledButtonStyles(disabled: boolean): React.CSSProperties {

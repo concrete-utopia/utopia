@@ -132,7 +132,6 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
             height: 20,
             width: 24,
             flex: '0 0 28px',
-            margin: 1,
           }}
           onMouseDown={(e) => {
             if (props.controlStyles.interactive) {

@@ -55,7 +55,7 @@ export const SectionTitleRow: React.FunctionComponent<
       {props.children}
       {unless(
         props.hideButton === true,
-        <SquareButton highlight={true} onClick={handleClick}>
+        <SquareButton highlight onClick={handleClick}>
           <ExpandableIndicator collapsed={props.minimised} selected={false} visible={true} />
         </SquareButton>,
       )}

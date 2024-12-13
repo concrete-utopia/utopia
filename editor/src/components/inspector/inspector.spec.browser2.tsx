@@ -466,7 +466,10 @@ export var storyboard = (
       })
 
     const VisualSections = ['Transforms', 'Background', 'Border', 'Shadow', 'Text Shadow']
-    const LayoutSections = ['Frame', 'Container']
+    const LayoutSections = [
+      'Frame',
+      'α', // this is the label of the opacity input in what used to be the Container section
+    ]
     const LayoutSystemSections = ['Layout System']
     const TypographySections = ['Type']
 

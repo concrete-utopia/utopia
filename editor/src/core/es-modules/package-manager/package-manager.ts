@@ -2,10 +2,10 @@ import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
 import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
 import {
+  isResolveNotPresent,
   isResolveSuccess,
   isResolveSuccessIgnoreModule,
   resolveModule,
-  resolveModulePath,
 } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
@@ -21,6 +21,8 @@ import { string } from 'prop-types'
 import { Either } from '../../shared/either'
 import type { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
+import type { FrameworkHooks } from '../../frameworks/framework-hooks'
+import { getFrameworkHooks } from '../../frameworks/framework-hooks'
 
 export interface FileEvaluationCache {
   exports: any
@@ -96,6 +98,7 @@ export function getRequireFn(
   builtInDependencies: BuiltInDependencies,
   injectedEvaluator = evaluator,
 ): RequireFn {
+  const frameworkHooks: FrameworkHooks = getFrameworkHooks(projectContents)
   return function require(importOrigin, toImport): unknown {
     const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
     if (builtInDependency != null) {
@@ -180,6 +183,16 @@ export function getRequireFn(
         }
 
         throw createResolvingRemoteDependencyError(toImport)
+      }
+    } else if (isResolveNotPresent(resolveResult)) {
+      const frameworkLookupPath = frameworkHooks.onResolveModuleNotPresent(
+        projectContents,
+        nodeModules,
+        importOrigin,
+        toImport,
+      )
+      if (frameworkLookupPath != null) {
+        return require(importOrigin, frameworkLookupPath)
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)

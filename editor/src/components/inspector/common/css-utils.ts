@@ -6,9 +6,7 @@ import type { FramePin } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexJustifyContent,
-  FlexLength,
   FlexWrap,
-  isPercentPin,
   LayoutSystem,
   UtopiaUtils,
 } from 'utopia-api/core'
@@ -31,6 +29,11 @@ import type {
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
+  GridPosition,
+  GridRange,
+  GridAutoOrTemplateBase,
+  GridContainerProperties,
+  GridSpan,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -40,6 +43,10 @@ import {
   isRegularJSXAttribute,
   jsExpressionFunctionCall,
   jsExpressionValue,
+  gridPositionValue,
+  gridRange,
+  gridSpanArea,
+  gridSpanNumeric,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -61,7 +68,7 @@ import {
 } from '../../../core/shared/math-utils'
 import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import { assertNever, type PrimitiveType, type ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
@@ -76,6 +83,9 @@ import {
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 import { memoize } from '../../../core/shared/memoize'
+import * as csstree from 'css-tree'
+import type { IcnProps } from '../../../uuiui'
+import { cssNumberEqual } from '../../canvas/controls/select-mode/controls-common'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -485,6 +495,7 @@ export type CSSNumberType =
   | 'Unitless'
   | 'UnitlessPercent'
   | 'AnyValid'
+  | 'Grid'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
@@ -565,9 +576,222 @@ const CSSNumberUnits: Array<CSSNumberUnit> = [
   '%',
 ]
 
+export function isFR(unit: CSSNumberUnit): unit is 'fr' {
+  return unit === 'fr'
+}
+
 export interface CSSNumber {
   value: number
   unit: CSSNumberUnit | null
+}
+
+export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
+const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
+
+type BaseGridDimension = {
+  lineName: string | null
+}
+
+export type GridCSSNumber = BaseGridDimension & {
+  type: 'NUMBER'
+  value: CSSNumber
+}
+
+export type GridCSSKeyword = BaseGridDimension & {
+  type: 'KEYWORD'
+  value: CSSKeyword<ValidGridDimensionKeyword>
+}
+
+export function gridDimensionsAreEqual(a: GridDimension, b: GridDimension): boolean {
+  switch (a.type) {
+    case 'KEYWORD':
+      if (a.type !== b.type) {
+        return false
+      }
+      return a.value.type === b.value.type && a.value.value === b.value.value
+    case 'NUMBER':
+      if (a.type !== b.type) {
+        return false
+      }
+      return cssNumberEqual(a.value, b.value)
+    case 'MINMAX':
+      if (a.type !== b.type) {
+        return false
+      }
+      return gridDimensionsAreEqual(a.min, b.min) && gridDimensionsAreEqual(a.max, b.max)
+    case 'REPEAT':
+      if (a.type !== b.type) {
+        return false
+      }
+      return (
+        a.times === b.times &&
+        a.value.length === b.value.length &&
+        a.value.every((value, index) => gridDimensionsAreEqual(value, b.value[index]))
+      )
+    default:
+      assertNever(a)
+  }
+}
+
+type BaseGridCSSRepeat = {
+  type: 'REPEAT'
+  value: Array<GridDimension>
+  lineName: string | null
+}
+
+function baseGridCSSRepeat(
+  value: Array<GridDimension>,
+  lineName: string | null,
+): BaseGridCSSRepeat {
+  return {
+    type: 'REPEAT',
+    value: value,
+    lineName: lineName,
+  }
+}
+
+type GridCSSRepeatStatic = BaseGridCSSRepeat & {
+  times: number
+}
+
+function gridCSSRepeatStatic(
+  times: number,
+  value: Array<GridDimension>,
+  lineName: string | null,
+): GridCSSRepeatStatic {
+  return {
+    ...baseGridCSSRepeat(value, lineName),
+    times: times,
+  }
+}
+
+type GridCSSRepeatDynamic = BaseGridCSSRepeat & {
+  times: CSSKeyword<'auto-fill' | 'auto-fit'>
+}
+
+function gridCSSRepeatDynamic(
+  times: CSSKeyword<'auto-fill' | 'auto-fit'>,
+  value: Array<GridDimension>,
+  lineName: string | null,
+): GridCSSRepeatDynamic {
+  return {
+    ...baseGridCSSRepeat(value, lineName),
+    times: times,
+  }
+}
+
+export type GridCSSRepeat = GridCSSRepeatStatic | GridCSSRepeatDynamic
+
+type GridCSSRepeatTimes = GridCSSRepeat['times']
+
+export function isStaticGridRepeat(dim: GridDimension): dim is GridCSSRepeatStatic {
+  return isGridCSSRepeat(dim) && !isCSSKeyword(dim.times)
+}
+
+export function isDynamicGridRepeat(dim: GridDimension): dim is GridCSSRepeatDynamic {
+  return isGridCSSRepeat(dim) && isCSSKeyword(dim.times)
+}
+
+export type GridCSSMinmax = BaseGridDimension & {
+  type: 'MINMAX'
+  min: GridCSSNumber | GridCSSKeyword
+  max: GridCSSNumber | GridCSSKeyword
+}
+
+export function parseGridCSSMinmaxOrRepeat(input: string): GridCSSMinmax | GridCSSRepeat | null {
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type === 'Value') {
+    const parsedDimensions = parseGridChildren(parsed.children)
+    if (
+      isRight(parsedDimensions) &&
+      parsedDimensions.value.length === 1 &&
+      (isGridCSSMinmax(parsedDimensions.value[0]) || isGridCSSRepeat(parsedDimensions.value[0]))
+    ) {
+      return parsedDimensions.value[0]
+    }
+  }
+  return null
+}
+
+export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
+  return dim.type === 'KEYWORD'
+}
+
+export function gridCSSKeyword(
+  value: CSSKeyword<ValidGridDimensionKeyword>,
+  lineName: string | null,
+): GridCSSKeyword {
+  return {
+    type: 'KEYWORD',
+    value: value,
+    lineName: lineName,
+  }
+}
+
+export function gridCSSRepeat(
+  times: GridCSSRepeatTimes,
+  value: GridDimension[],
+  lineName: string | null,
+): GridCSSRepeat {
+  if (typeof times === 'number') {
+    return gridCSSRepeatStatic(times, value, lineName)
+  } else {
+    return gridCSSRepeatDynamic(times, value, lineName)
+  }
+}
+
+export function isGridCSSNumber(dim: GridDimension): dim is GridCSSNumber {
+  return dim.type === 'NUMBER'
+}
+
+export function isGridCSSRepeat(dim: GridDimension): dim is GridCSSRepeat {
+  return dim.type === 'REPEAT'
+}
+
+export function isGridCSSMinmax(dim: GridDimension): dim is GridCSSMinmax {
+  return dim.type === 'MINMAX'
+}
+
+export function gridCSSMinmax(
+  min: GridCSSNumber | GridCSSKeyword,
+  max: GridCSSNumber | GridCSSKeyword,
+  lineName: string | null,
+): GridCSSMinmax {
+  return {
+    type: 'MINMAX',
+    min: min,
+    max: max,
+    lineName: lineName,
+  }
+}
+
+export function gridCSSNumber(value: CSSNumber, lineName: string | null): GridCSSNumber {
+  return {
+    type: 'NUMBER',
+    value: value,
+    lineName: lineName,
+  }
+}
+
+export type GridDiscreteDimension = GridCSSNumber | GridCSSKeyword | GridCSSMinmax
+export type GridDimension = GridDiscreteDimension | GridCSSRepeat
+
+export function printGridCSSNumber(dim: GridDimension): string {
+  switch (dim.type) {
+    case 'KEYWORD':
+      return dim.value.value
+    case 'NUMBER':
+      return `${dim.value.value}${dim.value.unit ?? ''}`
+    case 'REPEAT':
+      if (dim.value.length === 0) {
+        return ''
+      }
+      return dim.value.map(printGridCSSNumber).join(' ')
+    case 'MINMAX':
+      return `minmax(${printGridCSSNumber(dim.min)}, ${printGridCSSNumber(dim.max)})`
+    default:
+      assertNever(dim)
+  }
 }
 
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
@@ -647,6 +871,7 @@ const parseCSSResolutionUnit = (input: string) => parseCSSNumberUnit(input, Reso
 const parseCSSUnitlessUnit = (_: string) => left<string, never>(`No unit expected`)
 const parseCSSUnitlessPercentUnit = (input: string) => parseCSSNumberUnit(input, ['%'])
 const parseCSSAnyValidNumberUnit = (input: string) => parseCSSNumberUnit(input, CSSNumberUnits)
+const parseCSSGridUnit = (input: string) => parseCSSNumberUnit(input, GridCSSNumberUnits)
 
 function unitParseFnForType(
   numberType: CSSNumberType,
@@ -676,6 +901,8 @@ function unitParseFnForType(
       return parseCSSUnitlessPercentUnit
     case 'AnyValid':
       return parseCSSAnyValidNumberUnit
+    case 'Grid':
+      return parseCSSGridUnit
     default:
       const _exhaustiveCheck: never = numberType
       throw new Error(`Unable to parse CSSNumber of type ${numberType}`)
@@ -702,7 +929,7 @@ function parseCSSNumericTypeString(
     return flatMapEither((value) => {
       const maybeUnit = matches[2]
       if (maybeUnit == null || maybeUnit === '') {
-        return right({ value, unit: defaultUnit })
+        return right({ value: value, unit: defaultUnit })
       } else {
         const parsedUnit = parseUnit(maybeUnit)
         return mapEither((unit) => cssNumber(value, unit), parsedUnit)
@@ -724,6 +951,49 @@ export function printCSSNumber(
     return fixNumber(value)
   } else {
     return `${fixNumber(value)}${unit}`
+  }
+}
+
+export function printGridDimensionCSS(dimension: GridDimension): string {
+  const lineName = dimension.lineName != null ? `[${dimension.lineName}] ` : ''
+  return lineName + stringifyGridDimension(dimension)
+}
+
+export function stringifyGridDimension(dimension: GridDimension): string {
+  switch (dimension.type) {
+    case 'KEYWORD': {
+      return dimension.value.value
+    }
+    case 'NUMBER': {
+      return `${printCSSNumber(dimension.value, null)}`
+    }
+    case 'REPEAT': {
+      const times = isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
+      const values = dimension.value.map(printGridDimensionCSS).join(' ')
+      return `repeat(${times}, ${values})`
+    }
+    case 'MINMAX': {
+      const min = stringifyGridDimension(dimension.min)
+      const max = stringifyGridDimension(dimension.max)
+      return `minmax(${min}, ${max})`
+    }
+    default:
+      assertNever(dimension)
+  }
+}
+
+export function printArrayGridDimensions(array: Array<GridDimension>): string {
+  return array.map(printGridDimensionCSS).join(' ')
+}
+
+export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
+  switch (input.type) {
+    case 'DIMENSIONS':
+      return printArrayGridDimensions(input.dimensions)
+    case 'FALLBACK':
+      return input.value
+    default:
+      assertNever(input)
   }
 }
 
@@ -773,6 +1043,16 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSGrid = (input: unknown): Either<string, GridDimension> => {
+  const maybeNumber = parseCSSNumber(input, 'Grid')
+  if (isRight(maybeNumber)) {
+    return right(gridCSSNumber(maybeNumber.value, null))
+  }
+  if (isValidGridDimensionKeyword(input)) {
+    return right(gridCSSKeyword(cssKeyword(input), null))
+  }
+  return left('invalid css grid dimension')
+}
 export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
   const parsed = parseCSSNumber(input, 'Unitless')
   if (isRight(parsed)) {
@@ -780,6 +1060,50 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   } else {
     return parsed
   }
+}
+
+const validGridDimensionKeywords = [
+  'auto',
+  'min-content',
+  'max-content',
+  'none',
+  'inherit',
+  'initial',
+  'unset',
+  'subgrid',
+  'auto-fit',
+  'auto-fill',
+] as const
+
+export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
+
+export function isValidGridDimensionKeyword(value: unknown): value is ValidGridDimensionKeyword {
+  return validGridDimensionKeywords.includes(value as ValidGridDimensionKeyword)
+}
+
+const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
+
+export function parseToCSSGridDimension(input: unknown): Either<string, GridDimension> {
+  function getParts() {
+    if (typeof input === 'string') {
+      const match = input.match(gridCSSTemplateNumberRegex)
+      if (match != null) {
+        return {
+          lineName: match[1],
+          inputToParse: match[2],
+        }
+      }
+    }
+    return { lineName: null, inputToParse: input }
+  }
+  const { lineName: lineName, inputToParse } = getParts()
+
+  return mapEither((value) => {
+    return {
+      ...value,
+      lineName: value.type === 'REPEAT' ? null : lineName,
+    } as GridDimension
+  }, parseCSSGrid(inputToParse))
 }
 
 export const parseCSSNumber = (
@@ -795,6 +1119,232 @@ export const parseCSSNumber = (
   } else {
     return left(`Unable to parse invalid number`)
   }
+}
+
+export function parseGridPosition(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  edge: 'start' | 'end',
+  shorthand: GridPosition | null,
+  input: unknown,
+): Either<string, GridPosition> {
+  if (input === 'auto') {
+    return right(cssKeyword('auto'))
+  } else if (typeof input === 'string') {
+    const referenceTemplate =
+      axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
+    if (referenceTemplate?.type === 'DIMENSIONS') {
+      const maybeArea = referenceTemplate.dimensions.findIndex((dim) => dim.lineName === input)
+      if (maybeArea >= 0) {
+        let value = gridPositionValue(maybeArea + 1)
+        if (
+          edge === 'end' &&
+          shorthand != null &&
+          !isCSSKeyword(shorthand) &&
+          shorthand.numericalPosition === value.numericalPosition
+        ) {
+          value.numericalPosition = (value.numericalPosition ?? 0) + 1
+        }
+        return right(value)
+      }
+    }
+
+    const asNumber = parseNumber(input)
+    return mapEither(gridPositionValue, asNumber)
+  } else if (typeof input === 'number') {
+    return right(gridPositionValue(input))
+  } else {
+    return left('Not a valid grid position.')
+  }
+}
+
+export const GridAutoFlowValues = ['column', 'column dense', 'row', 'row dense', 'dense'] as const
+export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
+
+export function gridAutoFlowIcon(value: GridAutoFlow): IcnProps {
+  switch (value) {
+    case 'column':
+    case 'column dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowDown',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    case 'dense':
+    case 'row':
+    case 'row dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowRight',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    default:
+      assertNever(value)
+  }
+}
+
+export function parseGridAutoFlow(rawValue: string): GridAutoFlow | null {
+  if (GridAutoFlowValues.some((v) => v === rawValue)) {
+    return rawValue as GridAutoFlow
+  }
+
+  return null
+}
+
+export function parseGridRange(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  input: unknown,
+): Either<string, GridRange> {
+  if (typeof input !== 'string') {
+    return left('invalid grid item')
+  }
+
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type !== 'Value') {
+    return left('invalid grid item value')
+  }
+
+  const children = parsed.children.toArray()
+  const slashIndex = children.findIndex((c) => c.type === 'Operator' && c.value === '/')
+
+  const isRange = slashIndex >= 0
+  const start = isRange ? children.slice(0, slashIndex) : children
+  const end = isRange ? children.slice(slashIndex + 1) : []
+
+  if (start.length === 0) {
+    return left('invalid grid item start')
+  }
+
+  const maybeStart = maybeParseGridSpan(start) ?? maybeParseGridLine(start, axis, container)
+  if (maybeStart == null) {
+    return left('missing grid item start')
+  }
+
+  const maybeEnd = maybeParseGridSpan(end) ?? maybeParseGridLine(end, axis, container)
+
+  return right(gridRange(maybeStart, maybeEnd))
+}
+
+export function parseGridAutoOrTemplateBase(
+  input: unknown,
+): Either<string, GridAutoOrTemplateBase> {
+  if (typeof input === 'string') {
+    const parsed = csstree.parse(input, { context: 'value' })
+    if (parsed.type === 'Value') {
+      const dimensions = parseGridChildren(parsed.children)
+      if (isRight(dimensions)) {
+        return right({ type: 'DIMENSIONS', dimensions: dimensions.value })
+      }
+
+      console.warn(`Invalid grid template, falling back: ${dimensions.value}.`)
+      return right({ type: 'FALLBACK', value: input })
+    }
+  }
+  return left('Invalid grid template input.')
+}
+
+export function parseGridChildren(
+  children: csstree.List<csstree.CssNode>,
+): Either<string, GridDimension[]> {
+  let nextLineName: string | null = null
+
+  function getLineName() {
+    const currentLineName = nextLineName != null ? `${nextLineName}` : null
+    nextLineName = null
+    return currentLineName
+  }
+
+  let dimensions: GridDimension[] = []
+  for (const child of children) {
+    switch (child.type) {
+      case 'Dimension': {
+        const parsedDimension = parseCSSNumber(`${child.value}${child.unit}`, 'AnyValid')
+        if (isRight(parsedDimension)) {
+          dimensions.push(gridCSSNumber(parsedDimension.value, getLineName()))
+        } else {
+          return left('Invalid grid CSS dimension.')
+        }
+        break
+      }
+      case 'Identifier': {
+        if (isValidGridDimensionKeyword(child.name)) {
+          dimensions.push(gridCSSKeyword(cssKeyword(child.name), getLineName()))
+        } else {
+          return left('Invalid grid CSS keyword.')
+        }
+        break
+      }
+      case 'Function': {
+        const functionName = child.name.toLowerCase()
+        switch (functionName) {
+          case 'repeat': {
+            const [firstChild, ...otherChildren] = child.children.toArray()
+            const times = parseRepeatTimes(firstChild)
+            if (times == null) {
+              return left('Invalid grid CSS repeat times.')
+            }
+
+            const lineName = getLineName()
+
+            const values = new csstree.List<csstree.CssNode>().fromArray(
+              otherChildren.filter(
+                (c) =>
+                  c.type === 'Dimension' ||
+                  c.type === 'Identifier' ||
+                  c.type === 'Brackets' ||
+                  c.type === 'Function',
+              ),
+            )
+            const parsedDimensions = parseGridChildren(values)
+            if (isRight(parsedDimensions)) {
+              dimensions.push(gridCSSRepeat(times, parsedDimensions.value, lineName))
+            } else {
+              return left('Invalid grid CSS repeat values.')
+            }
+            break
+          }
+          case 'minmax': {
+            const values = new csstree.List<csstree.CssNode>().fromArray(
+              child.children
+                .toArray()
+                .filter((c) => c.type === 'Dimension' || c.type === 'Identifier'),
+            )
+            const parsedDimensions = parseGridChildren(values)
+            if (isRight(parsedDimensions)) {
+              const min = parsedDimensions.value[0]
+              const max = parsedDimensions.value[1]
+              if (
+                min == null ||
+                !(min.type === 'NUMBER' || min.type === 'KEYWORD') ||
+                max == null ||
+                !(max.type === 'NUMBER' || max.type === 'KEYWORD')
+              ) {
+                return left('Invalid minmax arguments.')
+              }
+              dimensions.push(gridCSSMinmax(min, max, getLineName()))
+            }
+            break
+          }
+          default:
+            console.warn(`unknown css grid function ${functionName}`)
+        }
+        break
+      }
+      case 'Brackets': {
+        // The next child will get this line name
+        nextLineName = child.children.toArray().find((c) => c.type === 'Identifier')?.name ?? null
+        break
+      }
+      default:
+        return left(`invalid grid child type ${child.type}`)
+    }
+  }
+  return right(dimensions)
 }
 
 export function parseDisplay(input: unknown): Either<string, string> {
@@ -1933,7 +2483,7 @@ function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSExpression
   )
 }
 
-type CSSOverflow = boolean
+export type CSSOverflow = boolean
 
 function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
   if (typeof overflow === 'string') {
@@ -3517,7 +4067,7 @@ export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | '
 
 export type CSSDirection = 'ltr' | 'rtl'
 
-export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
+export type CSSTextDecorationLine = string
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
 
@@ -3708,12 +4258,7 @@ function printTextAlign(cssTextAlign: CSSTextAlign): JSExpressionValue<Property.
   return jsExpressionValue(cssTextAlign, emptyComments)
 }
 
-const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
-  'underline',
-  'overline',
-  'line-through',
-  'none',
-])
+const parseTextDecorationLine = parseString
 
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
@@ -4090,6 +4635,11 @@ const flexAlignmentsParser: Parser<FlexAlignment> = isOneOfTheseParser([
   FlexAlignment.Center,
   FlexAlignment.FlexEnd,
   FlexAlignment.Stretch,
+  FlexAlignment.Baseline,
+  FlexAlignment.FirstBaseline,
+  FlexAlignment.LastBaseline,
+  FlexAlignment.SafeCenter,
+  FlexAlignment.UnsafeCenter,
 ])
 
 const flexJustifyContentParser: Parser<FlexJustifyContent> = isOneOfTheseParser([
@@ -4099,6 +4649,10 @@ const flexJustifyContentParser: Parser<FlexJustifyContent> = isOneOfTheseParser(
   FlexJustifyContent.SpaceAround,
   FlexJustifyContent.SpaceBetween,
   FlexJustifyContent.SpaceEvenly,
+  FlexJustifyContent.Stretch,
+  FlexJustifyContent.Normal,
+  FlexJustifyContent.SafeCenter,
+  FlexJustifyContent.UnsafeCenter,
 ])
 
 export type CSSPosition = '-webkit-sticky' | 'absolute' | 'fixed' | 'relative' | 'static' | 'sticky'
@@ -4184,7 +4738,8 @@ export interface ParsedCSSProperties {
   flexWrap: FlexWrap
   flexDirection: FlexDirection
   alignItems: FlexAlignment
-  alignContent: FlexAlignment
+  justifyItems: FlexAlignment
+  alignContent: FlexJustifyContent
   justifyContent: FlexJustifyContent
   alignSelf: FlexAlignment
   position: CSSPosition
@@ -4205,6 +4760,9 @@ export interface ParsedCSSProperties {
   flexBasis: CSSNumber | undefined
   gap: CSSNumber
   zIndex: CSSNumber | undefined
+  rowGap: CSSNumber
+  columnGap: CSSNumber
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4291,7 +4849,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: {
     paddingTop: {
@@ -4411,6 +4970,15 @@ export const cssEmptyValues: ParsedCSSProperties = {
     unit: null,
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: null,
+  },
+  columnGap: {
+    value: 0,
+    unit: null,
+  },
+  gridAutoFlow: null,
 }
 
 type CSSParsers = {
@@ -4451,7 +5019,8 @@ export const cssParsers: CSSParsers = {
   flexWrap: flexWrapParser,
   flexDirection: parseFlexDirection,
   alignItems: flexAlignmentsParser,
-  alignContent: flexAlignmentsParser,
+  justifyItems: flexAlignmentsParser,
+  alignContent: flexJustifyContentParser,
   justifyContent: flexJustifyContentParser,
   padding: parsePadding,
   paddingTop: parseCSSLengthPercent,
@@ -4483,6 +5052,9 @@ export const cssParsers: CSSParsers = {
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
   zIndex: parseCSSUnitless,
+  rowGap: parseCSSLengthPercent,
+  columnGap: parseCSSLengthPercent,
+  gridAutoFlow: parseGridAutoFlowValue,
 }
 
 type CSSPrinters = {
@@ -4525,6 +5097,7 @@ const cssPrinters: CSSPrinters = {
   flexWrap: jsxAttributeValueWithNoComments,
   flexDirection: jsxAttributeValueWithNoComments,
   alignItems: jsxAttributeValueWithNoComments,
+  justifyItems: jsxAttributeValueWithNoComments,
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
   padding: printPaddingAsAttributeValue,
@@ -4557,6 +5130,9 @@ const cssPrinters: CSSPrinters = {
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
   zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
+  rowGap: printCSSNumberAsAttributeValue('px'),
+  columnGap: printCSSNumberAsAttributeValue('px'),
+  gridAutoFlow: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -4925,7 +5501,10 @@ export const computedStyleKeys: Array<string> = Object.keys({
   ...layoutEmptyValuesNew,
 })
 
-type Parser<T> = (simpleValue: unknown, rawValue: ModifiableAttribute | null) => Either<string, T>
+export type Parser<T> = (
+  simpleValue: unknown,
+  rawValue: ModifiableAttribute | null,
+) => Either<string, T>
 
 type ParseFunction<T, K extends keyof T> = (
   prop: K,
@@ -4990,6 +5569,14 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
   } catch (e) {
     return left(`Failed to parse value for property ${prop}: ${e}`)
   }
+}
+
+function parseGridAutoFlowValue(value: unknown): Either<string, GridAutoFlow> {
+  const maybeParsedValue = typeof value !== 'string' ? null : parseGridAutoFlow(value)
+  if (maybeParsedValue == null) {
+    return left(`${value} is not a valid grid-auto-flow value`)
+  }
+  return right(maybeParsedValue)
 }
 
 // hmmmm
@@ -5192,7 +5779,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: nontrivial,
   paddingTop: {
@@ -5271,6 +5859,15 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: 'px',
+  },
+  columnGap: {
+    value: 0,
+    unit: 'px',
+  },
+  gridAutoFlow: null,
 }
 
 export function isTrivialDefaultValue(
@@ -5304,4 +5901,82 @@ export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
   const newValue = { ...oldValue }
   newValue.enabled = !newValue.enabled
   return newValue
+}
+
+function parseRepeatTimes(firstChild: csstree.CssNode) {
+  switch (firstChild.type) {
+    case 'Number':
+      return parseInt(firstChild.value) ?? '0'
+    case 'Identifier':
+      return firstChild.name === 'auto-fill' || firstChild.name === 'auto-fit'
+        ? cssKeyword(firstChild.name)
+        : null
+    default:
+      return null
+  }
+}
+
+export function maybeParseGridSpan(nodes: csstree.CssNode[]): GridSpan | null {
+  if (nodes.length !== 2) {
+    return null
+  }
+
+  const spanIndex = nodes.findIndex((node) => node.type === 'Identifier' && node.name === 'span')
+  if (spanIndex < 0) {
+    return null
+  }
+
+  const valueNodes = nodes.slice(0, spanIndex).concat(nodes.slice(spanIndex + 1))
+
+  const numericValue: csstree.NumberNode | null =
+    valueNodes.find((node) => node.type === 'Number') ?? null
+  const areaValue: csstree.Identifier | null =
+    valueNodes.find((node) => node.type === 'Identifier') ?? null
+
+  if (numericValue != null) {
+    return gridSpanNumeric(parseInt(numericValue.value))
+  } else if (areaValue != null) {
+    return gridSpanArea(areaValue.name)
+  } else {
+    return null
+  }
+}
+
+export function maybeParseGridLine(
+  nodes: csstree.CssNode[],
+  axis: 'row' | 'column',
+  container: GridContainerProperties,
+): GridPosition | null {
+  if (nodes.length !== 1) {
+    return null
+  }
+
+  const firstNode = nodes[0]
+  switch (firstNode.type) {
+    case 'Number':
+      return gridPositionValue(parseInt(firstNode.value))
+    case 'Identifier':
+      // the identifier can either be a keyword…
+      if (isValidGridDimensionKeyword(firstNode.name)) {
+        return cssKeyword(firstNode.name)
+      }
+
+      // …or a line name, in which case look it up in the template and return its index
+      const targetTracks =
+        axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
+      // TODO important! this behavior is currently incorrect, as this needs to find the _first_ lineName (in case of repeats)
+      // or otherwise relative (even backwards).
+      const maybeLineFromName =
+        targetTracks?.type === 'DIMENSIONS'
+          ? targetTracks.dimensions.findIndex((dim) => dim.lineName === firstNode.name)
+          : null
+      if (maybeLineFromName == null || maybeLineFromName < 0) {
+        // line name not found
+        return null
+      }
+
+      return gridPositionValue(maybeLineFromName + 1) // tracks are 1-indexed
+    default:
+      return null
+  }
 }

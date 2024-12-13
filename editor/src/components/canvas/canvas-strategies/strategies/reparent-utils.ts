@@ -62,6 +62,7 @@ import { set } from '../../../../core/shared/optics/optic-utilities'
 import { fromField, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 import type { FileRootPath } from '../../ui-jsx-canvas'
+import { getFilePathMappings } from '../../../../core/model/project-file-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -110,6 +111,7 @@ function adjustElementDuplicateName(
     fileContents.imports,
     element.imports,
     targetFile,
+    getFilePathMappings(projectContents),
   )
   // handle element name
   if (isJSXElement(element.element)) {
@@ -317,10 +319,10 @@ export function getReparentOutcomeMultiselect(
 
 export function cursorForMissingReparentedItems(
   reparentedToPaths: Array<ElementPath>,
-  spyMetadata: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
 ): CSSCursor | null {
   for (const reparentedToPath of reparentedToPaths) {
-    if (!(EP.toString(reparentedToPath) in spyMetadata)) {
+    if (!(EP.toString(reparentedToPath) in metadata)) {
       return CSSCursor.NotPermitted
     }
   }
@@ -534,6 +536,36 @@ function pasteNextToSameSizedElement(
     }
   }
   return null
+}
+
+function pasteIntoNextGridCell(
+  copyData: ParsedCopyData,
+  selectedViews: NonEmptyArray<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): ReparentTargetForPaste | null {
+  if (selectedViews.length === 0) {
+    return null
+  }
+  const selectedView = lastOfNonEmptyArray(selectedViews)
+
+  // if the copied elements are grid cells and the target is a grid cell, paste next to it
+
+  const copyDataElementsAreGridCells = copyData.elementPaste.every(({ originalElementPath }) =>
+    MetadataUtils.isGridItem(copyData.originalContextMetadata, originalElementPath),
+  )
+  if (!copyDataElementsAreGridCells) {
+    return null
+  }
+
+  const targetIsGridChild = MetadataUtils.isGridItem(metadata, selectedView)
+  if (!targetIsGridChild) {
+    return null
+  }
+
+  return {
+    type: 'parent',
+    parentPath: childInsertionPath(EP.parentPath(selectedView)),
+  }
 }
 
 function canInsertIntoTarget(
@@ -758,6 +790,11 @@ export function getTargetParentForPaste(
   )
   if (pasteNextToSameSizedElementResult != null) {
     return right(pasteNextToSameSizedElementResult)
+  }
+
+  const paseIntoNextGridCellResult = pasteIntoNextGridCell(copyData, selectedViews, metadata)
+  if (paseIntoNextGridCellResult != null) {
+    return right(paseIntoNextGridCellResult)
   }
 
   const pasteIntoParentOrGrandparentResult = pasteIntoParentOrGrandparent(

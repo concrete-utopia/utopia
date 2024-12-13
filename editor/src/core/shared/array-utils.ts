@@ -68,7 +68,7 @@ export function mapAndFilter<T, U>(
 }
 
 export function mapFirstApplicable<T, U>(
-  array: ReadonlyArray<T>,
+  array: Iterable<T>,
   mapFn: (t: T, i: number) => U | null,
 ): U | null {
   for (const value of array) {
@@ -272,6 +272,12 @@ export function addUniquely<T extends string | number | boolean | null | undefin
   }
 }
 
+export function pushUniquelyBy<T>(array: Array<T>, value: T, eq: (l: T, r: T) => boolean): void {
+  if (array.findIndex((a) => eq(a, value)) === -1) {
+    array.push(value)
+  }
+}
+
 export function addAllUniquely<T extends string | number | boolean | null | undefined>(
   array: Array<T>,
   values: Array<T>,
@@ -286,7 +292,7 @@ export function addAllUniquelyBy<T>(
 ): Array<T> {
   let workingArray = [...array]
   fastForEach(values, (value) => {
-    if (array.findIndex((a) => eq(a, value)) === -1) {
+    if (!workingArray.some((a) => eq(a, value))) {
       workingArray.push(value)
     }
   })
@@ -524,4 +530,76 @@ export function isPrefixOf<T>(
 
 export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
   return Array.isArray(ts) ? ts : [ts]
+}
+
+export function createArrayWithLength<T>(length: number, value: (index: number) => T): T[] {
+  return Array.from({ length }, (_, index) => {
+    // see issue https://github.com/microsoft/TypeScript/issues/37750
+    return value instanceof Function ? value(index) : value
+  })
+}
+
+export function matrixGetter<T>(array: T[], width: number): (row: number, column: number) => T {
+  return (row, column) => {
+    return array[row * width + column]
+  }
+}
+
+export function range(start: number, end: number): Array<number> {
+  let result: Array<number> = []
+  for (let i = start; i < end; i++) {
+    result.push(i)
+  }
+  return result
+}
+
+export function chunkArrayEqually<T>(
+  sortedArray: T[],
+  numberOfChunks: number,
+  valueFn: (t: T) => number,
+): T[][] {
+  const chunks: T[][] = Array.from({ length: numberOfChunks }, () => [])
+  const chunkSums: number[] = Array(numberOfChunks).fill(0)
+  for (const data of sortedArray) {
+    let minIndex = 0
+    for (let i = 1; i < numberOfChunks; i++) {
+      if (chunkSums[i] < chunkSums[minIndex]) {
+        minIndex = i
+      }
+    }
+    chunks[minIndex].push(data)
+    chunkSums[minIndex] += valueFn(data)
+  }
+  return chunks.filter((chunk) => chunk.length > 0)
+}
+
+export function sortArrayByAndReturnPermutation<T>(
+  array: T[],
+  sortFn: (t: T) => number,
+  ascending: boolean = true,
+): { sortedArray: T[]; permutation: number[] } {
+  const permutation = array.map((_, index) => index)
+  permutation.sort((a, b) => {
+    const sortResult = sortFn(array[a]) - sortFn(array[b])
+    return ascending ? sortResult : -sortResult
+  })
+  const sortedArray = permutation.map((index) => array[index])
+  return { sortedArray, permutation }
+}
+
+export function revertArrayOrder<T>(array: T[], permutation: number[]): T[] {
+  return array.map((_, index) => array[permutation.indexOf(index)])
+}
+
+// From https://stackoverflow.com/a/31879739
+export function interleaveArray<T>(array: T[], elem: T): T[] {
+  const newArray = []
+  let i = 0
+  if (i < array.length) {
+    newArray.push(array[i++])
+  }
+  while (i < array.length) {
+    newArray.push(elem, array[i++])
+  }
+  return newArray
 }

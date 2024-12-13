@@ -17,7 +17,7 @@ import { matchPath, matchRoutes } from 'react-router'
 import { useDispatch } from './store/dispatch-context'
 import { showToast } from './actions/action-creators'
 import { notice } from '../common/notice'
-import { defaultEither } from '../../core/shared/either'
+import { defaultEither, foldEither } from '../../core/shared/either'
 import { getFeaturedRoutesFromPackageJSON } from '../../printer-parsers/html/external-resources-parser'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
@@ -41,7 +41,12 @@ export const RemixNavigationBar = React.memo(() => {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
   const routes = useEditorState(
     Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
+    (store) =>
+      foldEither(
+        () => [],
+        (remixData) => remixData?.routes ?? [],
+        store.derived.remixData,
+      ),
     'RemixNavigationBar routes',
   )
   const featuredRoutes = useEditorState(
@@ -132,13 +137,11 @@ export const RemixNavigationBar = React.memo(() => {
     <FlexRow
       style={{
         gap: 10,
-        alignSelf: 'stretch',
-        alignItems: 'center',
-        justifyContent: 'center',
         pointerEvents: 'initial',
         userSelect: 'none',
         padding: '0 8px',
         height: 32,
+        width: '100%',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
@@ -196,8 +199,10 @@ export const RemixNavigationBar = React.memo(() => {
           padding: '2px 2px 2px 6px',
           fontSize: 11,
           minWidth: 150,
+          flexGrow: 1,
           height: 20,
           alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
         <StringInput

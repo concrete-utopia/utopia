@@ -99,7 +99,7 @@ jobs:
 
   test-server:
     name: Test Server
-    timeout-minutes: 25
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}

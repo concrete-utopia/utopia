@@ -7,7 +7,7 @@ import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies
 export function getCursorFromEditor(editorState: EditorState): CSSCursor | null {
   const forMissingReparentedItems = cursorForMissingReparentedItems(
     editorState.canvas.controls.reparentedToPaths,
-    editorState.spyMetadata,
+    editorState.jsxMetadata,
   )
   return forMissingReparentedItems ?? editorState.canvas.cursor
 }

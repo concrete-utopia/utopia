@@ -47,7 +47,8 @@ const FourthRevision = updateModel(ThirdRevision)
 let forcedNextProjectId: string | null = null
 
 function mockRandomProjectID(): string {
-  const newId = forcedNextProjectId == null ? generateUID(allProjectIds) : forcedNextProjectId
+  const newId =
+    forcedNextProjectId == null ? generateUID(new Set(allProjectIds)) : forcedNextProjectId
   forcedNextProjectId = null
   allProjectIds.push(newId)
   return newId

@@ -1,6 +1,6 @@
 import React from 'react'
 import { when } from '../../../../../utils/react-conditionals'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader, Tooltip } from '../../../../../uuiui'
+import { FlexColumn, FlexRow, Tooltip, UtopiaTheme } from '../../../../../uuiui'
 import { Link } from '../../../../../uuiui/link'
 import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
@@ -14,6 +14,10 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { RadiusRow } from '../../style-section/container-subsection/radius-row'
 import { ClipContentControl } from './clip-content-control'
 import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { getInspectorPreferencesForTargets } from '../../../../../core/property-controls/property-controls-utils'
+import { AlignmentButtons } from '../../../alignment-buttons'
+import { GridPlacementSubsection } from '../../style-section/container-subsection/grid-cell-subsection'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -27,43 +31,75 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 
   const showWrapperSectionWarning = selectedElementContract === 'wrapper-div'
 
+  const isCodeElement = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every(
+        (path) =>
+          MetadataUtils.isConditional(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
+      ),
+    'SimplifiedLayoutSubsection isCodeElement',
+  )
+
+  const inspectorPreferences = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      getInspectorPreferencesForTargets(
+        store.editor.selectedViews,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      ),
+    'SimplifiedLayoutSubsection inspectorPreferences',
+  )
+
+  const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
+
+  const shouldShowGridCellSection = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length === 1 &&
+      MetadataUtils.isGridItem(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'Inspector shouldShowGridCellSection',
+  )
+
   return (
-    <FlexColumn style={{ paddingBottom: 8 }}>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <EditorContractDropdown />
-          <ResizeToFitControl />
-        </FlexRow>
-      </InspectorSubsectionHeader>
+    <FlexColumn>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          gap: 8,
+          height: UtopiaTheme.layout.rowHeight.normal,
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px 0 4px`,
+          fontWeight: 600,
+        }}
+      >
+        <EditorContractDropdown />
+        <ResizeToFitControl />
+      </FlexRow>
       {when(showWrapperSectionWarning, <WrapperElementDisclosureBox />)}
-      <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
+      <FlexColumn style={{ paddingLeft: 8, paddingRight: 8 }}>
         {when(
           showLayoutSection,
           <>
+            {when(shouldShowAlignmentButtons, <AlignmentButtons />)}
             <FrameUpdatingLayoutSection />
-            <UIGridRow
-              padded={false}
-              variant='<--1fr--><--1fr-->'
-              style={{ minHeight: undefined, gap: 4 }}
-            >
+            <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
               <FixedHugDropdown dimension='width' />
               <FixedHugDropdown dimension='height' />
             </UIGridRow>
-            <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+            <UIGridRow padded={false} variant='<-------------1fr------------->'>
               <RadiusRow />
-            </FlexRow>
-            <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+            </UIGridRow>
+            <UIGridRow padded={false} variant='<-------------1fr------------->'>
               <ClipContentControl />
-            </FlexRow>
+            </UIGridRow>
           </>,
         )}
       </FlexColumn>
+      {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
     </FlexColumn>
   )
 })

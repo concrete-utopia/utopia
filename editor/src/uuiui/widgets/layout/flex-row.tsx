@@ -13,16 +13,18 @@ import React from 'react'
 export const FlexRow = styled.div([commonSenseUtopiaLayoutShorthands, { ...flexRowStyle }])
 FlexRow.displayName = 'FlexRow'
 
-export const SimpleFlexRow = (props: JSX.IntrinsicElements['div']) => {
-  const mergedProps = React.useMemo(() => {
-    return {
-      ...props,
-      style: {
-        ...flexRowStyle,
-        ...props.style,
-      },
-    }
-  }, [props])
-  return <div {...mergedProps} />
-}
+export const SimpleFlexRow = React.forwardRef<HTMLDivElement, JSX.IntrinsicElements['div']>(
+  (props, ref) => {
+    const mergedProps = React.useMemo(() => {
+      return {
+        ...props,
+        style: {
+          ...flexRowStyle,
+          ...props.style,
+        },
+      }
+    }, [props])
+    return <div ref={ref} {...mergedProps} />
+  },
+)
 SimpleFlexRow.displayName = 'SimpleFlexRow'

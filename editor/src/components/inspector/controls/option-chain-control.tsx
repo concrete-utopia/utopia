@@ -3,7 +3,7 @@
 import type { Interpolation } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { colorTheme } from '../../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
@@ -16,6 +16,7 @@ export interface OptionChainOption<T> {
   label?: string
   tooltip?: string
   forceCallOnSubmitValue?: boolean // Call the onSubmitValue again even when the control is already on that value
+  disabled?: boolean
 }
 
 export function getOptionControlTestId(testIdPrefix: string, postfix: string): string {
@@ -64,8 +65,8 @@ export const OptionChainControl: React.FunctionComponent<
         style={{
           display: 'flex',
           flexDirection: 'row',
-          border: `1px solid ${colorTheme.bg2.value}`,
-          borderRadius: 3,
+          border: `1px solid ${colorTheme.bg4.value}`,
+          borderRadius: UtopiaTheme.inputBorderRadius,
           padding: '1px',
         }}
         className={`option-chain-control-container ${Utils.pathOr(
@@ -89,12 +90,18 @@ export const OptionChainControl: React.FunctionComponent<
               icon: option.icon,
               iconComponent: option.iconComponent,
               labelInner: option.label,
+              disabled: option.disabled,
             }}
             value={props.value === option.value}
             // eslint-disable-next-line react/jsx-no-bind
-            onSubmitValue={(value: boolean) => {
-              if (value || option.forceCallOnSubmitValue) {
+            onSubmitValue={(isChecked: boolean) => {
+              if (option.disabled === true) {
+                return
+              }
+              if (isChecked || option.forceCallOnSubmitValue) {
                 props.onSubmitValue(option.value)
+              } else {
+                props.onUnsetValues?.()
               }
             }}
           />

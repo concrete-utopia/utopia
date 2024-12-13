@@ -3,15 +3,15 @@ import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-cont
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
-import { AddRemoveLayoutSystemControlTestId } from '../add-remove-layout-system-control'
+import { removeLayout } from '../layout-systems.test-utils'
 
 describe('remove-flex-convert-to-absolute strategy', () => {
   it('remove flex layout', async () => {
-    const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
+    const editor = await renderTestEditorWithCode(flexProject(), 'await-first-dom-report')
     const root = await selectDiv(editor)
 
     await expectSingleUndo2Saves(editor, async () => {
-      await clickOn(editor)
+      await removeLayout(editor)
     })
 
     expect(root.style.display).toEqual('')
@@ -37,6 +37,51 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     expect(right.style.height).toEqual('362px')
     expect(right.style.width).toEqual('259px')
   })
+
+  it('remove grid layout', async () => {
+    const editor = await renderTestEditorWithCode(gridProject(), 'await-first-dom-report')
+
+    const root = await selectDiv(editor)
+
+    await expectSingleUndo2Saves(editor, async () => {
+      await removeLayout(editor)
+    })
+
+    expect(root.style.display).toEqual('')
+    expect(root.style.alignItems).toEqual('')
+    expect(root.style.justifyContent).toEqual('')
+    expect(root.style.gap).toEqual('')
+    expect(root.style.paddingTop).toEqual('10px')
+    expect(root.style.paddingBottom).toEqual('10px')
+    expect(root.style.width).toEqual('540px')
+    expect(root.style.height).toEqual('420px')
+
+    const one = editor.renderedDOM.getByTestId('one')
+    expect(one.style.position).toEqual('absolute')
+    expect(one.style.left).toEqual('187px')
+    expect(one.style.top).toEqual('147px')
+    expect(one.style.height).toEqual('264px')
+    expect(one.style.width).toEqual('167px')
+    expect(one.style.gridColumn).toEqual('')
+    expect(one.style.gridColumnStart).toEqual('')
+    expect(one.style.gridColumnEnd).toEqual('')
+    expect(one.style.gridRow).toEqual('')
+    expect(one.style.gridRowStart).toEqual('')
+    expect(one.style.gridRowEnd).toEqual('')
+
+    const two = editor.renderedDOM.getByTestId('two')
+    expect(two.style.position).toEqual('absolute')
+    expect(two.style.left).toEqual('10px')
+    expect(two.style.top).toEqual('10px')
+    expect(two.style.height).toEqual('127px')
+    expect(two.style.width).toEqual('520px')
+    expect(two.style.gridColumn).toEqual('')
+    expect(two.style.gridColumnStart).toEqual('')
+    expect(two.style.gridColumnEnd).toEqual('')
+    expect(two.style.gridRow).toEqual('')
+    expect(two.style.gridRowStart).toEqual('')
+    expect(two.style.gridRowEnd).toEqual('')
+  })
 })
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
@@ -53,13 +98,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   return div
 }
 
-async function clickOn(editor: EditorRenderResult): Promise<void> {
-  const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
-
-  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
-}
-
-function project(): string {
+function flexProject(): string {
   return `import * as React from 'react'
         import { Storyboard } from 'utopia-api'
         
@@ -106,4 +145,51 @@ function project(): string {
           </Storyboard>
         )
         `
+}
+
+function gridProject(): string {
+  return `
+import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-uid='root'
+      data-testid='root'
+      style={{
+        backgroundColor: '#fff',
+        position: 'absolute',
+        width: 540,
+        height: 420,
+        gap: 10,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gridTemplateRows: '1fr 1fr 1fr',
+        padding: 10,
+      }}
+    >
+      <div
+        data-uid='one'
+        data-testid='one'
+        style={{
+          backgroundColor: '#f90',
+          gridRow: '2 / 4',
+          gridColumn: 2,
+        }}
+      />
+      <div
+        data-uid='two'
+        data-testid='two'
+        style={{
+          backgroundColor: '#09f',
+          gridRowStart: 1,
+          gridRowEnd: 2,
+          gridColumnStart: 1,
+          gridColumnEnd: 4,
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
 }

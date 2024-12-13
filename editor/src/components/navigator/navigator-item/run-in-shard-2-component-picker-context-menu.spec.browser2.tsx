@@ -19,6 +19,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
+  mouseDownAtPoint,
   mouseMoveToPoint,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
@@ -34,6 +35,7 @@ import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-it
 import { NavigatorContainerId } from '../navigator'
 import { act } from 'react-dom/test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -543,7 +545,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
 
     const flexRowRow = editor.renderedDOM.queryByTestId(
       labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
@@ -717,7 +719,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
 
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -896,7 +898,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
 
     const submenuButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
     await mouseMoveToPoint(submenuButton, { x: 3, y: 3 })
@@ -1196,13 +1198,17 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:pg_root/card/prop_label_title',
     )
-    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
     await editor.getDispatchFollowUpActionsFinished()
 
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
       'regular-sb/scene/pg:pg-root',
@@ -1213,7 +1219,9 @@ describe('The navigator component picker context menu', () => {
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
     expect(
-      editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        editor.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -1274,12 +1282,16 @@ describe('The navigator component picker context menu', () => {
       { x: 2, y: 2 },
     )
 
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
+
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('div'))
+    await mouseClickAtPoint(menuButton, { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -1375,12 +1387,17 @@ export var storyboard = (
       { x: 2, y: 2 },
     )
 
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
+
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
+    const column = await waitFor(() => editor.renderedDOM.getByText('Column'))
+
+    await mouseClickAtPoint(column, { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
     expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
@@ -1533,7 +1550,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -1652,7 +1671,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',

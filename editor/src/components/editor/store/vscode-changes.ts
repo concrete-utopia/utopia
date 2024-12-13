@@ -21,10 +21,8 @@ import {
 import type {
   UpdateDecorationsMessage,
   SelectedElementChanged,
-  AccumulatedToVSCodeMessage,
-  ToVSCodeMessageNoAccumulated,
+  FromUtopiaToVSCodeMessage,
 } from 'utopia-vscode-common'
-import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { EditorState } from './editor-state'
 import { getHighlightBoundsForElementPaths } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -203,19 +201,9 @@ export function shouldIncludeSelectedElementChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
 ): boolean {
-  const oldHighlightBounds = getHighlightBoundsForElementPaths(
-    oldEditorState.selectedViews,
-    oldEditorState,
-  )
-  const newHighlightBounds = getHighlightBoundsForElementPaths(
-    newEditorState.selectedViews,
-    newEditorState,
-  )
   return (
-    !(
-      EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
-      shallowEqual(oldHighlightBounds, newHighlightBounds)
-    ) && newEditorState.selectedViews.length > 0
+    !EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+    newEditorState.selectedViews.length > 0
   )
 }
 
@@ -302,15 +290,15 @@ export const emptyProjectChanges: ProjectChanges = {
   selectedChanged: null,
 }
 
-export function projectChangesToVSCodeMessages(local: ProjectChanges): AccumulatedToVSCodeMessage {
-  let messages: Array<ToVSCodeMessageNoAccumulated> = []
+function projectChangesToVSCodeMessages(local: ProjectChanges): Array<FromUtopiaToVSCodeMessage> {
+  let messages: Array<FromUtopiaToVSCodeMessage> = []
   if (local.updateDecorations != null) {
     messages.push(local.updateDecorations)
   }
   if (local.selectedChanged != null) {
     messages.push(local.selectedChanged)
   }
-  return accumulatedToVSCodeMessage(messages)
+  return messages
 }
 
 export function getProjectChanges(
@@ -334,7 +322,5 @@ export function getProjectChanges(
 export function sendVSCodeChanges(changes: ProjectChanges) {
   applyProjectChanges(changes.fileChanges.changesForVSCode)
   const toVSCodeAccumulated = projectChangesToVSCodeMessages(changes)
-  if (toVSCodeAccumulated.messages.length > 0) {
-    sendMessage(toVSCodeExtensionMessage(toVSCodeAccumulated))
-  }
+  toVSCodeAccumulated.forEach((message) => sendMessage(message))
 }

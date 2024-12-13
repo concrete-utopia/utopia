@@ -220,6 +220,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_OPERATIONS':
+      return UPDATE_FNS.UPDATE_IMPORT_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_STATUS':
+      return UPDATE_FNS.UPDATE_IMPORT_STATUS(action, state)
+    case 'SET_IMPORT_WIZARD_OPEN':
+      return UPDATE_FNS.SET_IMPORT_WIZARD_OPEN(action, state)
+    case 'UPDATE_PROJECT_REQUIREMENTS':
+      return UPDATE_FNS.UPDATE_PROJECT_REQUIREMENTS(action, state, dispatch)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEWS':
@@ -262,14 +270,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
       return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
-    case 'UPDATE_PREVIEW_CONNECTED':
-      return UPDATE_FNS.UPDATE_PREVIEW_CONNECTED(action, state)
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
       return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch)
-    case 'SEND_PREVIEW_MODEL':
-      return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'UPDATE_REMIX_ROUTE':
@@ -291,7 +295,7 @@ export function runSimpleLocalEditorAction(
     case 'REMOVE_FILE_CONFLICT':
       return UPDATE_FNS.REMOVE_FILE_CONFLICT(action, state)
     case 'UPDATE_FROM_WORKER':
-      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState)
+      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState, dispatch)
     case 'UPDATE_FROM_CODE_EDITOR':
       return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(
         action,
@@ -326,6 +330,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'UPDATE_METADATA_IN_EDITOR_STATE':
+      return UPDATE_FNS.UPDATE_METADATA_IN_EDITOR_STATE(action, state, spyCollector)
     case 'TRUE_UP_ELEMENTS':
       return UPDATE_FNS.TRUE_UP_ELEMENTS(state)
     case 'SET_PROP':
@@ -343,7 +349,7 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state)
     case 'UNWRAP_ELEMENTS':
       return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
@@ -386,7 +392,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':
-      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
+      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
@@ -491,6 +497,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.REPLACE_MAPPED_ELEMENT(action, state)
     case 'REPLACE_ELEMENT_IN_SCOPE':
       return UPDATE_FNS.REPLACE_ELEMENT_IN_SCOPE(action, state)
+    case 'SET_ERROR_BOUNDARY_HANDLING':
+      return UPDATE_FNS.SET_ERROR_BOUNDARY_HANDLING(action, state)
     default:
       return state
   }

@@ -2,7 +2,8 @@ import * as EP from '../../../../core/shared/element-path'
 import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { shiftModifier } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { ctrlModifier, shiftModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -498,6 +499,7 @@ async function dragElement(
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   midDragCallback?: () => Promise<void>,
+  modifiers?: Modifiers,
 ): Promise<void> {
   await mouseDownAtPoint(canvasControlsLayer, startPoint)
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
@@ -526,12 +528,22 @@ async function runTest(
   const { x, y } = startPoint
 
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  await dragElement(canvasControlsLayer, startPoint, windowPoint({ x: 20, y: 0 }), async () => {
-    await mouseDownAtPoint(divToBeDragged, { x: x, y: y })
-    await mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
+  await dragElement(
+    canvasControlsLayer,
+    startPoint,
+    windowPoint({ x: 20, y: 0 }),
+    async () => {
+      await mouseDownAtPoint(divToBeDragged, { x: x, y: y }, { modifiers: ctrlModifier })
+      await mouseMoveToPoint(
+        divToBeDragged,
+        { x: x + 20, y: y },
+        { eventOptions: { buttons: 1 }, modifiers: ctrlModifier },
+      )
 
-    check(editor)
-  })
+      check(editor)
+    },
+    ctrlModifier,
+  )
 }
 
 describe('finds an applicable strategy for the nearest ancestor', () => {

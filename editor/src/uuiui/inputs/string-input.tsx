@@ -3,12 +3,13 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import composeRefs from '@seznam/compose-react-refs'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ControlStatus } from '../../components/inspector/common/control-status'
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { useColorTheme } from '../styles/theme'
+import { UtopiaTheme, useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 import { dataPasteHandler } from '../../utils/paste-handler'
@@ -32,6 +33,9 @@ export interface StringInputProps
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
   pasteHandler?: boolean
+  showBorder?: boolean
+  innerStyle?: React.CSSProperties
+  ellipsize?: boolean
 }
 
 export const StringInput = React.memo(
@@ -40,11 +44,14 @@ export const StringInput = React.memo(
       {
         controlStatus = 'simple',
         style,
+        innerStyle,
         focusOnMount = false,
         includeBoxShadow = true,
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
+        showBorder,
+        ellipsize,
         ...inputProps
       },
       propsRef,
@@ -84,6 +91,13 @@ export const StringInput = React.memo(
 
       const placeholder = getControlStylesAwarePlaceholder(controlStyles) ?? initialPlaceHolder
 
+      let inputStyle: CSSProperties = {}
+      if (ellipsize) {
+        inputStyle.textOverflow = 'ellipsis'
+        inputStyle.whiteSpace = 'nowrap'
+        inputStyle.overflow = 'hidden'
+      }
+
       return (
         <form
           autoComplete='off'
@@ -93,11 +107,13 @@ export const StringInput = React.memo(
         >
           <div
             className='string-input-container'
+            style={innerStyle}
             css={{
-              borderRadius: 2,
+              borderRadius: UtopiaTheme.inputBorderRadius,
               color: controlStyles.mainColor,
               position: 'relative',
               background: 'transparent',
+              boxShadow: showBorder ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}` : undefined,
               '&:hover': {
                 boxShadow: includeBoxShadow
                   ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`
@@ -136,6 +152,7 @@ export const StringInput = React.memo(
               autoComplete='off'
               spellCheck={false}
               growInputAutomatically={inputProps.growInputAutomatically}
+              style={inputStyle}
             />
             {labelBelow == null ? null : (
               <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
@@ -177,7 +194,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       pasteHandler,
       ...otherProps
     } = props
-    const { disabled, onKeyDown, onFocus } = otherProps
+    const { disabled, onKeyDown, onFocus, onBlur } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -231,6 +248,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
         disabled={disabled}
         onKeyDown={handleOnKeyDown}
         onFocus={handleOnFocus}
+        onBlur={onBlur}
         onChange={onChange}
         style={{
           ...style,

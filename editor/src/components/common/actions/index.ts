@@ -1,5 +1,3 @@
-export type PreviewPanel = 'preview'
-
 export type LeftMenuPanel =
   | 'filebrowser'
   | 'dependencylist'
@@ -22,10 +20,9 @@ export type EditorPanel =
   | CenterPanel
   | CodeEditorPanel
   | InspectorPanel
-  | PreviewPanel
   | NavigatorPanel
 
-export type EditorPane = 'leftmenu' | 'center' | 'inspector' | 'preview' | 'rightmenu'
+export type EditorPane = 'leftmenu' | 'center' | 'inspector' | 'rightmenu'
 
 export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
   switch (panel) {
@@ -55,8 +52,6 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
       return 'rightmenu'
     case 'codeEditor':
       return 'center'
-    case 'preview':
-      return 'preview'
     default:
       const _exhaustiveCheck: never = panel
       throw new Error(`Unhandled panel ${panel}`)
