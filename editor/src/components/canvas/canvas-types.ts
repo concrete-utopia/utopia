@@ -593,7 +593,7 @@ export function cssStylePropertyNotParsable(
 
 export type CSSVariant<T> = {
   value: T
-  modifiers?: StyleModifier[]
+  modifiers: StyleModifier[]
 }
 
 export function cssVariant<T>(value: T, modifiers: StyleModifier[]): CSSVariant<T> {
