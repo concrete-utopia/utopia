@@ -27,6 +27,10 @@ export async function runGridMoveTest(
   },
   midDragCallback?: (editor: EditorRenderResult) => void,
 ) {
+  if (props.scale !== 1) {
+    await editor.dispatch([CanvasActions.zoom(props.scale)], true)
+  }
+
   await selectComponentsForTest(editor, [EP.fromString(props.gridPath)])
   const elementPathToDrag = EP.appendToPath(EP.fromString(props.gridPath), props.testId)
   // trigger the grid controls so we know where to find the cells
@@ -41,10 +45,6 @@ export async function runGridMoveTest(
   )
 
   await selectComponentsForTest(editor, [elementPathToDrag])
-
-  if (props.scale !== 1) {
-    await editor.dispatch([CanvasActions.zoom(props.scale)], true)
-  }
 
   await mouseDownAtPoint(sourceGridCell, dragFrom)
   await mouseMoveToPoint(sourceGridCell, dragTo)
