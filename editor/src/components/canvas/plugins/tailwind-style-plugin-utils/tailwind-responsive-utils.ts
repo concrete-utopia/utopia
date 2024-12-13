@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss/types/config'
 import { type StyleMediaSizeModifier, type StyleModifier } from '../../canvas-types'
 import type { ScreenSize } from '../../responsive-types'
 import { extractScreenSizeFromCss } from '../../responsive-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 
 export const TAILWIND_DEFAULT_SCREENS = {
   sm: '640px',
@@ -26,25 +27,23 @@ export function screensConfigToScreenSizes(config: Config | null): Record<string
   }
 
   return Object.fromEntries(
-    Object.entries(screenSizes)
-      .map(([key, size]) => {
-        const mediaString =
-          typeof size === 'string'
-            ? `@media (min-width: ${size})`
-            : `@media ${[
-                size.min != null ? `(min-width: ${size.min})` : '',
-                size.max != null ? `(max-width: ${size.max})` : '',
-              ]
-                .filter((s) => s != '')
-                .join(' and ')}`
+    mapDropNulls(([key, size]) => {
+      const mediaString =
+        typeof size === 'string'
+          ? `@media (min-width: ${size})`
+          : `@media ${[
+              size.min != null ? `(min-width: ${size.min})` : '',
+              size.max != null ? `(max-width: ${size.max})` : '',
+            ]
+              .filter((s) => s != '')
+              .join(' and ')}`
 
-        const screenSize = extractScreenSizeFromCss(mediaString)
-        if (screenSize == null) {
-          return null
-        }
-        return [key, screenSize]
-      })
-      .filter((entry): entry is [string, ScreenSize] => entry != null),
+      const screenSize = extractScreenSizeFromCss(mediaString)
+      if (screenSize == null) {
+        return null
+      }
+      return [key, screenSize]
+    }, Object.entries(screenSizes)),
   )
 }
 
