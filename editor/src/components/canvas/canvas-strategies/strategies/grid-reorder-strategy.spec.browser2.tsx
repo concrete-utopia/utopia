@@ -430,7 +430,7 @@ export var storyboard = (
           data-testid='blue'
           data-label='blue'
         />
-      </Grid>
+      </div>
     </Scene>
   </Storyboard>
 )

@@ -947,6 +947,25 @@ import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb' data-testid='sb'>
+    <Grid
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 100,
+        top: 100,
+        width: 300,
+        height: 300,
+        padding: 10,
+      }}
+      data-uid='grid'
+      data-testid='grid'
+    ${insideGrid == null ? '/>' : `>${insideGrid}</Grid>`}
+    ${extraCode ?? ''}
+  </Storyboard>
+)
+
+export function Grid(props) {
+  return (
     <div
       style={{
         display: 'grid',
@@ -955,13 +974,12 @@ export var storyboard = (
         gridGap: 10,
         ...props.style,
       }}
-      data-uid='grid'
-      data-testid='grid'
+      data-uid='59069a6cd70fcd33ce17f5ff0be43a07'
     >
-    ${insideGrid == null ? '/>' : `>${insideGrid}</Grid>`}
-    ${extraCode ?? ''}
-  </Storyboard>
-)
+      {props.children}
+    </div>
+  )
+}
 `
 }
 
