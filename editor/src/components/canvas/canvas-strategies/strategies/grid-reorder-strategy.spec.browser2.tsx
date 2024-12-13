@@ -377,9 +377,15 @@ export var storyboard = (
       data-label='Playground'
       data-uid='scene'
     >
-      <Grid
+      <div
         style={{
-          backgroundColor: '#aaaaaa33',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          width: 500,
+          height: 500,
+          padding: 10,
         }}
         data-testid='grid'
         data-uid='grid'
@@ -424,42 +430,10 @@ export var storyboard = (
           data-testid='blue'
           data-label='blue'
         />
-      </Grid>
+      </div>
     </Scene>
   </Storyboard>
 )
-
-export function Grid(props) {
-  return (
-    <div
-      style={{
-        ...props.style,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-      data-uid='43adc9c0cf5a0bbf66c67e2e37466c18'
-    >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gridTemplateRows: '1fr 1fr 1fr',
-          gridGap: 10,
-          width: 500,
-          height: 500,
-          padding: 10,
-        }}
-        data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
-      >
-        {props.children}
-      </div>
-      <div
-        style={{ height: 100 }}
-        data-uid='f5827ce0f04916c792a1da2bd69b6cad'
-      />
-    </div>
-  )
-}
 `
 
 const ProjectCodeReorderWithComponentItem = `import * as React from 'react'

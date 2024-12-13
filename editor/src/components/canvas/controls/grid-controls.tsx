@@ -51,7 +51,7 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { assertNever, NO_OP } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import type { UtopiColor } from '../../../uuiui'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -69,6 +69,7 @@ import {
   isGridCSSRepeat,
   printCSSNumberWithDefaultUnit,
   printGridCSSNumber,
+  stringifyGridDimension,
 } from '../../inspector/common/css-utils'
 import CanvasActions from '../canvas-actions'
 import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
@@ -2217,7 +2218,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const [frozenMarkers, setFrozenMarkers] = React.useState<RulerMarkerData | null>(null)
   const [showExtraMarkers, setShowExtraMarkers] = React.useState<'row' | 'column' | null>(null)
 
-  const gridRect: CanvasRectangle | null = useEditorState(
+  const gridData = useEditorState(
     Substores.metadata,
     (store) => {
       const originalGrid = findOriginalGrid(store.editor.jsxMetadata, EP.parentPath(props.path))
@@ -2225,7 +2226,13 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         return null
       }
 
-      return MetadataUtils.getFrameOrZeroRectInCanvasCoords(originalGrid, store.editor.jsxMetadata)
+      return {
+        gridPath: originalGrid,
+        gridRect: MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          originalGrid,
+          store.editor.jsxMetadata,
+        ),
+      }
     },
     'RulerMarkers gridRect',
   )
@@ -2249,9 +2256,11 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const rulerMarkerData: RulerMarkerData | null = useEditorState(
     Substores.metadata,
     (store) => {
-      if (gridRect == null || parentGridCellGlobalFrames == null) {
+      if (gridData == null || parentGridCellGlobalFrames == null) {
         return null
       }
+
+      const gridRect = gridData.gridRect
 
       const elementMetadata = MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,
@@ -2463,7 +2472,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     [markerMouseUp, props, startResizeInteraction, rulerMarkerData, setForceShowGridPlaceholders],
   )
 
-  if (rulerMarkerData == null || gridRect == null) {
+  if (rulerMarkerData == null || gridData == null) {
     return null
   }
 
@@ -2473,7 +2482,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     <React.Fragment>
       <GridRuler
         axis='column'
-        gridRect={gridRect}
+        gridRect={gridData.gridRect}
         cellFrames={parentGridCellGlobalFrames}
         rulerVisible={showExtraMarkers === 'column' ? 'visible' : 'not-visible'}
       >
@@ -2514,7 +2523,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
 
       <GridRuler
         axis='row'
-        gridRect={gridRect}
+        gridRect={gridData.gridRect}
         cellFrames={parentGridCellGlobalFrames}
         rulerVisible={showExtraMarkers === 'row' ? 'visible' : 'not-visible'}
       >
@@ -2587,8 +2596,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         height={rulerMarkerData.cellRect.height + 1}
       />
 
-      {/* Snap line during resize */}
-      <SnapLine
+      <SnapLines
+        gridPath={gridData.gridPath}
         gridTemplate={rulerMarkerData.parentGrid}
         container={rulerMarkerData.gridRect}
         edge={resizeControlRef.current?.edge ?? null}
@@ -2645,9 +2654,10 @@ const ResizeOffsetLine = React.memo(
 )
 ResizeOffsetLine.displayName = 'ResizeOffsetLine'
 
-const SnapLine = React.memo(
+const SnapLines = React.memo(
   (props: {
     gridTemplate: GridContainerProperties
+    gridPath: ElementPath
     edge: GridResizeEdge | null
     container: CanvasRectangle
     target: CanvasRectangle
@@ -2655,6 +2665,8 @@ const SnapLine = React.memo(
     frozenMarkers: RulerMarkerData | null
   }) => {
     const colorTheme = useColorTheme()
+
+    const gridData = useGridMeasurementHelperData(props.gridPath, 'element')
 
     const targetMarker = React.useMemo(() => {
       if (props.edge == null) {
@@ -2704,7 +2716,10 @@ const SnapLine = React.memo(
       targetMarker == null ||
       targetMarker.position == null ||
       targetFrozenMarker == null ||
-      targetFrozenMarker.position == null
+      targetFrozenMarker.position == null ||
+      props.gridTemplate.gridTemplateColumns?.type !== 'DIMENSIONS' ||
+      props.gridTemplate.gridTemplateRows?.type !== 'DIMENSIONS' ||
+      gridData == null
     ) {
       return null
     }
@@ -2723,49 +2738,122 @@ const SnapLine = React.memo(
       ? props.container.x
       : props.target.x + (props.edge === 'column-end' ? props.target.width : 0)
 
+    const columns = props.gridTemplate.gridTemplateColumns.dimensions
+    const rows = props.gridTemplate.gridTemplateRows.dimensions
+
+    // TODO if hasGap === true, then maybe there shouldn't be duplicate lines for the same adjacent rows/cols
+    const hasGap =
+      (isColumn
+        ? gridData.gap ?? gridData.columnGap ?? 0
+        : gridData.gap ?? gridData.rowGap ?? 0) !== 0
+
     return (
-      <div
-        style={{
-          position: 'absolute',
-          width: isColumn ? 1 : props.container.width * canvasScale,
-          height: !isColumn ? 1 : props.container.height * canvasScale,
-          top: top * canvasScale,
-          left: left * canvasScale,
-          backgroundColor: colorTheme.gridControlsPink.value,
-          zoom: 1 / canvasScale,
-        }}
-      >
-        {when(
-          showLabel,
-          <div
-            style={{
-              position: 'absolute',
-              top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
-              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
-              color: colorTheme.gridControlsPink.value,
-              fontWeight: 700,
-              textAlign: axis === 'row' ? 'right' : undefined,
-              width: labelWidth,
-              height: labelHeight,
-            }}
-          >
-            <span
+      <React.Fragment>
+        {/* The default snap lines for the current edge */}
+        <div
+          style={{
+            position: 'absolute',
+            left: props.container.x,
+            top: props.container.y,
+            width: props.container.width,
+            height: props.container.height,
+            border: `1px solid ${colorTheme.grey65.value}`,
+            display: 'grid',
+            gridTemplateColumns: isColumn
+              ? columns.map((d) => stringifyGridDimension(d)).join(' ')
+              : undefined,
+            gridTemplateRows: !isColumn
+              ? rows.map((d) => stringifyGridDimension(d)).join(' ')
+              : undefined,
+            gap: gridData.gap ?? undefined,
+            rowGap: gridData.rowGap ?? undefined,
+            columnGap: gridData.columnGap ?? undefined,
+            padding:
+              `${gridData.padding.top ?? 0}px ` +
+              `${gridData.padding.left ?? 0}px ` +
+              `${gridData.padding.bottom ?? 0}px ` +
+              `${gridData.padding.right ?? 0}px`,
+          }}
+        >
+          {when(
+            isColumn,
+            columns.map((_, index) => {
+              return (
+                <div
+                  key={`line-${index}`}
+                  style={{
+                    borderLeft:
+                      index > 0 && hasGap ? `1px solid ${colorTheme.grey65.value}` : undefined,
+                    borderRight:
+                      index < columns.length - 1
+                        ? `1px solid ${colorTheme.grey65.value}`
+                        : undefined,
+                  }}
+                />
+              )
+            }),
+          )}
+          {unless(
+            isColumn,
+            rows.map((_, index) => {
+              return (
+                <div
+                  key={`line-${index}`}
+                  style={{
+                    borderTop:
+                      index > 0 && hasGap ? `1px solid ${colorTheme.grey65.value}` : undefined,
+                    borderBottom:
+                      index < rows.length - 1 ? `1px solid ${colorTheme.grey65.value}` : undefined,
+                  }}
+                />
+              )
+            }),
+          )}
+        </div>
+        {/* The current snapline */}
+        <div
+          style={{
+            position: 'absolute',
+            width: isColumn ? 1 : props.container.width * canvasScale,
+            height: !isColumn ? 1 : props.container.height * canvasScale,
+            top: top * canvasScale,
+            left: left * canvasScale,
+            backgroundColor: colorTheme.gridControlsPink.value,
+            zoom: 1 / canvasScale,
+          }}
+        >
+          {when(
+            showLabel,
+            <div
               style={{
-                backgroundColor: 'white',
-                padding: '2px 4px',
-                borderRadius: 2,
-                fontSize: 11,
+                position: 'absolute',
+                top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
+                left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
+                color: colorTheme.gridControlsPink.value,
+                fontWeight: 700,
+                textAlign: axis === 'row' ? 'right' : undefined,
+                width: labelWidth,
+                height: labelHeight,
               }}
             >
-              {printPin(props.gridTemplate, targetMarker.position, axis)}
-            </span>
-          </div>,
-        )}
-      </div>
+              <span
+                style={{
+                  backgroundColor: 'white',
+                  padding: '2px 4px',
+                  borderRadius: 2,
+                  fontSize: 11,
+                }}
+              >
+                {printPin(props.gridTemplate, targetMarker.position, axis)}
+              </span>
+            </div>,
+          )}
+        </div>
+      </React.Fragment>
     )
   },
 )
-SnapLine.displayName = 'SnapLine'
+SnapLines.displayName = 'SnapLines'
 
 interface GridRulerProps {
   axis: 'row' | 'column'

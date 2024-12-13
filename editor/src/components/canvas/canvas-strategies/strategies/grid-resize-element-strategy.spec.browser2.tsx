@@ -15,7 +15,12 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { mouseDownAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import {
+  mouseDownAtPoint,
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
+} from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
@@ -26,9 +31,21 @@ import { gridEdgeToEdgePosition } from '../../controls/grid-controls-for-strateg
 async function runCellResizeTest(
   editor: EditorRenderResult,
   edge: GridResizeEdge,
+  gridPath: ElementPath,
   dragToCellTestId: string,
   elementPathToDrag: ElementPath = EP.fromString('sb/scene/grid/ddd'),
 ) {
+  await selectComponentsForTest(editor, [gridPath])
+  const targetGridCell = editor.renderedDOM.getByTestId(dragToCellTestId)
+  const endPoint = getRectCenter(
+    localRectangle({
+      x: targetGridCell.getBoundingClientRect().x,
+      y: targetGridCell.getBoundingClientRect().y,
+      width: targetGridCell.getBoundingClientRect().width,
+      height: targetGridCell.getBoundingClientRect().height,
+    }),
+  )
+
   await selectComponentsForTest(editor, [elementPathToDrag])
 
   const resizeControl = editor.renderedDOM.getByTestId(
@@ -36,27 +53,10 @@ async function runCellResizeTest(
   )
 
   const resizeControlBox = resizeControl.getBoundingClientRect()
-  await mouseDownAtPoint(resizeControl, { x: resizeControlBox.x + 5, y: resizeControlBox.y + 5 })
-  const targetGridCell = editor.renderedDOM.getByTestId(dragToCellTestId)
 
-  await mouseDragFromPointToPoint(
-    resizeControl,
-    {
-      x: resizeControl.getBoundingClientRect().x + 2,
-      y: resizeControl.getBoundingClientRect().y + 2,
-    },
-    getRectCenter(
-      localRectangle({
-        x: targetGridCell.getBoundingClientRect().x,
-        y: targetGridCell.getBoundingClientRect().y,
-        width: targetGridCell.getBoundingClientRect().width,
-        height: targetGridCell.getBoundingClientRect().height,
-      }),
-    ),
-    {
-      moveBeforeMouseDown: true,
-    },
-  )
+  await mouseDownAtPoint(resizeControl, { x: resizeControlBox.x + 1, y: resizeControlBox.y + 1 })
+  await mouseMoveToPoint(resizeControl, endPoint)
+  await mouseUpAtPoint(resizeControl, endPoint)
 }
 
 async function runCellResizeTestWithDragVector(
@@ -97,6 +97,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
       )
 
@@ -116,6 +117,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
 
@@ -138,6 +140,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
       )
 
@@ -160,6 +163,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
 
@@ -181,6 +185,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 6),
       )
 
@@ -200,6 +205,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
 
@@ -222,6 +228,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 6),
       )
 
@@ -244,6 +251,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'column-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
 
@@ -265,6 +273,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 3, 6),
       )
       {
@@ -281,6 +290,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
       {
@@ -304,6 +314,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 3, 6),
       )
       {
@@ -320,6 +331,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-end',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
       )
       {
@@ -342,6 +354,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 6),
       )
 
@@ -360,6 +373,7 @@ describe('grid resize element strategy', () => {
         await runCellResizeTest(
           editor,
           'row-start',
+          EP.fromString('sb/scene/grid'),
           gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
         )
 
@@ -383,6 +397,7 @@ describe('grid resize element strategy', () => {
       await runCellResizeTest(
         editor,
         'row-start',
+        EP.fromString('sb/scene/grid'),
         gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 6),
       )
 
@@ -401,6 +416,7 @@ describe('grid resize element strategy', () => {
         await runCellResizeTest(
           editor,
           'row-start',
+          EP.fromString('sb/scene/grid'),
           gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
         )
 
@@ -421,6 +437,7 @@ describe('grid resize element strategy', () => {
     await runCellResizeTest(
       editor,
       'column-end',
+      EP.fromString('sb/scene/grid'),
       gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 8),
     )
 
@@ -465,6 +482,7 @@ describe('grid resize element strategy', () => {
     await runCellResizeTest(
       editor,
       'column-end',
+      EP.fromString('sb/scene/grid'),
       gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 8),
     )
 
@@ -507,6 +525,7 @@ describe('grid resize element strategy', () => {
     await runCellResizeTest(
       editor,
       'column-end',
+      EP.fromString('sb/scene/grid'),
       gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
     )
 
@@ -548,8 +567,6 @@ export var storyboard = (
       data-testid='grid'
       style={{
         position: 'absolute',
-        left: -94,
-        top: 698,
         display: 'grid',
         gap: 10,
         width: 600,
@@ -570,8 +587,8 @@ export var storyboard = (
           gridTemplateRows: '1fr',
           gridColumn: 1,
           gridRow: 2,
-		  width: '100%',
-		  height: '100%',
+          width: '100%',
+          height: '100%',
         }}
       >
         <div
@@ -612,6 +629,7 @@ export var storyboard = (
       await runCellResizeTest(
         editor,
         'column-end',
+        EP.fromString('sb/grid'),
         gridCellTargetId(EP.fromString('sb/grid'), 2, 3),
         EP.fromString('sb/grid/grid-inside-grid'),
       )
@@ -635,6 +653,7 @@ export var storyboard = (
     await runCellResizeTest(
       editor,
       'column-end',
+      EP.fromString('sb/scene/grid'),
       gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
       EP.fromString('sb/scene/grid/eee'),
     )
@@ -658,6 +677,7 @@ export var storyboard = (
     await runCellResizeTest(
       editor,
       'column-end',
+      EP.fromString('sb/scene/grid'),
       gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
       EP.fromString('sb/scene/grid/eee'),
     )
@@ -684,6 +704,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 3),
           EP.fromString('sb/grid/cell'),
         )
@@ -703,6 +724,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-start',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -722,6 +744,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-start',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 1),
           EP.fromString('sb/grid/cell'),
         )
@@ -747,6 +770,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 4),
           EP.fromString('sb/grid/cell'),
         )
@@ -772,6 +796,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 3, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -791,6 +816,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-start',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -810,6 +836,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-start',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 1, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -835,6 +862,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 4, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -860,6 +888,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 1, 3),
           EP.fromString('sb/grid/cell'),
         )
@@ -879,6 +908,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 4, 3),
           EP.fromString('sb/grid/cell'),
         )
@@ -898,6 +928,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'column-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 4, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -917,6 +948,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-end',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 3, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -936,6 +968,7 @@ export var storyboard = (
         await runCellResizeTest(
           editor,
           'row-start',
+          EP.fromString('sb/grid'),
           gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
           EP.fromString('sb/grid/cell'),
         )
@@ -1071,13 +1104,13 @@ export var storyboard = (
       data-label='Playground'
       data-uid='scene'
     >
-      <Grid
+      <div
         style={{
-          height: 482,
-          width: 786,
-          position: 'absolute',
-          left: 31,
-          top: 0,
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
         }}
         data-uid='grid'
       >
@@ -1142,37 +1175,10 @@ export var storyboard = (
           data-uid='eee'
           data-testid='grid-child-stretch'
         />
-      </Grid>
+      </div>
     </Scene>
   </Storyboard>
 )
-
-export function Grid(props) {
-  return (
-    <div
-      style={{
-        ...props.style,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: '75px 75px 75px 75px',
-          gridTemplateColumns:
-            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-          gridGap: 16,
-        }}
-      >
-        {props.children}
-      </div>
-      <div
-        style={{ height: 100 }}
-      />
-    </div>
-  )
-}
 `
 
 const ProjectCodeWithGridArea = `import * as React from 'react'
