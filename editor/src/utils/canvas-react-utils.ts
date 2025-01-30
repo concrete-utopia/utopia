@@ -71,15 +71,15 @@ export function makeCanvasElementPropsSafe(props: any): any {
 }
 
 function shouldIncludeDataUID(type: any): boolean {
-  if (typeof type === 'string') {
-    const elementIsIntrinsic = firstLetterIsLowerCase(type)
-    const elementIsBaseHTML = isIntrinsicHTMLElementString(type)
-    // Looks like an intrinsic element (div/span/etc), but isn't a recognised
-    // React intrinsic HTML element.
-    if (elementIsIntrinsic && !elementIsBaseHTML) {
-      return false
-    }
-  }
+  // if (typeof type === 'string') {
+  //   const elementIsIntrinsic = firstLetterIsLowerCase(type)
+  //   const elementIsBaseHTML = isIntrinsicHTMLElementString(type)
+  //   // Looks like an intrinsic element (div/span/etc), but isn't a recognised
+  //   // React intrinsic HTML element.
+  //   if (elementIsIntrinsic && !elementIsBaseHTML) {
+  //     return false
+  //   }
+  // }
   return true
 }
 
