@@ -862,6 +862,8 @@ const CanvasContainer = React.forwardRef<
       ref={ref}
       style={{
         position: 'absolute',
+        width: '100%',
+        height: '100%',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
       data-utopia-root-element-path={EP.toString(props.canvasRootElementElementPath)}
