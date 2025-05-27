@@ -485,7 +485,7 @@ jobs:
                      -e "MINIO_ROOT_PASSWORD=minioadmin" \
                      -v /tmp/data:/data \
                      -v /tmp/config:/root/.minio \
-                     quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z \
+                     quay.io/minio/minio:RELEASE.2025-01-20T14-49-07Z \
                      server /data
       - name: Get minIO client
         run: |
@@ -495,7 +495,7 @@ jobs:
           sudo mv mc /usr/local/bin
       - name: Wait for minIO host
         run: |
-          until mc config host add minio-test http://localhost:9000 minioadmin minioadmin; do
+          until mc alias set minio-test http://localhost:9000 minioadmin minioadmin; do
             sleep 2
           done
       - name: Create test minIO bucket
