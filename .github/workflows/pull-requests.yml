@@ -366,7 +366,7 @@ jobs:
   system-test:
     name: Run System Tests
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}

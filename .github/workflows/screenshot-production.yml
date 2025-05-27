@@ -13,7 +13,7 @@ jobs:
   take-screenshot:
     name: Take Screenshot
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [cache-pnpm-store]
     steps:
       - name: Cancel existing runs on this branch

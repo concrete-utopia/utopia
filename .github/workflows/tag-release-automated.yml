@@ -12,7 +12,7 @@ jobs:
     # For automated releases we want to check it is safe first
     name: Run System Tests
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
