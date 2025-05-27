@@ -30,7 +30,7 @@ jobs:
         id: capture-pnpm-store-path
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "pnpm-store-path=$(pnpm store path)" >> "$GITHUB_OUTPUT"'
       - name: Cache pnpm store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.capture-pnpm-store-path.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location

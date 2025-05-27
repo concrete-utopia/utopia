@@ -20,7 +20,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
