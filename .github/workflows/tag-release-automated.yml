@@ -12,7 +12,7 @@ jobs:
     # For automated releases we want to check it is safe first
     name: Run System Tests
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -20,7 +20,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location

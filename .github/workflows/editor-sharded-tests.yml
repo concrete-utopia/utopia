@@ -28,13 +28,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Cache editor test result
         id: cache-editor-tests
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-karma-tests-shard-${{ inputs.shard_number }}-${{ inputs.branch }}-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ inputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location

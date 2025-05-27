@@ -23,13 +23,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Cache editor test result
         id: cache-editor-tests
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-code-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache pnpm store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -59,13 +59,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Cache editor test result
         id: cache-editor-tests
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-jest-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -107,23 +107,23 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .cabal/packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .cabal/packages
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
       - name: Cache .cabal/store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .cabal/store
           key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
       - name: Cache dist-newstyle
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: server/dist-newstyle
           key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
       - name: Cache server test result
         id: cache-server-tests
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           # For the tests it doesn't really matter what we cache
           path: server/src
@@ -178,7 +178,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -279,7 +279,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -366,7 +366,7 @@ jobs:
   system-test:
     name: Run System Tests
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -382,7 +382,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -427,7 +427,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -474,7 +474,7 @@ jobs:
           version: 7.14.2
           run_install: false
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -485,7 +485,7 @@ jobs:
                      -e "MINIO_ROOT_PASSWORD=minioadmin" \
                      -v /tmp/data:/data \
                      -v /tmp/config:/root/.minio \
-                     quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z \
+                     quay.io/minio/minio:RELEASE.2025-01-20T14-49-07Z \
                      server /data
       - name: Get minIO client
         run: |
@@ -495,7 +495,7 @@ jobs:
           sudo mv mc /usr/local/bin
       - name: Wait for minIO host
         run: |
-          until mc config host add minio-test http://localhost:9000 minioadmin minioadmin; do
+          until mc alias set minio-test http://localhost:9000 minioadmin minioadmin; do
             sleep 2
           done
       - name: Create test minIO bucket

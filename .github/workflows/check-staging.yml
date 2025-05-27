@@ -13,7 +13,7 @@ jobs:
   take-screenshot:
     name: Take Screenshot
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [cache-pnpm-store]
     steps:
       - name: Cancel existing runs on this branch
@@ -23,7 +23,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
@@ -87,7 +87,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
