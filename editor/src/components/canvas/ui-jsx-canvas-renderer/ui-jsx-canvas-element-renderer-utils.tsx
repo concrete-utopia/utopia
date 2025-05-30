@@ -812,12 +812,9 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML
-
-  const finalProps =
-    looksLikeReactIntrinsicButNotHTML || elementIsFragment
-      ? filterDataProps(propsIncludingElementPath)
-      : propsIncludingElementPath
+  const finalProps = elementIsFragment
+    ? filterDataProps(propsIncludingElementPath)
+    : propsIncludingElementPath
 
   if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)

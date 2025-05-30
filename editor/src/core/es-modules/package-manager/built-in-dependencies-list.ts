@@ -5,6 +5,7 @@ import * as RemixServerRuntime from '@remix-run/server-runtime'
 import * as Hydrogen from '@shopify/hydrogen'
 import React from 'react' // this is imported like this so that the monkey patching will run
 import * as ReactDOM from 'react-dom'
+import * as ReactDOMServer from 'react-dom/server'
 import * as ReactRouter from 'react-router'
 import * as ReactJsxRuntime from 'react/jsx-runtime'
 import * as UtopiaAPI from 'utopia-api'
@@ -75,6 +76,11 @@ export function createBuiltInDependenciesList(
     builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
     builtInDependency('react', React, editorPackageJSON.dependencies.react),
     builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
+    builtInDependency(
+      'react-dom/server',
+      ReactDOMServer,
+      editorPackageJSON.dependencies['react-dom'],
+    ),
     builtInDependency(
       '@emotion/react',
       EmotionReact,
