@@ -1,7 +1,7 @@
 name: Tag and Release (Automated)
 on:
   schedule:
-    - cron: '0 5 * * 1-5' # Run every weekday 5:00 UTC
+    - cron: '0 5 * * 1' # Run every monday 5:00 UTC
 jobs:
   cache-pnpm-store:
     name: Install everything with PNPM and cache it
