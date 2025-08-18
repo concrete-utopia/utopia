@@ -35,6 +35,7 @@ utopia-js-component.tar.gz
 
 utopia-api/dist
 utopia-api/node_modules
+utopia-api/package-lock.json
 
 ## Various settings
 *.pbxuser
